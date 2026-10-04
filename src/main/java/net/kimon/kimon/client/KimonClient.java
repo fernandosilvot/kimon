@@ -7,6 +7,8 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.kimon.kimon.Kimon;
 import net.kimon.kimon.network.FireBlastPayload;
 import net.kimon.kimon.network.ChargeInputPayload;
+import net.kimon.kimon.network.DashPayload;
+import net.kimon.kimon.network.ToggleFlightPayload;
 import net.kimon.kimon.network.ResetReleasePayload;
 import net.kimon.kimon.network.TransformPayload;
 import net.minecraft.client.KeyMapping;
@@ -87,6 +89,30 @@ public final class KimonClient {
             KeyMapping.Category.MISC
     ));
 
+    /** Opens the skills screen. Default: <kbd>J</kbd>. */
+    public static final Lazy<KeyMapping> SKILLS_KEY = Lazy.of(() -> new KeyMapping(
+            "key.kimon.skills",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_J,
+            KeyMapping.Category.MISC
+    ));
+
+    /** Toggles flight (needs the Fly skill). Default: <kbd>Y</kbd> (F is taken by vanilla). */
+    public static final Lazy<KeyMapping> FLY_KEY = Lazy.of(() -> new KeyMapping(
+            "key.kimon.fly",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_Y,
+            KeyMapping.Category.MISC
+    ));
+
+    /** Dash sideways/backwards in the direction you steer (needs the Dash skill). Default: <kbd>V</kbd>. */
+    public static final Lazy<KeyMapping> DASH_KEY = Lazy.of(() -> new KeyMapping(
+            "key.kimon.dash",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_V,
+            KeyMapping.Category.MISC
+    ));
+
     /** Fires an Energy Blast along your view. Default: <kbd>B</kbd>. */
     public static final Lazy<KeyMapping> BLAST_KEY = Lazy.of(() -> new KeyMapping(
             "key.kimon.blast",
@@ -110,9 +136,24 @@ public final class KimonClient {
         // No instance wiring needed; everything is handled by the static @SubscribeEvent methods.
     }
 
+    /** The way the player is steering for a dash: left or right if a strafe key is held, else back. */
+    private static int dashDirection() {
+        net.minecraft.client.Options options = Minecraft.getInstance().options;
+        if (options.keyLeft.isDown() && !options.keyRight.isDown()) {
+            return DashPayload.LEFT;
+        }
+        if (options.keyRight.isDown() && !options.keyLeft.isDown()) {
+            return DashPayload.RIGHT;
+        }
+        return DashPayload.BACK;
+    }
+
     @SubscribeEvent
     static void registerBindings(RegisterKeyMappingsEvent event) {
         event.register(STATS_KEY.get());
+        event.register(SKILLS_KEY.get());
+        event.register(FLY_KEY.get());
+        event.register(DASH_KEY.get());
         event.register(CHARGE_KEY.get());
         event.register(DISCHARGE_KEY.get());
         event.register(TURBO_KEY.get());
@@ -137,6 +178,15 @@ public final class KimonClient {
         // consumeClick() drains the queued presses: one packet per press for one-shot actions.
         while (STATS_KEY.get().consumeClick()) {
             Minecraft.getInstance().setScreenAndShow(new StatsScreen());
+        }
+        while (SKILLS_KEY.get().consumeClick()) {
+            Minecraft.getInstance().setScreenAndShow(new SkillsScreen());
+        }
+        while (FLY_KEY.get().consumeClick()) {
+            ClientPacketDistributor.sendToServer(new ToggleFlightPayload());
+        }
+        while (DASH_KEY.get().consumeClick()) {
+            ClientPacketDistributor.sendToServer(new DashPayload(dashDirection()));
         }
         while (BLAST_KEY.get().consumeClick()) {
             ClientPacketDistributor.sendToServer(new FireBlastPayload());

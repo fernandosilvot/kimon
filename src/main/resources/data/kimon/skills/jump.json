@@ -1,0 +1,17 @@
+{
+  "max_level": 10,
+  "cost": {
+    "tp_base": 40,
+    "mind": 5
+  },
+  "effects": [
+    {
+      "type": "jump_boost",
+      "per_level": 10
+    },
+    {
+      "type": "safe_fall",
+      "per_level": 1
+    }
+  ]
+}

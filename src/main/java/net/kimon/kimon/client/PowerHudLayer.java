@@ -100,9 +100,34 @@ public final class PowerHudLayer implements GuiLayer {
                         (int) Math.round(state.energy()), (int) Math.round(maxEnergy)),
                 MARGIN_X, y, ENERGY_COLOR);
         y += LINE;
+        renderKiSense(guiGraphics, minecraft);
         guiGraphics.text(minecraft.font,
                 Component.translatable("hud.kimon.stamina",
                         (int) Math.round(state.stamina()), (int) Math.round(maxStamina)),
                 MARGIN_X, y, STAMINA_COLOR);
+    }
+
+    /**
+     * Ki Sense: with the skill, the entity you are looking at (within the skill's range) is read out at
+     * the top of the screen — name and health. Purely client-side; it only reads what the client sees.
+     */
+    private static void renderKiSense(GuiGraphicsExtractor g, Minecraft mc) {
+        double range = net.kimon.kimon.skill.SkillEffects.total(
+                mc.player.getData(net.kimon.kimon.skill.ModSkillAttachments.SKILLS.get()),
+                net.kimon.kimon.skill.SkillCatalog.current(), net.kimon.kimon.skill.SkillEffect.KI_SENSE);
+        if (range <= 0.0) {
+            return;
+        }
+        net.minecraft.world.phys.HitResult hit = net.minecraft.world.entity.projectile.ProjectileUtil
+                .getHitResultOnViewVector(mc.player,
+                        e -> e != mc.player && e.isPickable() && e instanceof net.minecraft.world.entity.LivingEntity,
+                        range);
+        if (hit.getType() == net.minecraft.world.phys.HitResult.Type.ENTITY
+                && ((net.minecraft.world.phys.EntityHitResult) hit).getEntity()
+                        instanceof net.minecraft.world.entity.LivingEntity target) {
+            Component line = Component.translatable("hud.kimon.ki_sense", target.getDisplayName(),
+                    String.format("%.0f", target.getHealth()), String.format("%.0f", target.getMaxHealth()));
+            g.centeredText(mc.font, line, mc.getWindow().getGuiScaledWidth() / 2, 8, 0xFF66FF99);
+        }
     }
 }

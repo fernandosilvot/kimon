@@ -62,8 +62,7 @@ public class TrainingAltarBlock extends Block {
 
             serverPlayer.setData(ModAttachments.STATE.get(), power.withResources(
                     power.release(), power.energy(), power.stamina() - cost,
-                    StatCalculator.maxRelease(stats, KimonConfig.params().baseMaxRelease(),
-                            KimonConfig.params().hardMaxRelease()),
+                    net.kimon.kimon.power.ReleaseCeiling.of(serverPlayer),
                     StatCalculator.maxEnergy(stats, profile, KimonConfig.params().kiPerSpirit()),
                     maxStamina));
 

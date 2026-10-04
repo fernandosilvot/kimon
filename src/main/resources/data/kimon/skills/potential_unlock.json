@@ -1,0 +1,13 @@
+{
+  "max_level": 10,
+  "cost": {
+    "tp_base": 400,
+    "mind": 10
+  },
+  "effects": [
+    {
+      "type": "release_cap",
+      "per_level": 5
+    }
+  ]
+}

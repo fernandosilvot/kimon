@@ -83,13 +83,14 @@ class StatCalculatorTest {
     }
 
     @Test
-    @DisplayName("max Release is 50 at start and rises with Focus, capped at 100")
-    void maxReleaseFromFocus() {
-        assertEquals(50.0, StatCalculator.maxRelease(StatBlock.initial()), 1e-9);
-        StatBlock focused = withAttribute(Attribute.MIND, StatBlock.START_VALUE + 20);
-        assertEquals(70.0, StatCalculator.maxRelease(focused), 1e-9);
-        StatBlock maxed = withAttribute(Attribute.MIND, StatBlock.MAX_VALUE);
-        assertEquals(100.0, StatCalculator.maxRelease(maxed), 1e-9);
+    @DisplayName("max Release is the base plus the skill bonus, capped (50 -> 100 at Potential Unlock 10)")
+    void maxReleaseFromSkills() {
+        assertEquals(50.0, StatCalculator.maxRelease(50.0, 0.0, 100.0), 1e-9);
+        assertEquals(75.0, StatCalculator.maxRelease(50.0, 25.0, 100.0), 1e-9);
+        assertEquals(100.0, StatCalculator.maxRelease(50.0, 50.0, 100.0), 1e-9);
+        assertEquals(100.0, StatCalculator.maxRelease(50.0, 500.0, 100.0), 1e-9, "never above the hard cap");
+        assertEquals(200.0, StatCalculator.maxRelease(100.0, 500.0, 200.0), 1e-9, "overcharge raises the cap");
+        assertEquals(0.0, StatCalculator.maxRelease(10.0, -50.0, 100.0), 1e-9, "never negative");
     }
 
     @Test
@@ -108,12 +109,4 @@ class StatCalculatorTest {
         assertEquals(StatCalculator.maxEnergy(stats) * 2, StatCalculator.maxEnergy(stats, 80.0), 1e-9);
     }
 
-    @Test
-    void configurableMaxReleaseRespectsBaseAndHardCap() {
-        StatBlock stats = StatBlock.initial();
-        assertEquals(50.0, StatCalculator.maxRelease(stats), 1e-9);
-        assertEquals(30.0, StatCalculator.maxRelease(stats, 30.0, 100.0), 1e-9);
-        assertEquals(100.0, StatCalculator.maxRelease(stats, 500.0, 100.0), 1e-9);
-        assertEquals(200.0, StatCalculator.maxRelease(stats, 500.0, 200.0), 1e-9);
-    }
 }

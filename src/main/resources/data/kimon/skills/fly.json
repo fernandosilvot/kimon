@@ -1,0 +1,13 @@
+{
+  "max_level": 10,
+  "cost": {
+    "tp_base": 60,
+    "mind": 10
+  },
+  "effects": [
+    {
+      "type": "flight",
+      "per_level": 10
+    }
+  ]
+}

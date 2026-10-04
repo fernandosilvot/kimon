@@ -2,6 +2,7 @@ package net.kimon.kimon.config;
 
 import net.kimon.kimon.power.KiRegenRate;
 import net.kimon.kimon.power.PowerParams;
+import net.kimon.kimon.skill.SkillParams;
 import net.kimon.kimon.stats.CostParams;
 import net.kimon.kimon.stats.TpParams;
 import net.kimon.kimon.training.TrainingParams;
@@ -214,6 +215,27 @@ public final class KimonConfig {
             .translation("config.kimon.training.maxWeight")
             .defineInRange("training.maxWeight", TrainingParams.DEFAULTS.maxWeight(), 0.0, 100000.0);
 
+    // --- skills ---
+    private static final ModConfigSpec.DoubleValue SKILL_MIND_PER_POINT = SERVER_BUILDER
+            .comment("Mind budget per point of the Mind attribute: every skill level uses Mind, so Mind limits how many levels you can hold.")
+            .translation("config.kimon.skills.mindPerPoint")
+            .defineInRange("skills.mindPerPoint", SkillParams.DEFAULTS.mindPerPoint(), 0.0, 1000.0);
+
+    private static final ModConfigSpec.DoubleValue FLIGHT_KI = SERVER_BUILDER
+            .comment("Ki drained per second while flying.")
+            .translation("config.kimon.skills.flightKiPerSecond")
+            .defineInRange("skills.flightKiPerSecond", SkillParams.DEFAULTS.flightKiPerSecond(), 0.0, 100000.0);
+
+    private static final ModConfigSpec.DoubleValue DASH_KI = SERVER_BUILDER
+            .comment("Fraction of max Ki one dash costs.")
+            .translation("config.kimon.skills.dashKiFraction")
+            .defineInRange("skills.dashKiFraction", SkillParams.DEFAULTS.dashKiFraction(), 0.0, 1.0);
+
+    private static final ModConfigSpec.IntValue DASH_COOLDOWN = SERVER_BUILDER
+            .comment("Ticks between dashes.")
+            .translation("config.kimon.skills.dashCooldownTicks")
+            .defineInRange("skills.dashCooldownTicks", SkillParams.DEFAULTS.dashCooldownTicks(), 0, 72000);
+
     public static final ModConfigSpec SERVER_SPEC = SERVER_BUILDER.build();
 
     // ---------------------------------------------------------------- client
@@ -231,6 +253,7 @@ public final class KimonConfig {
     private static volatile TpParams cachedTp = TpParams.DEFAULTS;
     private static volatile CostParams cachedCost = CostParams.DEFAULTS;
     private static volatile TrainingParams cachedTraining = TrainingParams.DEFAULTS;
+    private static volatile SkillParams cachedSkills = SkillParams.DEFAULTS;
 
     /** The current balance values (defaults until the config has loaded). */
     public static PowerParams params() {
@@ -245,6 +268,11 @@ public final class KimonConfig {
     /** The current attribute-cost curve (defaults until the config has loaded). */
     public static CostParams costParams() {
         return cachedCost;
+    }
+
+    /** The current skill numbers (defaults until the config has loaded). */
+    public static SkillParams skillParams() {
+        return cachedSkills;
     }
 
     /** The current weight / gravity rules (defaults until the config has loaded). */
@@ -297,6 +325,8 @@ public final class KimonConfig {
                     TP_HIT_CHANCE.getAsDouble(), ALTAR_STAMINA_COST.getAsDouble(), POWER_PER_POINT.getAsInt());
             cachedCost = new CostParams(COST_BASE.getAsDouble(), COST_RATE.getAsDouble(),
                     COST_MULTIPLIER.getAsDouble(), COST_START_MINUS.getAsDouble(), COST_MIN.getAsLong());
+            cachedSkills = new SkillParams(SKILL_MIND_PER_POINT.getAsDouble(), FLIGHT_KI.getAsDouble(),
+                    DASH_KI.getAsDouble(), DASH_COOLDOWN.getAsInt());
             cachedTraining = new TrainingParams(WEIGHT_PENALTY.getAsDouble(), MAX_WEIGHT_PENALTY.getAsDouble(),
                     WEIGHT_TP_BONUS.getAsDouble(), GRAVITY_STAT_DROP.getAsDouble(), GRAVITY_TP_BONUS.getAsDouble(),
                     MAX_TP_MULT.getAsDouble(), DEVICE_GRAVITY.getAsDouble(), SCAN_RADIUS.getAsInt(),

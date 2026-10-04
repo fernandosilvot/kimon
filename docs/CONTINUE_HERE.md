@@ -42,6 +42,8 @@ Package root: `net.kimon.kimon`
   `ModNetworking` handlers.
 - `block/` — `TrainingAltarBlock`, `ModBlocks` (blocks, items incl. Wish Orb, creative tab).
 - `wish/` — `Wish` (reward table, pure), `WishOrbItem`.
+- `skill/` — skills as data: `SkillDef`/`SkillEffect` (JSON), `SkillCatalog`, `SkillData` (attachment),
+  pure `SkillRules`/`SkillEffects`; glue `SkillHandler`, `FlightHandler`, `DashHandler`, `SkillDataLoader`.
 - `command/` — `KimonCommands` (`/kimon ...` debug/admin tree).
 - `client/` — `KimonClient` (keybinds→payloads), `StatsScreen` (GUI), `PowerHudLayer` (HUD). All
   `@Dist.CLIENT`.

@@ -60,8 +60,12 @@ public final class StatsScreen extends Screen {
             }
         }
 
+        addRenderableWidget(Button.builder(Component.translatable("screen.kimon.skills.open"),
+                        b -> Minecraft.getInstance().setScreenAndShow(new SkillsScreen()))
+                .bounds(cx - 75, topY + attrs.length * ROW_HEIGHT + 10, 150, 20)
+                .build());
         addRenderableWidget(Button.builder(Component.translatable("gui.done"), b -> onClose())
-                .bounds(cx - 75, topY + attrs.length * ROW_HEIGHT + 14, 150, 20)
+                .bounds(cx - 75, topY + attrs.length * ROW_HEIGHT + 34, 150, 20)
                 .build());
     }
 

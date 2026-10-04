@@ -1,0 +1,13 @@
+{
+  "max_level": 10,
+  "cost": {
+    "tp_base": 300,
+    "mind": 10
+  },
+  "effects": [
+    {
+      "type": "ki_sense",
+      "per_level": 10
+    }
+  ]
+}

@@ -14,6 +14,10 @@ import net.kimon.kimon.power.PowerState;
 import net.kimon.kimon.stats.Attribute;
 import net.kimon.kimon.stats.CharacterProfile;
 import net.kimon.kimon.stats.ModStatAttachments;
+import net.kimon.kimon.skill.ModSkillAttachments;
+import net.kimon.kimon.skill.SkillCatalog;
+import net.kimon.kimon.skill.SkillDef;
+import net.kimon.kimon.skill.SkillHandler;
 import net.kimon.kimon.stats.CharacterCatalog;
 import net.minecraft.resources.Identifier;
 import net.kimon.kimon.stats.StatBlock;
@@ -83,6 +87,15 @@ public final class KimonCommands {
                                 .then(Commands.argument("level", IntegerArgumentType.integer(0))
                                         .executes(ctx -> setMastery(ctx.getSource(),
                                                 StringArgumentType.getString(ctx, "form"),
+                                                IntegerArgumentType.getInteger(ctx, "level"))))))
+                .then(Commands.literal("skill")
+                        .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                        .then(Commands.argument("skill", StringArgumentType.word())
+                                .suggests((ctx, builder) -> net.minecraft.commands.SharedSuggestionProvider.suggest(
+                                        SkillCatalog.current().skills().keySet().stream().map(KimonCommands::shortId), builder))
+                                .then(Commands.argument("level", IntegerArgumentType.integer(0))
+                                        .executes(ctx -> setSkill(ctx.getSource(),
+                                                StringArgumentType.getString(ctx, "skill"),
                                                 IntegerArgumentType.getInteger(ctx, "level"))))))
                 .then(Commands.literal("reset")
                         .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
@@ -163,6 +176,26 @@ public final class KimonCommands {
     /** Ids in the mod's own namespace are shown without it ("saiyan"); others keep theirs. */
     private static String shortId(Identifier id) {
         return CharacterCatalog.NAMESPACE.equals(id.getNamespace()) ? id.getPath() : id.toString();
+    }
+
+    private static int setSkill(CommandSourceStack src, String skillKey, int level) {
+        ServerPlayer p = self(src);
+        if (p == null) {
+            return 0;
+        }
+        SkillCatalog catalog = SkillCatalog.current();
+        Identifier id = SkillCatalog.parseId(skillKey);
+        SkillDef def = id == null ? null : catalog.get(id);
+        if (def == null) {
+            src.sendSystemMessage(Component.literal("§cUnknown skill. Options: "
+                    + String.join(", ", catalog.skills().keySet().stream().map(KimonCommands::shortId).toList())));
+            return 0;
+        }
+        int clamped = Math.min(level, def.maxLevel());
+        p.setData(ModSkillAttachments.SKILLS.get(), p.getData(ModSkillAttachments.SKILLS.get()).with(id, clamped));
+        SkillHandler.applyEffects(p);
+        src.sendSystemMessage(Component.literal("§aSkill " + shortId(id) + " set to level " + clamped + "."));
+        return 1;
     }
 
     private static int setRace(CommandSourceStack src, String raceKey) {
@@ -248,6 +281,8 @@ public final class KimonCommands {
         }
         p.setData(ModStatAttachments.PROFILE.get(), CharacterProfile.DEFAULT);
         p.setData(ModStatAttachments.STATS.get(), StatBlock.initial());
+        p.setData(ModSkillAttachments.SKILLS.get(), net.kimon.kimon.skill.SkillData.EMPTY);
+        SkillHandler.applyEffects(p);
         p.setData(ModAttachments.POWER.get(), PowerData.INITIAL);
         p.setData(ModAttachments.MASTERY.get(), MasteryData.initial());
         StatEffects.apply(p);

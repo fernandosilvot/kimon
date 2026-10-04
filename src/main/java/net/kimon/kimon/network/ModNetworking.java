@@ -8,11 +8,16 @@ import net.kimon.kimon.power.ModAttachments;
 import net.kimon.kimon.power.PowerData;
 import net.kimon.kimon.power.PowerEffects;
 import net.kimon.kimon.power.PowerState;
+import net.kimon.kimon.skill.DashHandler;
+import net.kimon.kimon.skill.FlightHandler;
+import net.kimon.kimon.skill.SkillCatalog;
+import net.kimon.kimon.skill.SkillHandler;
 import net.kimon.kimon.stats.Attribute;
 import net.kimon.kimon.stats.CharacterCatalog;
 import net.kimon.kimon.stats.ModStatAttachments;
 import net.kimon.kimon.stats.StatBlock;
 import net.kimon.kimon.stats.StatEffects;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -28,7 +33,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 public final class ModNetworking {
 
     /** Bump this string when the wire format changes incompatibly. */
-    private static final String PROTOCOL_VERSION = "5";
+    private static final String PROTOCOL_VERSION = "6";
 
     private ModNetworking() {
     }
@@ -54,6 +59,30 @@ public final class ModNetworking {
                 CatalogPayload.TYPE,
                 CatalogPayload.STREAM_CODEC,
                 ModNetworking::handleCatalog
+        );
+
+        registrar.playToClient(
+                SkillCatalogPayload.TYPE,
+                SkillCatalogPayload.STREAM_CODEC,
+                ModNetworking::handleSkillCatalog
+        );
+
+        registrar.playToServer(
+                LearnSkillPayload.TYPE,
+                LearnSkillPayload.STREAM_CODEC,
+                ModNetworking::handleLearnSkill
+        );
+
+        registrar.playToServer(
+                ToggleFlightPayload.TYPE,
+                ToggleFlightPayload.STREAM_CODEC,
+                ModNetworking::handleToggleFlight
+        );
+
+        registrar.playToServer(
+                DashPayload.TYPE,
+                DashPayload.STREAM_CODEC,
+                ModNetworking::handleDash
         );
 
         registrar.playToClient(
@@ -127,6 +156,39 @@ public final class ModNetworking {
     /** Client: adopts the server's race/class catalog so derived stats match the server's. */
     private static void handleCatalog(final CatalogPayload payload, final IPayloadContext context) {
         context.enqueueWork(() -> CharacterCatalog.set(payload.catalog()));
+    }
+
+    /** Client: adopts the server's skill catalog. */
+    private static void handleSkillCatalog(final SkillCatalogPayload payload, final IPayloadContext context) {
+        context.enqueueWork(() -> SkillCatalog.set(payload.catalog()));
+    }
+
+    /** Raises a skill by one level (validated server-side). */
+    private static void handleLearnSkill(final LearnSkillPayload payload, final IPayloadContext context) {
+        context.enqueueWork(() -> {
+            if (context.player() instanceof ServerPlayer serverPlayer) {
+                Identifier id = SkillCatalog.parseId(payload.skillId());
+                if (id != null) {
+                    SkillHandler.learn(serverPlayer, id);
+                }
+            }
+        });
+    }
+
+    private static void handleToggleFlight(final ToggleFlightPayload payload, final IPayloadContext context) {
+        context.enqueueWork(() -> {
+            if (context.player() instanceof ServerPlayer serverPlayer) {
+                FlightHandler.toggle(serverPlayer);
+            }
+        });
+    }
+
+    private static void handleDash(final DashPayload payload, final IPayloadContext context) {
+        context.enqueueWork(() -> {
+            if (context.player() instanceof ServerPlayer serverPlayer) {
+                DashHandler.dash(serverPlayer, payload.direction());
+            }
+        });
     }
 
     /** Client: remembers how to draw a nearby player's aura. */
