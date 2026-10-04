@@ -6,8 +6,10 @@ import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 
 import net.kimon.kimon.Kimon;
+import net.kimon.kimon.power.Form;
 import net.kimon.kimon.power.ModAttachments;
 import net.kimon.kimon.power.PowerData;
+import net.kimon.kimon.power.PowerState;
 import net.kimon.kimon.stats.Attribute;
 import net.kimon.kimon.stats.CharacterProfile;
 import net.kimon.kimon.stats.ModStatAttachments;
@@ -64,6 +66,10 @@ public final class KimonCommands {
                         .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .then(Commands.argument("class", StringArgumentType.word())
                                 .executes(ctx -> setClass(ctx.getSource(), StringArgumentType.getString(ctx, "class")))))
+                .then(Commands.literal("form")
+                        .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                        .then(Commands.argument("form", StringArgumentType.word())
+                                .executes(ctx -> setForm(ctx.getSource(), StringArgumentType.getString(ctx, "form")))))
                 .then(Commands.literal("reset")
                         .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .executes(ctx -> reset(ctx.getSource()))));
@@ -180,6 +186,22 @@ public final class KimonCommands {
         p.setData(ModStatAttachments.PROFILE.get(), profile.withClass(clazz));
         StatEffects.apply(p);
         src.sendSystemMessage(Component.literal("§aClass set to " + clazz.key() + "."));
+        return 1;
+    }
+
+    private static int setForm(CommandSourceStack src, String formKey) {
+        ServerPlayer p = self(src);
+        if (p == null) {
+            return 0;
+        }
+        Form form = Form.byKey(formKey);
+        if (form == null) {
+            src.sendSystemMessage(Component.literal("§cUnknown form. Options: base, surge, ascent, zenith"));
+            return 0;
+        }
+        PowerState state = p.getData(ModAttachments.STATE.get());
+        p.setData(ModAttachments.STATE.get(), state.withForm(form));
+        src.sendSystemMessage(Component.literal("§aForm set to " + form.key() + "."));
         return 1;
     }
 

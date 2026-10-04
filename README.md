@@ -8,7 +8,7 @@
 ![Minecraft](https://img.shields.io/badge/Minecraft-26.2-brightgreen)
 ![NeoForge](https://img.shields.io/badge/NeoForge-26.2.0.88-orange)
 ![Java](https://img.shields.io/badge/Java-25-red)
-![Tests](https://img.shields.io/badge/tests-59%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-68%20passing-brightgreen)
 
 Kimon is a from-scratch RPG progression mod inspired by the *feel* of classic anime-fighter mods
 (train, grow stronger, power up, transform) — built as a **clean-room reimplementation** with
@@ -58,12 +58,13 @@ Minecraft 26.2 / NeoForge 26.2.0.88.
 | **Energy & Stamina** resources with regen (Energy regens faster at low Release) | ✅ |
 | Melee damage scales with **Strength × Release**; action-bar **"Hit for X"** feedback | ✅ |
 | **Energy Blast** attack (<kbd>B</kbd>): raycast that consumes Energy and scales with Energy × Release | ✅ |
-| **HUD** showing Race/Class, Power, Tier, Release %, Energy, Stamina (hidden under F3) | ✅ |
+| **Forms / transformations** (<kbd>R</kbd> up / <kbd>V</kbd> down): multiply combat damage, drain Energy, gated by Power tier + Release | ✅ |
+| **HUD** showing Race/Class, active Form, Power, Tier, Release %, Energy, Stamina (hidden under F3) | ✅ |
 | **`/kimon` debug/admin command** to set progression without grinding | ✅ |
 | Server-authoritative logic (the client cannot forge values) | ✅ |
 | Automatic server → client sync of all stats | ✅ |
 | English + Spanish localization | ✅ |
-| 59 JUnit unit tests, GitHub Actions CI (build + test with caching) | ✅ |
+| 68 JUnit unit tests, GitHub Actions CI (build + test with caching) | ✅ |
 
 **Design discipline:** features are added **one vertical slice at a time**. Each slice is complete
 and playable, with its logic unit-tested, before the next begins — rather than many half-finished
@@ -79,6 +80,8 @@ systems. See the [Roadmap](#roadmap).
 | <kbd>K</kbd> | Open the **Character Sheet** to spend Training Points on attributes |
 | <kbd>C</kbd> (hold) | **Charge** — power up; your Release % rises (and decays when released) |
 | <kbd>B</kbd> | **Energy Blast** — fire a ranged energy attack along your view (costs Energy) |
+| <kbd>R</kbd> | **Transform up** — ascend to the next form (needs Power tier + Release) |
+| <kbd>V</kbd> | **Transform down** — revert one form toward Base |
 | <kbd>F3</kbd> | Vanilla debug screen — hides the Kimon HUD while held |
 
 All keys are rebindable under **Options → Controls → Miscellaneous**.
@@ -97,6 +100,7 @@ instantly, without grinding:
 /kimon attr <name> <value>  # set an attribute: strength|agility|vitality|energy|focus|spirit
 /kimon race <race>          # set race: human|titan|sage|frost|mystic|hybrid (reseeds attributes)
 /kimon class <class>        # set class: warrior|brawler|channeler
+/kimon form <form>          # force a form: base|surge|ascent|zenith
 /kimon reset                # reset character to defaults
 ```
 
@@ -122,6 +126,10 @@ A quick tour that exercises every system:
 7. **Fire an Energy Blast**: with some Release charged, press <kbd>B</kbd> while looking at a target.
    It consumes Energy and deals damage scaling with your Energy attribute × Release. An energy build
    (`/kimon race sage` + `/kimon class channeler`, high Energy attribute) hits hardest.
+8. **Transform**: charge your Release, then press <kbd>R</kbd> to ascend to the next **form**
+   (Surge → Ascent → Zenith). Forms multiply all your combat damage but drain Energy per second and
+   need enough Power tier + Release — if Energy runs out or Release drops, you revert to Base.
+   Press <kbd>V</kbd> to step down. The active form shows on the HUD.
 
 ### "See how hard you hit"
 
@@ -216,9 +224,10 @@ net.kimon.kimon
 │   ├── PowerScaling.java       # Power → tiered attribute bonuses (pure, unit-tested)
 │   ├── PowerState.java         # Release %, Energy, Stamina loop (pure, unit-tested)
 │   ├── EnergyBlast.java        # energy-attack damage/cost rules (pure, unit-tested)
+│   ├── Form.java               # transformation ladder: multipliers, drain, gating (pure, unit-tested)
 │   ├── PowerEffects.java       # applies Power-tier bonuses as vanilla attribute modifiers
 │   ├── PowerEventHandler.java  # re-applies bonuses on login / respawn
-│   ├── CombatHandler.java      # server tick loop; melee scaling; Energy Blast; "Hit for X"
+│   ├── CombatHandler.java      # server tick loop; melee + form scaling; Energy Blast; transform
 │   └── ModAttachments.java     # POWER (persisted+synced) and STATE (synced) attachments
 ├── stats/
 │   ├── Attribute.java          # the six attributes
@@ -235,6 +244,7 @@ net.kimon.kimon
 │   ├── RaiseAttributePayload.java   # C→S: spend TP on an attribute
 │   ├── SetChargingPayload.java      # C→S: toggle charging (hold C)
 │   ├── FireBlastPayload.java        # C→S: fire an Energy Blast
+│   ├── TransformPayload.java        # C→S: transform up / down
 │   └── ModNetworking.java           # registers payloads + server-side handlers
 ├── command/
 │   └── KimonCommands.java      # /kimon debug/admin command tree
@@ -267,9 +277,9 @@ Training Points or stats.
 
 ## Testing
 
-- **Unit tests** (`src/test/java`, 59 tests) cover all pure logic: Power tiers, the TP economy and
-  cost curve, attribute-derived stats, the Release/Energy/Stamina loop, race/class modifiers, and
-  the Energy Blast damage/cost rules.
+- **Unit tests** (`src/test/java`, 68 tests) cover all pure logic: Power tiers, the TP economy and
+  cost curve, attribute-derived stats, the Release/Energy/Stamina loop, race/class modifiers, the
+  Energy Blast damage/cost rules, and the form ladder (multipliers, drain, tier/Release gating).
   They run on a plain JVM with no Minecraft bootstrap, so they are fast and reliable in CI.
 
   ```bash
@@ -314,15 +324,16 @@ full plan and [`docs/roadmap.svg`](docs/roadmap.svg) for the diagram source.
 - ✅ **Phase 3** — Release % charge, Energy/Stamina resources, melee scaling, "Hit for X" feedback.
 - ✅ **Phase 4** — six races + three classes, `/kimon` debug commands.
 - ✅ **Phase 5** — Energy Blast: ranged attack consuming Energy, scaling with Energy × Release.
+- ✅ **Phase 6** — forms / transformations: multiply combat damage, drain Energy, gated by tier + Release.
 
 **Next**
-- 🔜 **Phase 6** — forms / transformations (temporary multipliers + mastery).
+- 🔜 **Form Mastery** — forms grow stronger / cheaper the more you use them.
 
 **Later**
-- ⏳ A visual projectile entity for the Energy Blast.
+- ⏳ A visual projectile entity for the Energy Blast; player aura/transform animations.
 - ⏳ Move races/forms/skills to **JSON datapacks** (currently enum-based) for server customization.
 - 💤 **Phase 7** — world, masters, sagas, wishes (data-driven, long-horizon).
-- 💤 Player animations (needs a 26.2 animation library) and in-game GameTests.
+- 💤 In-game GameTests on the 26.2 framework.
 
 ---
 

@@ -60,6 +60,12 @@ public final class ModNetworking {
                 FireBlastPayload.STREAM_CODEC,
                 ModNetworking::handleFireBlast
         );
+
+        registrar.playToServer(
+                TransformPayload.TYPE,
+                TransformPayload.STREAM_CODEC,
+                ModNetworking::handleTransform
+        );
     }
 
     /**
@@ -121,6 +127,15 @@ public final class ModNetworking {
         context.enqueueWork(() -> {
             if (context.player() instanceof ServerPlayer serverPlayer) {
                 CombatHandler.fireEnergyBlast(serverPlayer);
+            }
+        });
+    }
+
+    /** Transforms the player up or down one form, validated server-side. */
+    private static void handleTransform(final TransformPayload payload, final IPayloadContext context) {
+        context.enqueueWork(() -> {
+            if (context.player() instanceof ServerPlayer serverPlayer) {
+                CombatHandler.transform(serverPlayer, payload.up());
             }
         });
     }
