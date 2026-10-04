@@ -14,8 +14,8 @@ import net.kimon.kimon.power.PowerState;
 import net.kimon.kimon.stats.Attribute;
 import net.kimon.kimon.stats.CharacterProfile;
 import net.kimon.kimon.stats.ModStatAttachments;
-import net.kimon.kimon.stats.PlayerClass;
-import net.kimon.kimon.stats.Race;
+import net.kimon.kimon.stats.CharacterCatalog;
+import net.minecraft.resources.Identifier;
 import net.kimon.kimon.stats.StatBlock;
 import net.kimon.kimon.stats.StatCalculator;
 import net.kimon.kimon.stats.StatEffects;
@@ -62,10 +62,14 @@ public final class KimonCommands {
                 .then(Commands.literal("race")
                         .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .then(Commands.argument("race", StringArgumentType.word())
+                                .suggests((ctx, builder) -> net.minecraft.commands.SharedSuggestionProvider.suggest(
+                                        CharacterCatalog.current().raceIds().stream().map(KimonCommands::shortId), builder))
                                 .executes(ctx -> setRace(ctx.getSource(), StringArgumentType.getString(ctx, "race")))))
                 .then(Commands.literal("class")
                         .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .then(Commands.argument("class", StringArgumentType.word())
+                                .suggests((ctx, builder) -> net.minecraft.commands.SharedSuggestionProvider.suggest(
+                                        CharacterCatalog.current().classIds().stream().map(KimonCommands::shortId), builder))
                                 .executes(ctx -> setClass(ctx.getSource(), StringArgumentType.getString(ctx, "class")))))
                 .then(Commands.literal("form")
                         .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
@@ -98,7 +102,7 @@ public final class KimonCommands {
 
         src.sendSystemMessage(Component.literal("§b=== Kimon ===§r"));
         src.sendSystemMessage(Component.literal(
-                "Race: §e" + profile.race().key() + "§r  Class: §e" + profile.clazz().key()));
+                "Race: §e" + shortId(profile.raceId()) + "§r  Class: §e" + shortId(profile.classId())));
         src.sendSystemMessage(Component.literal("Power: §a" + power.power() + "§r  TP: §a" + stats.trainingPoints()));
         StringBuilder sb = new StringBuilder("Attrs: ");
         for (Attribute a : Attribute.VALUES) {
@@ -160,23 +164,31 @@ public final class KimonCommands {
         return 1;
     }
 
+    /** Ids in the mod's own namespace are shown without it ("titan"); others keep theirs. */
+    private static String shortId(Identifier id) {
+        return CharacterCatalog.NAMESPACE.equals(id.getNamespace()) ? id.getPath() : id.toString();
+    }
+
     private static int setRace(CommandSourceStack src, String raceKey) {
         ServerPlayer p = self(src);
         if (p == null) {
             return 0;
         }
-        Race race = Race.byKey(raceKey);
-        if (race == null) {
-            src.sendSystemMessage(Component.literal("§cUnknown race. Options: human, titan, sage, frost, mystic, hybrid"));
+        CharacterCatalog catalog = CharacterCatalog.current();
+        Identifier raceId = CharacterCatalog.parseId(raceKey);
+        if (raceId == null || !catalog.hasRace(raceId)) {
+            src.sendSystemMessage(Component.literal("§cUnknown race. Options: "
+                    + String.join(", ", catalog.raceIds().stream().map(KimonCommands::shortId).toList())));
             return 0;
         }
         CharacterProfile profile = p.getData(ModStatAttachments.PROFILE.get());
-        p.setData(ModStatAttachments.PROFILE.get(), profile.withRace(race));
+        p.setData(ModStatAttachments.PROFILE.get(), profile.withRace(raceId));
         // Reseed attributes to the race's starting spread, keeping TP.
         StatBlock current = p.getData(ModStatAttachments.STATS.get());
-        p.setData(ModStatAttachments.STATS.get(), race.newStatBlock().addTrainingPoints(current.trainingPoints()));
+        p.setData(ModStatAttachments.STATS.get(),
+                catalog.race(raceId).newStatBlock().addTrainingPoints(current.trainingPoints()));
         StatEffects.apply(p);
-        src.sendSystemMessage(Component.literal("§aRace set to " + race.key() + " (attributes reseeded)."));
+        src.sendSystemMessage(Component.literal("§aRace set to " + shortId(raceId) + " (attributes reseeded)."));
         return 1;
     }
 
@@ -185,15 +197,17 @@ public final class KimonCommands {
         if (p == null) {
             return 0;
         }
-        PlayerClass clazz = PlayerClass.byKey(classKey);
-        if (clazz == null) {
-            src.sendSystemMessage(Component.literal("§cUnknown class. Options: warrior, brawler, channeler"));
+        CharacterCatalog catalog = CharacterCatalog.current();
+        Identifier classId = CharacterCatalog.parseId(classKey);
+        if (classId == null || !catalog.hasClass(classId)) {
+            src.sendSystemMessage(Component.literal("§cUnknown class. Options: "
+                    + String.join(", ", catalog.classIds().stream().map(KimonCommands::shortId).toList())));
             return 0;
         }
         CharacterProfile profile = p.getData(ModStatAttachments.PROFILE.get());
-        p.setData(ModStatAttachments.PROFILE.get(), profile.withClass(clazz));
+        p.setData(ModStatAttachments.PROFILE.get(), profile.withClass(classId));
         StatEffects.apply(p);
-        src.sendSystemMessage(Component.literal("§aClass set to " + clazz.key() + "."));
+        src.sendSystemMessage(Component.literal("§aClass set to " + shortId(classId) + "."));
         return 1;
     }
 

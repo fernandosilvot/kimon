@@ -12,12 +12,16 @@ class ProgressionTest {
 
     private static final CostParams P = CostParams.DEFAULTS;
 
+    private static StatBlock human() {
+        return CharacterCatalog.builtin().race(CharacterCatalog.DEFAULT_RACE).newStatBlock();
+    }
+
     // ---------------------------------------------------------------- level
     @Test
     @DisplayName("a fresh 60-point character is level 1")
     void startsAtLevelOne() {
-        for (Race r : Race.VALUES) {
-            assertEquals(1, LevelCalculator.level(r.newStatBlock()), r.key());
+        for (var e : CharacterCatalog.builtin().races().entrySet()) {
+            assertEquals(1, LevelCalculator.level(e.getValue().newStatBlock()), e.getKey().toString());
         }
         assertEquals(1, LevelCalculator.level(StatBlock.initial()), "below the baseline clamps to 1");
     }
@@ -35,7 +39,7 @@ class ProgressionTest {
     @Test
     @DisplayName("pointsToNextLevel counts down to the next threshold")
     void pointsToNext() {
-        StatBlock human = Race.HUMAN.newStatBlock(); // 60 points → level 1, next at 65
+        StatBlock human = human(); // 60 points → level 1, next at 65
         assertEquals(5, LevelCalculator.pointsToNextLevel(human));
         StatBlock raised = human.addTrainingPoints(1000).raise(Attribute.STRENGTH, P);
         assertEquals(4, LevelCalculator.pointsToNextLevel(raised));
@@ -44,7 +48,7 @@ class ProgressionTest {
     @Test
     @DisplayName("buying attribute points raises the level")
     void buyingRaisesLevel() {
-        StatBlock rich = Race.HUMAN.newStatBlock().addTrainingPoints(1_000_000);
+        StatBlock rich = human().addTrainingPoints(1_000_000);
         StatBlock after = rich.raiseMany(Attribute.STRENGTH, 50, P).block();
         assertTrue(LevelCalculator.level(after) > LevelCalculator.level(rich));
     }
@@ -84,7 +88,7 @@ class ProgressionTest {
     @Test
     @DisplayName("raiseMany spends exactly the sum of the rising prices")
     void raiseManySpendsSum() {
-        StatBlock start = Race.HUMAN.newStatBlock().addTrainingPoints(100_000);
+        StatBlock start = human().addTrainingPoints(100_000);
         StatBlock.RaiseResult result = start.raiseMany(Attribute.STRENGTH, 10, P);
         assertEquals(10, result.raised());
 
@@ -101,7 +105,7 @@ class ProgressionTest {
     @Test
     @DisplayName("raiseMany stops at the first unaffordable point and never overspends")
     void raiseManyStopsWhenBroke() {
-        StatBlock poor = Race.HUMAN.newStatBlock().addTrainingPoints(20);
+        StatBlock poor = human().addTrainingPoints(20);
         StatBlock.RaiseResult result = poor.raiseMany(Attribute.STRENGTH, 1000, P);
         assertTrue(result.raised() > 0 && result.raised() < 1000);
         assertTrue(result.block().trainingPoints() >= 0);
@@ -113,7 +117,7 @@ class ProgressionTest {
     @Test
     @DisplayName("raiseMany with no TP or a non-positive count changes nothing")
     void raiseManyNoOp() {
-        StatBlock none = Race.HUMAN.newStatBlock();
+        StatBlock none = human();
         assertSame(none, none.raiseMany(Attribute.STRENGTH, 10, P).block());
         StatBlock rich = none.addTrainingPoints(1000);
         assertEquals(0, rich.raiseMany(Attribute.STRENGTH, 0, P).raised());
@@ -123,7 +127,7 @@ class ProgressionTest {
     @Test
     @DisplayName("bulk buying equals buying one at a time")
     void bulkEqualsSingles() {
-        StatBlock start = Race.HUMAN.newStatBlock().addTrainingPoints(5000);
+        StatBlock start = human().addTrainingPoints(5000);
         StatBlock singles = start;
         for (int i = 0; i < 25; i++) {
             singles = singles.raise(Attribute.SPIRIT, P);

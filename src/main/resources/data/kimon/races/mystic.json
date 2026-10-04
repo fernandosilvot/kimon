@@ -1,0 +1,16 @@
+{
+  "attributes": {
+    "strength": 10,
+    "agility": 15,
+    "vitality": 8,
+    "energy": 7,
+    "focus": 10,
+    "spirit": 10
+  },
+  "modifiers": {
+    "melee": 10,
+    "stamina": 30,
+    "ki_power": 10,
+    "run": 10
+  }
+}

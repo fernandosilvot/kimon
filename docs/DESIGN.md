@@ -72,13 +72,14 @@ Mirrors the research's phased plan, scoped to one vertical slice at a time:
      after being hurt, throttled sync every 2 ticks, aura state for neighbours, dimension re-sync.
    - ✅ **Progression (doc 03 step 2)**: character level, configurable attribute cost curve with bulk
      buying, training weights and Gravity Device. Simple minigames are not done.
-   - ⏳ Next (`docs/03`, order of 12): step 3 races and classes as datapack JSON, step 4 skills, step 5
-     forms from JSON, step 6 Form Mastery rework.
+   - ✅ **Races and classes as datapack JSON (doc 03 step 3)**, with the research tables as test oracle.
+   - ⏳ Next (`docs/03`, order of 12): step 4 skills as JSON, step 5 forms from JSON, step 6 Form
+     Mastery rework.
 
 Near-term refinements: a visual projectile entity, and moving races/forms to JSON datapacks.
 
 Deferred (need libraries not yet on 26.2): player animation (forms visuals), in-game GameTests.
-Also deferred: moving races/forms/skills to JSON datapacks (currently enum-based; the research's
+Also deferred: moving forms/skills to JSON datapacks (races and classes are done; the research's
 JSON schema is the target once the feature set stabilizes).
 
 ## Server-authoritative principle

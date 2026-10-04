@@ -8,7 +8,7 @@
 ![Minecraft](https://img.shields.io/badge/Minecraft-26.2-brightgreen)
 ![NeoForge](https://img.shields.io/badge/NeoForge-26.2.0.88-orange)
 ![Java](https://img.shields.io/badge/Java-25-red)
-![Tests](https://img.shields.io/badge/tests-146%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-159%20passing-brightgreen)
 
 Kimon is a from-scratch RPG progression mod inspired by the *feel* of classic anime-fighter mods
 (train, grow stronger, power up, transform) — built as a **clean-room reimplementation** with
@@ -69,6 +69,7 @@ Minecraft 26.2 / NeoForge 26.2.0.88.
 | **Form Mastery**: forms grow stronger (+damage) and cheaper (−drain) the more you use them | ✅ |
 | **Training Altar** block: a training dummy — right-click counts as a hit (needs Release ≥ 5%, costs Stamina, chance of TP; no Power) | ✅ |
 | **Wish Orb** item: right-click to be granted a random wish (Power and/or Training Points) | ✅ |
+| **Races & classes as datapack JSON** (6 + 3 shipped, numbers from the research tables); add your own without code | ✅ |
 | **HUD** showing Race/Class, active Form + Mastery, Power, Tier, Release %, Energy, Stamina | ✅ |
 | **`/kimon` debug/admin command** to set progression without grinding | ✅ |
 | Server-authoritative logic (the client cannot forge values) | ✅ |
@@ -162,12 +163,53 @@ all modifiers.
 
 ## Races & classes
 
-Each **race** sets your starting attribute spread and a per-attribute percent modifier; each
-**class** adds further modifiers. Combined, they shape every derived stat. All names and numbers are
-original to Kimon.
+Each **race** sets your starting attributes (60 points, so everyone is level 1) and percent modifiers
+on the derived stats; each **class** adds more modifiers on top. All of it is **data**: shipped as JSON
+under `data/kimon/races/` and `data/kimon/classes/`, so a datapack can change or add races and classes
+without code. Names are original to Kimon; the numbers follow the design research's tables.
 
 | Race | Identity | Starting lean |
 | --- | --- | --- |
+| **Human** | Balanced all-rounder | even across the board; high stamina |
+| **Titan** | Hardest-hitting melee | high Strength & Energy |
+| **Sage** | Strongest energy user | huge Spirit & Focus, tough body |
+| **Frost** | Defensive & fast | high Vitality & Spirit; best defense and speed |
+| **Mystic** | Agile, stamina-rich | high Agility |
+| **Hybrid** | Between balanced and offensive | Energy-leaning |
+
+| Class | Lean |
+| --- | --- |
+| **Warrior** | more melee, body and stamina; less energy and speed |
+| **Brawler** | the baseline (no changes) |
+| **Channeler** | more energy, defense and speed; less melee, body and stamina |
+
+### Adding your own (datapack)
+
+Put JSON files in a datapack (or the mod's resources):
+
+```
+data/<namespace>/races/<name>.json      → race id  <namespace>:<name>
+data/<namespace>/classes/<name>.json    → class id <namespace>:<name>
+```
+
+```json
+// races/orc.json — all six attributes are required
+{
+  "attributes": { "strength": 20, "agility": 5, "vitality": 15, "energy": 5, "focus": 5, "spirit": 10 },
+  "modifiers":  { "melee": 25, "body": 10, "run": -10 }
+}
+// classes/berserker.json — a class only has modifiers
+{ "modifiers": { "melee": 20, "defense": -15 } }
+```
+
+Modifiers are percents and every one is optional (default 0): `melee`, `defense`, `body`, `stamina`,
+`ki_power`, `max_ki`, `run`, `fly`. (`defense` and `fly` are stored already but only take effect once
+those stats exist.) Race + class modifiers add up. Run `/reload` after changing a datapack, then
+`/kimon race mypack:orc`. Invalid files are skipped with a message in the log; if nothing valid is
+found the built-in set stays in use. Names show as the id's path unless you add
+`race.<namespace>.<name>` / `class.<namespace>.<name>` to a language file.
+
+--- | --- | --- |
 | **Human** | Balanced all-rounder | even across the board |
 | **Titan** | Hardest-hitting melee | high Strength & Energy |
 | **Sage** | Strongest energy user | huge Energy & Spirit, low body |
@@ -274,8 +316,9 @@ net.kimon.kimon
 │   ├── StatCalculator.java     # attributes+profile → derived stats (pure, unit-tested)
 │   ├── StatCodecs.java         # NBT + network codecs for StatBlock
 │   ├── StatEffects.java        # applies attribute-derived bonuses to the player
-│   ├── Race.java               # six races: starting spreads + modifiers
-│   ├── PlayerClass.java        # three classes: modifiers
+│   ├── RaceDef.java / ClassDef.java / StatMods.java   # race, class and modifier data + JSON codecs
+│   ├── CharacterCatalog.java   # every known race/class by id; built-in fallback
+│   ├── CharacterDataLoader.java / CharacterDataHandler.java   # datapack reload + sync to clients
 │   ├── CostParams.java         # attribute cost curve (pure, unit-tested)
 │   ├── LevelCalculator.java    # level from attribute points (pure, unit-tested)
 │   ├── CharacterProfile.java   # chosen race + class (persisted+synced)
@@ -331,7 +374,7 @@ Training Points or stats.
 
 ## Testing
 
-- **Unit tests** (`src/test/java`, 146 tests) cover all pure logic: Power tiers, the TP economy and
+- **Unit tests** (`src/test/java`, 159 tests) cover all pure logic: Power tiers, the TP economy and
   cost curve, attribute-derived stats, the Release/Energy/Stamina loop, race/class modifiers, the
   Energy Blast damage/cost rules, the form ladder, Form Mastery, and the Wish reward table.
   They run on a plain JVM with no Minecraft bootstrap, so they are fast and reliable in CI.
@@ -396,7 +439,7 @@ full plan and [`docs/roadmap.svg`](docs/roadmap.svg) for the diagram source.
 
 **Later**
 - ⏳ A visual projectile entity for the Energy Blast; player aura/transform animations.
-- ⏳ Move races/forms/skills to **JSON datapacks** (currently enum-based) for server customization.
+- ✅ Races and classes are **JSON datapacks**. ⏳ Forms and skills still to move to JSON.
 - 💤 **Phase 7** — world, masters, sagas, wishes (data-driven, long-horizon).
 - 💤 In-game GameTests on the 26.2 framework.
 
