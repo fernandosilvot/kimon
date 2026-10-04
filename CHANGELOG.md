@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- **Character sheet GUI** (press <kbd>K</kbd>): shows the six attributes, unspent Training Points,
+  and the TP cost to raise each attribute, with a "+" button per attribute. Server-authoritative —
+  the client only requests raises via a `RaiseAttributePayload`; the server validates affordability.
+- **Training now earns Training Points.** Pressing <kbd>G</kbd> grants TP (in addition to raising
+  Power), which are spent in the character sheet to raise attributes.
+- **Attributes now drive real combat stats** (`StatCalculator` + `StatEffects`): Vitality → max
+  health, Strength → attack damage, Agility → movement speed, applied as vanilla attribute
+  modifiers. Only points above the starting value contribute, so new characters play like vanilla.
+- `StatBlock` is now persisted + synced + copied-on-death via a data attachment (`ModStatAttachments`),
+  with NBT and network codecs (`StatCodecs`).
+- 5 additional unit tests for `StatCalculator`.
 - **Design document** (`docs/DESIGN.md`) distilling the reference anime-RPG mechanics into Kimon's
   original stat model, with the clean-room legal stance and the phased roadmap.
 - **Six-attribute system + Training Points economy** (`stats` package):

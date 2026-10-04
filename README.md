@@ -23,12 +23,16 @@ The first release is a small but **fully working, end-to-end vertical slice** of
 | Feature | Status |
 | --- | --- |
 | Per-player **Power** stat, persisted across relog & death | ✅ |
-| **Train** keybind (default <kbd>G</kbd>) that raises Power by `+5` | ✅ |
-| Server-authoritative logic (client cannot forge the value) | ✅ |
-| Automatic server → client sync of the stat | ✅ |
-| **HUD** overlay showing current Power (top-left, hidden under F3) | ✅ |
+| **Train** keybind (default <kbd>G</kbd>) that raises Power by `+5` and earns Training Points | ✅ |
+| Power scales **max health / attack damage / movement speed** (tiered) | ✅ |
+| **Six attributes** (Strength, Agility, Vitality, Energy, Focus, Spirit) + Training Points economy | ✅ |
+| **Character sheet GUI** (default <kbd>K</kbd>) to spend TP on attributes | ✅ |
+| Attributes drive real combat stats (Vitality→health, Strength→damage, Agility→speed) | ✅ |
+| Server-authoritative logic (client cannot forge values) | ✅ |
+| Automatic server → client sync of all stats | ✅ |
+| **HUD** overlay showing current Power + Tier (hidden under F3) | ✅ |
 | English + Spanish localization | ✅ |
-| Unit-tested progression rules (9 tests) | ✅ |
+| Unit-tested progression rules (32 tests) | ✅ |
 
 > This is deliberately a *thin slice*, not a half-finished galaxy of features. It proves the
 > three genuinely hard subsystems (data attachments, payload networking, client HUD) work
@@ -38,9 +42,12 @@ The first release is a small but **fully working, end-to-end vertical slice** of
 ### Try it
 
 1. In game, open a world.
-2. Look at the **top-left**: `Power: 0`.
-3. Press <kbd>G</kbd> to train — the number rises by 5 each press.
-4. Rebind the key under **Options → Controls → Miscellaneous → "Train Power"**.
+2. Look at the **top-left**: `Power: 0` / `Tier: 0`.
+3. Press <kbd>G</kbd> to train — Power rises by 5 each press, and you earn Training Points.
+4. Press <kbd>K</kbd> to open the **Character Sheet** and spend Training Points on attributes
+   (Strength, Agility, Vitality…). Raising Vitality gives more health, Strength more damage,
+   Agility more speed.
+5. Rebind keys under **Options → Controls → Miscellaneous**.
 
 ---
 

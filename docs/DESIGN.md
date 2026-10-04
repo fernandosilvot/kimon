@@ -48,9 +48,9 @@ Mirrors the research's phased plan, scoped to one vertical slice at a time:
 
 0. ✅ **Infra & Power stat** — attachment, sync, keybind, HUD, tests, CI. *(v0.1.0)*
 1. ✅ **Power → attributes** — tiered scaling of health/damage/speed. *(done)*
-2. 🔜 **Six attributes + TP economy** — per-player attribute block, TP, spend-to-raise with growing
-   cost. Pure, unit-tested stat calculator. *(next)*
-3. ⏳ **Resources** — Body / Energy / Stamina with regen; Release % charge mechanic.
+2. ✅ **Six attributes + TP economy** — per-player attribute block, TP, spend-to-raise with growing
+   cost, character sheet GUI, attributes driving vanilla stats. *(done)*
+3. 🔜 **Resources** — Body / Energy / Stamina with regen; Release % charge mechanic. *(next)*
 4. ⏳ **Races & classes** (data-driven JSON) + character creation screen.
 5. ⏳ **Energy attacks** — generic projectile entity, configurable techniques.
 6. ⏳ **Forms** — data-driven multipliers, transform state machine, mastery.

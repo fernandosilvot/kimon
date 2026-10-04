@@ -1,6 +1,21 @@
 {
   "key.kimon.train": "Entrenar Poder",
+  "key.kimon.stats": "Abrir Hoja de Personaje",
   "key.categories.misc": "Miscelánea",
+
   "hud.kimon.power": "Poder: %s",
-  "hud.kimon.tier": "Nivel: %s"
+  "hud.kimon.tier": "Nivel: %s",
+
+  "screen.kimon.stats.title": "Hoja de Personaje",
+  "screen.kimon.stats.tp": "Puntos de Entrenamiento: %s",
+  "screen.kimon.stats.cost": "coste %s",
+
+  "attribute.kimon.strength": "Fuerza",
+  "attribute.kimon.agility": "Agilidad",
+  "attribute.kimon.vitality": "Vitalidad",
+  "attribute.kimon.energy": "Energía",
+  "attribute.kimon.focus": "Concentración",
+  "attribute.kimon.spirit": "Espíritu",
+
+  "gui.done": "Hecho"
 }
