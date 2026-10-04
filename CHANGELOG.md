@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- **Training Altar block (Phase 7 start).** A craftable world block (amethyst shards + obsidian)
+  that you right-click to train for a larger reward than the keybind (+15 Power, +15 TP),
+  server-authoritative. Comes with blockstate/model/item model, loot table, recipe, a Kimon
+  creative tab, and en/es names — giving progression a physical place in the world.
 - **Form Mastery.** Each form now accumulates mastery while active, raising its damage multiplier
   (up to +0.25) and lowering its Energy drain (up to −40%) as you practise it. Mastery is per-form,
   persisted and synced, shown on the HUD next to the active form. (`MasteryData` pure + 8 tests,

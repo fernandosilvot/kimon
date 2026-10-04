@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": "minecraft:amethyst_shard",
+    "O": "minecraft:obsidian"
+  },
+  "pattern": [
+    "AAA",
+    "AOA",
+    "OOO"
+  ],
+  "result": {
+    "id": "kimon:training_altar",
+    "count": 1
+  }
+}
