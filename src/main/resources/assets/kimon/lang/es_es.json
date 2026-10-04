@@ -1,5 +1,43 @@
 {
   "key.kimon.train": "Entrenar Poder",
+  "key.kimon.stats": "Abrir Hoja de Personaje",
+  "key.kimon.charge": "Cargar (Subir Poder)",
+  "key.kimon.blast": "Lanzar Ráfaga de Energía",
   "key.categories.misc": "Miscelánea",
-  "hud.kimon.power": "Poder: %s"
+
+  "hud.kimon.profile": "%s / %s",
+  "hud.kimon.power": "Poder: %s",
+  "hud.kimon.tier": "Nivel: %s",
+  "hud.kimon.release": "Liberación: %s%%",
+  "hud.kimon.energy": "Energía: %s / %s",
+  "hud.kimon.stamina": "Vigor: %s / %s",
+
+  "msg.kimon.hit": "Golpe de %s",
+  "msg.kimon.blast_hit": "Ráfaga de Energía: %s de daño",
+  "msg.kimon.blast_miss": "La Ráfaga de Energía falló",
+  "msg.kimon.no_energy": "Energía insuficiente",
+
+  "screen.kimon.stats.title": "Hoja de Personaje",
+  "screen.kimon.stats.tp": "Puntos de Entrenamiento: %s",
+  "screen.kimon.stats.cost": "coste %s",
+
+  "attribute.kimon.strength": "Fuerza",
+  "attribute.kimon.agility": "Agilidad",
+  "attribute.kimon.vitality": "Vitalidad",
+  "attribute.kimon.energy": "Energía",
+  "attribute.kimon.focus": "Concentración",
+  "attribute.kimon.spirit": "Espíritu",
+
+  "race.kimon.human": "Humano",
+  "race.kimon.titan": "Titán",
+  "race.kimon.sage": "Sabio",
+  "race.kimon.frost": "Gélido",
+  "race.kimon.mystic": "Místico",
+  "race.kimon.hybrid": "Híbrido",
+
+  "class.kimon.warrior": "Guerrero",
+  "class.kimon.brawler": "Luchador",
+  "class.kimon.channeler": "Canalizador",
+
+  "gui.done": "Hecho"
 }
