@@ -6,7 +6,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **Skills as datapack JSON (doc 03, step 4).** `data/<ns>/skills/*.json` → `SkillDef` (max level, cost,
+  effects), loaded by `SkillDataLoader`, synced (`SkillCatalogPayload`) and stored per player
+  (`SkillData`, a synced attachment). Reaching level *n* costs `tp_base × n` TP and every level uses
+  **Mind**; the budget is the Mind attribute × `skills.mindPerPoint`. Learning is validated server-side
+  (`SkillRules`, never partial) from the new **Skills screen** (<kbd>J</kbd>, also a button on the sheet),
+  or `/kimon skill <skill> <level>`.
+  - **Potential Unlock**: +5% Release ceiling per level — it now replaces the Mind attribute as the
+    source of the ceiling (50% → 100% at level 10).
+  - **Endurance**: −3% damage taken per level. **Jump**: +10% jump strength, +1 safe-fall block per level.
+  - **Fly** (<kbd>Y</kbd>): server-authoritative flight in survival, +10% speed per level, drains
+    `skills.flightKiPerSecond` Ki only while airborne; ends when Ki runs out.
+  - **Dash** (<kbd>V</kbd>): burst back/left/right on the ground, costs `skills.dashKiFraction` of max Ki,
+    cooldown `skills.dashCooldownTicks`.
+  - **Ki Sense**: the entity you look at (range 10 blocks per level) is read out at the top of the screen.
+  - Effects are generic (`release_cap`, `damage_reduction`, `jump_boost`, `safe_fall`, `flight`, `dash`,
+    `ki_sense`), so a datapack skill can add to any of them. Protocol version 6.
+- 26 new unit tests (`SkillTest`): 188 total.
+
 ### Changed
+- **The Mind attribute no longer raises the Release ceiling** (Potential Unlock does); Mind now gives the
+  skill budget and TP per hit.
 - **Dragon Ball terminology everywhere (owner's decision; the "invented names only" rule is lifted).**
   - Races: Human, **Saiyan**, **Namekian**, **Arcosian**, **Majin**, **Half-Saiyan** (were Titan, Sage,
     Frost, Mystic, Hybrid). Classes: Warrior, **Martial Artist**, **Spiritualist** (were Brawler,

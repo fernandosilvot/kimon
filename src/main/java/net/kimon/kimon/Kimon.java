@@ -44,6 +44,9 @@ public class Kimon {
         // Register the StatBlock data attachment (six attributes + Training Points).
         ModStatAttachments.register(modEventBus);
 
+        // Register the skills attachment.
+        net.kimon.kimon.skill.ModSkillAttachments.register(modEventBus);
+
         // Register blocks (Training Altar), their items, and the creative tab.
         ModBlocks.register(modEventBus);
 

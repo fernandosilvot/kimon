@@ -69,7 +69,7 @@ public final class CombatHandler {
         MasteryData mastery = player.getData(ModAttachments.MASTERY.get());
 
         PowerParams params = KimonConfig.params();
-        double maxRelease = StatCalculator.maxRelease(stats, params.baseMaxRelease(), params.hardMaxRelease());
+        double maxRelease = ReleaseCeiling.of(player);
         double maxEnergy = StatCalculator.maxEnergy(stats, profile, params.kiPerSpirit());
         double maxStamina = StatCalculator.maxStamina(stats, profile);
 
@@ -121,7 +121,7 @@ public final class CombatHandler {
 
         // An empowered hit costs Energy and Stamina; if you can't pay, you hit with vanilla damage.
         PowerParams params = KimonConfig.params();
-        double maxRelease = StatCalculator.maxRelease(stats, params.baseMaxRelease(), params.hardMaxRelease());
+        double maxRelease = ReleaseCeiling.of(attacker);
         double maxEnergy = StatCalculator.maxEnergy(stats, profile, params.kiPerSpirit());
         double maxStamina = StatCalculator.maxStamina(stats, profile);
         double kiCost = CombatCosts.kiPerHit(stats.get(Attribute.STRENGTH));
@@ -256,7 +256,7 @@ public final class CombatHandler {
                 state.release(),
                 state.energy() - EnergyBlast.energyCost(),
                 state.stamina(),
-                StatCalculator.maxRelease(stats, params.baseMaxRelease(), params.hardMaxRelease()),
+                ReleaseCeiling.of(player),
                 StatCalculator.maxEnergy(stats, profile, params.kiPerSpirit()),
                 StatCalculator.maxStamina(stats, profile));
         player.setData(ModAttachments.STATE.get(), afterCost);

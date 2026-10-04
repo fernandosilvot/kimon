@@ -1,0 +1,13 @@
+{
+  "max_level": 10,
+  "cost": {
+    "tp_base": 150,
+    "mind": 10
+  },
+  "effects": [
+    {
+      "type": "damage_reduction",
+      "per_level": 3
+    }
+  ]
+}

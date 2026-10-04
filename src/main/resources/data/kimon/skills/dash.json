@@ -1,0 +1,14 @@
+{
+  "max_level": 10,
+  "cost": {
+    "tp_base": 40,
+    "mind": 5
+  },
+  "effects": [
+    {
+      "type": "dash",
+      "base": 0.6,
+      "per_level": 0.08
+    }
+  ]
+}

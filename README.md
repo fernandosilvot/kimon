@@ -8,7 +8,7 @@
 ![Minecraft](https://img.shields.io/badge/Minecraft-26.2-brightgreen)
 ![NeoForge](https://img.shields.io/badge/NeoForge-26.2.0.88-orange)
 ![Java](https://img.shields.io/badge/Java-25-red)
-![Tests](https://img.shields.io/badge/tests-162%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-188%20passing-brightgreen)
 
 Kimon is a from-scratch RPG progression mod inspired by the *feel* of classic anime-fighter mods
 (train, grow stronger, power up, transform). It is a **clean-room reimplementation of the mechanics**:
@@ -50,7 +50,8 @@ Minecraft 26.2 / NeoForge 26.2.0.88.
 | Power scales **max health / attack damage / movement speed** in tiers | ✅ |
 | **Six attributes** — Strength, Dexterity, Constitution, Willpower, Mind, Spirit | ✅ |
 | **Training Points economy** with a rising per-point cost curve | ✅ |
-| **Character sheet GUI** (<kbd>K</kbd>) to spend TP on attributes | ✅ |
+| **Character sheet GUI** (<kbd>K</kbd>) to spend TP on attributes, and a **Skills** screen (<kbd>J</kbd>) | ✅ |
+| **Skills as datapack JSON** (Jump, Dash, Fly, Endurance, Potential Unlock, Ki Sense): TP cost grows per level (`base × n`), every level also uses **Mind** from your Mind attribute; effects are data, so new skills need no code | ✅ |
 | Attributes drive real combat stats (Constitution→health, Strength→damage, Dexterity→speed) | ✅ |
 | **Six races** (Human, Saiyan, Namekian, Arcosian, Majin, Half-Saiyan) with unique starting spreads & modifiers | ✅ |
 | **Three classes** (Warrior, Martial Artist, Spiritualist) that further tweak modifiers | ✅ |
@@ -91,6 +92,9 @@ systems. See the [Roadmap](#roadmap).
 | <kbd>Ctrl</kbd>+<kbd>C</kbd> (hold) | **Discharge** — Release % drops (wins over Charge) |
 | <kbd>R</kbd> (hold) | **Turbo** — faster charge at an extra Energy cost |
 | <kbd>H</kbd> | **Reset** — Release to 0% and revert to Base form instantly |
+| <kbd>J</kbd> | Open the **Skills** screen (learn skills with TP and Mind) |
+| <kbd>Y</kbd> | **Fly** — toggle flight (needs the Fly skill; drains Ki while you fly) |
+| <kbd>V</kbd> | **Dash** — burst back, or left/right if you hold A/D (needs Dash; costs Ki, has a cooldown) |
 | <kbd>B</kbd> | **Energy Blast** — fire a ranged energy attack along your view (costs Energy) |
 | <kbd>G</kbd> | **Transform up** — ascend to the next form (needs Power tier + Release) |
 | <kbd>F3</kbd> | Vanilla debug screen — hides the Kimon HUD while held |
@@ -112,6 +116,7 @@ instantly, without grinding:
 /kimon race <race>          # set race: human|saiyan|namekian|arcosian|majin|half_saiyan (reseeds attributes)
 /kimon class <class>        # set class: warrior|martial_artist|spiritualist
 /kimon form <form>          # force a form: base|super_saiyan|super_saiyan_2|super_saiyan_3
+/kimon skill <skill> <lvl>  # set a skill level: jump|dash|fly|endurance|potential_unlock|ki_sense
 /kimon mastery <form> <lvl> # set mastery level for a form (super_saiyan|super_saiyan_2|super_saiyan_3)
 /kimon reset                # reset character to defaults
 ```
@@ -210,6 +215,39 @@ found the built-in set stays in use. Names show as the id's path unless you add
 
 ---
 
+## Skills
+
+Skills are bought with **TP** and limited by **Mind**: every skill level uses Mind points, and your budget
+is your Mind attribute (`skills.mindPerPoint`, default 1), so Mind decides how many levels you can hold.
+Reaching level *n* costs `tp_base × n` TP (`tp_base + tp_per_level × (n-1)` in general). For now you learn
+them from the Skills screen; teaching them through master NPCs comes with the world step.
+
+| Skill | TP / Mind | What it does |
+| --- | --- | --- |
+| **Potential Unlock** | 400 / 10 | +5% Release ceiling per level (50% → 100% at level 10) |
+| **Endurance** | 150 / 10 | −3% damage taken per level (30% at level 10) |
+| **Jump** | 40 / 5 | +10% jump strength and +1 safe-fall block per level |
+| **Dash** | 40 / 5 | burst back/left/right on the ground; stronger per level (costs 2% of your max Ki, 1 s cooldown) |
+| **Fly** | 60 / 10 | flight, +10% speed per level; drains 2 Ki per second while flying |
+| **Ki Sense** | 300 / 10 | the entity you look at (up to 10 blocks per level) is read out at the top of the screen |
+
+Skills are data: `data/<namespace>/skills/<name>.json`.
+
+```json
+{
+  "max_level": 10,
+  "cost": { "tp_base": 150, "tp_per_level": 150, "mind": 10 },
+  "effects": [ { "type": "damage_reduction", "per_level": 3 } ]
+}
+```
+
+`tp_per_level` defaults to `tp_base`, `mind` to 0, `max_level` to 10. Effect types: `release_cap`,
+`damage_reduction`, `jump_boost`, `safe_fall`, `flight`, `dash`, `ki_sense`; the value is
+`base + per_level × level`, and any skill can add to any type. Not done yet: Ki Sense's lock-on (Z) and
+Dash's "swoop" in flight.
+
+---
+
 ## Attributes & derived stats
 
 | Attribute | Governs |
@@ -218,7 +256,7 @@ found the built-in set stays in use. Names show as the id's path unless you add
 | **Dexterity** | Movement speed, defense |
 | **Constitution** | Max health (and Stamina pool) |
 | **Willpower** | Ki-attack power (Ki Blast) |
-| **Mind** | Raises your Release ceiling (50% → up to 100%) and TP per hit |
+| **Mind** | TP per hit, and your **Mind budget** for skills (each skill level uses Mind) |
 | **Spirit** | Max Ki pool |
 
 Only attribute points **above the starting value** contribute bonuses, so a brand-new character
@@ -267,6 +305,11 @@ loads on a dedicated server, and keeps every stat/resource computation **server-
 ```
 net.kimon.kimon
 ├── Kimon.java                  # @Mod entry point; registers attachments on the mod bus
+├── skill/
+│   ├── SkillDef.java / SkillEffect.java   # a skill and its effects (JSON codecs)
+│   ├── SkillCatalog.java / SkillData.java # all skills; a player's levels
+│   ├── SkillRules.java / SkillEffects.java # learning (TP + Mind) and effect totals (pure, unit-tested)
+│   └── SkillHandler / FlightHandler / DashHandler / SkillDataLoader  # server glue
 ├── training/
 │   ├── TrainingLoad.java       # weight + gravity (pure)
 │   ├── TrainingEffects.java    # what the load does (pure, unit-tested)
@@ -359,7 +402,7 @@ Training Points or stats.
 
 ## Testing
 
-- **Unit tests** (`src/test/java`, 162 tests) cover all pure logic: Power tiers, the TP economy and
+- **Unit tests** (`src/test/java`, 188 tests) cover all pure logic: Power tiers, the TP economy and
   cost curve, attribute-derived stats, the Release/Energy/Stamina loop, race/class modifiers, the
   Energy Blast damage/cost rules, the form ladder, Form Mastery, and the Wish reward table.
   They run on a plain JVM with no Minecraft bootstrap, so they are fast and reliable in CI.

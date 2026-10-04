@@ -76,8 +76,10 @@ Mirrors the research's phased plan, scoped to one vertical slice at a time:
    - ✅ **Progression (doc 03 step 2)**: character level, configurable attribute cost curve with bulk
      buying, training weights and Gravity Device. Simple minigames are not done.
    - ✅ **Races and classes as datapack JSON (doc 03 step 3)**, with the research tables as test oracle.
-   - ⏳ Next (`docs/03`, order of 12): step 4 skills as JSON, step 5 forms from JSON, step 6 Form
-     Mastery rework.
+   - ✅ **Skills as JSON (doc 03 step 4)**: Jump, Dash, Fly, Endurance, Potential Unlock, Ki Sense. Not
+     done: Ki Sense lock-on (Z), Dash swoop, learning from master NPCs (step 8).
+   - ⏳ Next (`docs/03`, order of 12): step 5 forms from JSON (race-specific), step 6 Form Mastery
+     rework, step 7 Ki techniques.
 
 Near-term refinements: a visual projectile entity, and moving races/forms to JSON datapacks.
 

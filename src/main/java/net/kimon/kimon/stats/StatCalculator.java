@@ -90,11 +90,6 @@ public final class StatCalculator {
     public static final double ENERGY_PER_SPIRIT = 40.0;
     /** Max Stamina per VITALITY point. */
     public static final double STAMINA_PER_VITALITY = 3.5;
-    /** Extra Release ceiling per FOCUS point above start (a stand-in for "Potential Unlock"). */
-    public static final double RELEASE_PER_FOCUS = 1.0;
-    /** Hard cap on the bonus Release ceiling from FOCUS. */
-    public static final double MAX_BONUS_RELEASE = 50.0;
-
     /** Maximum Energy pool from SPIRIT. */
     public static double maxEnergy(StatBlock stats) {
         return maxEnergy(stats, ENERGY_PER_SPIRIT);
@@ -110,18 +105,12 @@ public final class StatCalculator {
         return stats.get(Attribute.CONSTITUTION) * STAMINA_PER_VITALITY;
     }
 
-    /** The player's Release ceiling: base 50 plus a FOCUS-driven bonus, capped at 100. */
-    public static double maxRelease(StatBlock stats) {
-        return maxRelease(stats, 50.0, 100.0);
-    }
-
     /**
-     * The Release ceiling with configurable base and hard cap: {@code baseMax} plus the FOCUS bonus
-     * (a stand-in for the "Potential Unlock" skill), never above {@code hardMax}.
+     * The Release ceiling: {@code baseMax} plus the bonus from skills (Potential Unlock: +5% per level,
+     * so 50% → 100% at level 10), never above {@code hardMax}.
      */
-    public static double maxRelease(StatBlock stats, double baseMax, double hardMax) {
-        double bonus = Math.min(MAX_BONUS_RELEASE, above(stats, Attribute.MIND) * RELEASE_PER_FOCUS);
-        return Math.min(hardMax, baseMax + bonus);
+    public static double maxRelease(double baseMax, double skillBonus, double hardMax) {
+        return Math.min(hardMax, Math.max(0.0, baseMax + skillBonus));
     }
 
     /**
