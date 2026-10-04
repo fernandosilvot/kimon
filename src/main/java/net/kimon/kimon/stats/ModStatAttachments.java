@@ -30,6 +30,15 @@ public final class ModStatAttachments {
                     .copyOnDeath()
                     .build());
 
+    /** The player's chosen race + class. Serialized, synced, kept across death. */
+    public static final Supplier<AttachmentType<CharacterProfile>> PROFILE = ATTACHMENT_TYPES.register(
+            "profile",
+            () -> AttachmentType.builder(() -> CharacterProfile.DEFAULT)
+                    .serialize(CharacterProfile.MAP_CODEC)
+                    .sync((holder, to) -> holder == to, CharacterProfile.STREAM_CODEC)
+                    .copyOnDeath()
+                    .build());
+
     public static void register(IEventBus modEventBus) {
         ATTACHMENT_TYPES.register(modEventBus);
     }

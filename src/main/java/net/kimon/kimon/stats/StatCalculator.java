@@ -32,6 +32,41 @@ public final class StatCalculator {
         return Math.max(0, stats.get(attribute) - StatBlock.START_VALUE);
     }
 
+    /** Multiplier (1 + combined race/class modifier) for an attribute, floored at 0. */
+    private static double mod(CharacterProfile profile, Attribute attribute) {
+        if (profile == null) {
+            return 1.0;
+        }
+        return Math.max(0.0, 1.0 + profile.totalModifier(attribute));
+    }
+
+    // --- Bonuses WITH race/class profile (used in-game) ---
+
+    public static double bonusHealth(StatBlock stats, CharacterProfile profile) {
+        return bonusHealth(stats) * mod(profile, Attribute.VITALITY);
+    }
+
+    public static double bonusAttackDamage(StatBlock stats, CharacterProfile profile) {
+        return bonusAttackDamage(stats) * mod(profile, Attribute.STRENGTH);
+    }
+
+    public static double bonusMovementSpeed(StatBlock stats, CharacterProfile profile) {
+        return bonusMovementSpeed(stats) * mod(profile, Attribute.AGILITY);
+    }
+
+    public static double maxEnergy(StatBlock stats, CharacterProfile profile) {
+        return maxEnergy(stats) * mod(profile, Attribute.SPIRIT);
+    }
+
+    public static double maxStamina(StatBlock stats, CharacterProfile profile) {
+        return maxStamina(stats) * mod(profile, Attribute.VITALITY);
+    }
+
+    public static double meleeDamageBonus(StatBlock stats, CharacterProfile profile, double releaseFraction) {
+        double clamped = Math.max(0.0, Math.min(1.0, releaseFraction));
+        return bonusAttackDamage(stats, profile) * clamped;
+    }
+
     /** Bonus max health contributed by VITALITY. */
     public static double bonusHealth(StatBlock stats) {
         return Math.min(MAX_BONUS_HEALTH, above(stats, Attribute.VITALITY) * HEALTH_PER_VITALITY);

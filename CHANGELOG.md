@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- **Races & classes.** Six races (Human, Titan, Sage, Frost, Mystic, Hybrid) each with an original
+  starting attribute spread and per-attribute percent modifiers, and three classes (Warrior,
+  Brawler, Channeler) that further tweak modifiers. Race + class feed every derived stat
+  (`CharacterProfile`, persisted + synced + copy-on-death).
+- **`/kimon` debug/admin command** (op level): `info`, `tp <amount>`, `power <value>`,
+  `attr <name> <value>`, `race <race>`, `class <class>`, `reset` — inspect and set progression
+  without grinding.
+- HUD now shows your **Race / Class** at the top.
+- 8 additional unit tests (`Race`, `PlayerClass`, `CharacterProfile`, modifier wiring).
+
+### Added (previous, still unreleased)
 - **Release % charge mechanic** (hold <kbd>C</kbd> to power up). Release scales combat output and
   decays when you stop charging. Higher Focus raises your Release ceiling (base 50% → up to 100%).
 - **Live combat resources**: Energy (from Spirit) and Stamina (from Vitality), advanced each tick

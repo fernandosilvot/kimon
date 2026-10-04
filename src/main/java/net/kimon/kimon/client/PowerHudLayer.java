@@ -42,12 +42,20 @@ public final class PowerHudLayer implements GuiLayer {
         PowerData data = minecraft.player.getData(ModAttachments.POWER.get());
         PowerState state = minecraft.player.getData(ModAttachments.STATE.get());
         StatBlock stats = minecraft.player.getData(ModStatAttachments.STATS.get());
+        net.kimon.kimon.stats.CharacterProfile profile =
+                minecraft.player.getData(ModStatAttachments.PROFILE.get());
 
         int tier = PowerScaling.tiers(data.power());
-        double maxEnergy = StatCalculator.maxEnergy(stats);
-        double maxStamina = StatCalculator.maxStamina(stats);
+        double maxEnergy = StatCalculator.maxEnergy(stats, profile);
+        double maxStamina = StatCalculator.maxStamina(stats, profile);
 
         int y = MARGIN_Y;
+        guiGraphics.text(minecraft.font,
+                Component.translatable("hud.kimon.profile",
+                        Component.translatable("race.kimon." + profile.race().key()),
+                        Component.translatable("class.kimon." + profile.clazz().key())),
+                MARGIN_X, y, 0xFFFFFFFF);
+        y += LINE;
         guiGraphics.text(minecraft.font, Component.translatable("hud.kimon.power", data.power()), MARGIN_X, y, ACCENT);
         y += LINE;
         guiGraphics.text(minecraft.font, Component.translatable("hud.kimon.tier", tier), MARGIN_X, y, ACCENT);
