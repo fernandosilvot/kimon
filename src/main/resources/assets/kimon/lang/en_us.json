@@ -2,6 +2,7 @@
   "key.kimon.train": "Train Power",
   "key.kimon.stats": "Open Character Sheet",
   "key.kimon.charge": "Charge (Power Up)",
+  "key.kimon.blast": "Fire Energy Blast",
   "key.categories.misc": "Miscellaneous",
 
   "hud.kimon.profile": "%s / %s",
@@ -12,6 +13,9 @@
   "hud.kimon.stamina": "Stamina: %s / %s",
 
   "msg.kimon.hit": "Hit for %s",
+  "msg.kimon.blast_hit": "Energy Blast hit for %s",
+  "msg.kimon.blast_miss": "Energy Blast missed",
+  "msg.kimon.no_energy": "Not enough Energy",
 
   "screen.kimon.stats.title": "Character Sheet",
   "screen.kimon.stats.tp": "Training Points: %s",

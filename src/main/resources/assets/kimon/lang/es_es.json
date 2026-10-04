@@ -2,6 +2,7 @@
   "key.kimon.train": "Entrenar Poder",
   "key.kimon.stats": "Abrir Hoja de Personaje",
   "key.kimon.charge": "Cargar (Subir Poder)",
+  "key.kimon.blast": "Lanzar Ráfaga de Energía",
   "key.categories.misc": "Miscelánea",
 
   "hud.kimon.profile": "%s / %s",
@@ -12,6 +13,9 @@
   "hud.kimon.stamina": "Vigor: %s / %s",
 
   "msg.kimon.hit": "Golpe de %s",
+  "msg.kimon.blast_hit": "Ráfaga de Energía: %s de daño",
+  "msg.kimon.blast_miss": "La Ráfaga de Energía falló",
+  "msg.kimon.no_energy": "Energía insuficiente",
 
   "screen.kimon.stats.title": "Hoja de Personaje",
   "screen.kimon.stats.tp": "Puntos de Entrenamiento: %s",
