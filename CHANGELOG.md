@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- **Races and classes as datapack JSON (doc 03, step 3).** `data/<ns>/races/*.json` and
+  `data/<ns>/classes/*.json`, loaded by `CharacterDataLoader` on every (re)load and synced to clients
+  (`CatalogPayload`) so the HUD derives the same stats as the server. New pure `RaceDef`, `ClassDef`,
+  `StatMods` (Melee, Defense, Body, Stamina, Ki Power, Max Ki, Run, Fly) and `CharacterCatalog` with a
+  built-in classpath fallback; invalid files are reported and skipped. The shipped data reproduces every
+  race+class row of the research tables (classes are race-independent offsets from the baseline class).
+  Commands (`/kimon race|class`) take any catalog id and tab-complete. Old saves with bare names
+  (`"human"`) load as `kimon:human`. Protocol version 5.
+- 13 new tests (`CharacterDataTest`, `CatalogPayloadTest`) checking the data against the tables,
+  JSON validation, migration, the per-stat modifier columns and the network round trip: 159 total.
 - **Progression (doc 03, step 2).**
   - **Character level**: every 5 attribute points above 55 is one level (a fresh character is level 1).
     Shown on the HUD and the sheet. (`LevelCalculator`)
@@ -50,6 +60,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - 19 new unit tests (`ReleaseStateMachineTest`, `StatCalculator` overloads): 100 total.
 
 ### Changed
+- **Race and class numbers now follow the research tables** (per derived stat: melee, body, stamina,
+  max Ki, run, Ki power) instead of the old per-attribute guesses. The `Race` / `PlayerClass` enums are
+  gone. Frost's starting Energy went from 5 to 10 so every race has 60 points.
 - Attribute costs follow the new curve (a bit steeper at high levels than the old linear one).
 - **No more free Training Points.** The Train button/packet is gone; the only organic TP source is
   now hitting things with Release ≥ 5% (melee and Energy Blast), per the research:

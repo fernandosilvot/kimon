@@ -1,0 +1,15 @@
+{
+  "attributes": {
+    "strength": 5,
+    "agility": 5,
+    "vitality": 7,
+    "energy": 10,
+    "focus": 15,
+    "spirit": 18
+  },
+  "modifiers": {
+    "body": 10,
+    "ki_power": 30,
+    "max_ki": 20
+  }
+}

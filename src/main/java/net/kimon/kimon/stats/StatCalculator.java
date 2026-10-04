@@ -32,39 +32,36 @@ public final class StatCalculator {
         return Math.max(0, stats.get(attribute) - StatBlock.START_VALUE);
     }
 
-    /** Multiplier (1 + combined race/class modifier) for an attribute, floored at 0. */
-    private static double mod(CharacterProfile profile, Attribute attribute) {
-        if (profile == null) {
-            return 1.0;
-        }
-        return Math.max(0.0, 1.0 + profile.totalModifier(attribute));
+    private static StatMods mods(CharacterProfile profile) {
+        return profile == null ? StatMods.NONE : profile.mods();
     }
 
-    // --- Bonuses WITH race/class profile (used in-game) ---
+    // --- Bonuses WITH race/class modifiers (used in-game). Each derived stat has its own modifier
+    // column from the design tables: Body, Melee, Run, Max Ki, Stamina. ---
 
     public static double bonusHealth(StatBlock stats, CharacterProfile profile) {
-        return bonusHealth(stats) * mod(profile, Attribute.VITALITY);
+        return bonusHealth(stats) * StatMods.factor(mods(profile).body());
     }
 
     public static double bonusAttackDamage(StatBlock stats, CharacterProfile profile) {
-        return bonusAttackDamage(stats) * mod(profile, Attribute.STRENGTH);
+        return bonusAttackDamage(stats) * StatMods.factor(mods(profile).melee());
     }
 
     public static double bonusMovementSpeed(StatBlock stats, CharacterProfile profile) {
-        return bonusMovementSpeed(stats) * mod(profile, Attribute.AGILITY);
+        return bonusMovementSpeed(stats) * StatMods.factor(mods(profile).run());
     }
 
     public static double maxEnergy(StatBlock stats, CharacterProfile profile) {
-        return maxEnergy(stats) * mod(profile, Attribute.SPIRIT);
+        return maxEnergy(stats) * StatMods.factor(mods(profile).maxKi());
     }
 
     /** Max Energy with a configurable Energy-per-SPIRIT ratio ({@code ki.perSPI}). */
     public static double maxEnergy(StatBlock stats, CharacterProfile profile, double energyPerSpirit) {
-        return maxEnergy(stats, energyPerSpirit) * mod(profile, Attribute.SPIRIT);
+        return maxEnergy(stats, energyPerSpirit) * StatMods.factor(mods(profile).maxKi());
     }
 
     public static double maxStamina(StatBlock stats, CharacterProfile profile) {
-        return maxStamina(stats) * mod(profile, Attribute.VITALITY);
+        return maxStamina(stats) * StatMods.factor(mods(profile).stamina());
     }
 
     public static double meleeDamageBonus(StatBlock stats, CharacterProfile profile, double releaseFraction) {

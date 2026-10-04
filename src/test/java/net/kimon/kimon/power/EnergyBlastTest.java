@@ -11,8 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import net.kimon.kimon.stats.Attribute;
 import net.kimon.kimon.stats.CharacterProfile;
-import net.kimon.kimon.stats.PlayerClass;
-import net.kimon.kimon.stats.Race;
+import net.kimon.kimon.stats.CharacterCatalog;
 import net.kimon.kimon.stats.StatBlock;
 
 @DisplayName("EnergyBlast damage/cost rules")
@@ -61,8 +60,8 @@ class EnergyBlastTest {
     @DisplayName("Sage/Channeler energy build out-damages a plain Human for the same stats")
     void profileBoostsBlast() {
         StatBlock stats = withEnergy(StatBlock.START_VALUE + 100);
-        CharacterProfile human = new CharacterProfile(Race.HUMAN, PlayerClass.BRAWLER);
-        CharacterProfile sage = new CharacterProfile(Race.SAGE, PlayerClass.CHANNELER);
+        CharacterProfile human = new CharacterProfile(CharacterCatalog.id("human"), CharacterCatalog.id("brawler"));
+        CharacterProfile sage = new CharacterProfile(CharacterCatalog.id("sage"), CharacterCatalog.id("channeler"));
         assertTrue(EnergyBlast.damage(stats, sage, 1.0) > EnergyBlast.damage(stats, human, 1.0));
     }
 }

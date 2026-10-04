@@ -1,0 +1,12 @@
+{
+  "modifiers": {
+    "melee": 10,
+    "defense": -10,
+    "body": 10,
+    "stamina": 10,
+    "ki_power": -10,
+    "max_ki": -10,
+    "run": -10,
+    "fly": -10
+  }
+}

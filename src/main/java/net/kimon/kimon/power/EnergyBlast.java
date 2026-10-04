@@ -3,6 +3,7 @@ package net.kimon.kimon.power;
 import net.kimon.kimon.stats.Attribute;
 import net.kimon.kimon.stats.CharacterProfile;
 import net.kimon.kimon.stats.StatBlock;
+import net.kimon.kimon.stats.StatMods;
 
 /**
  * Pure (Minecraft-free) rules for the Energy Blast attack: how much damage it deals and how much
@@ -33,7 +34,7 @@ public final class EnergyBlast {
         if (profile == null) {
             return 1.0;
         }
-        return Math.max(0.0, 1.0 + profile.totalModifier(Attribute.ENERGY));
+        return StatMods.factor(profile.mods().kiPower());
     }
 
     /**

@@ -54,8 +54,8 @@ public final class PowerHudLayer implements GuiLayer {
         int y = MARGIN_Y;
         guiGraphics.text(minecraft.font,
                 Component.translatable("hud.kimon.profile",
-                        Component.translatable("race.kimon." + profile.race().key()),
-                        Component.translatable("class.kimon." + profile.clazz().key())),
+                        Component.translatableWithFallback(profile.raceKey(), profile.raceId().getPath()),
+                        Component.translatableWithFallback(profile.classKey(), profile.classId().getPath())),
                 MARGIN_X, y, 0xFFFFFFFF);
         y += LINE;
         // Active form (only when transformed, in an eye-catching color).

@@ -9,6 +9,7 @@ import net.kimon.kimon.power.PowerData;
 import net.kimon.kimon.power.PowerEffects;
 import net.kimon.kimon.power.PowerState;
 import net.kimon.kimon.stats.Attribute;
+import net.kimon.kimon.stats.CharacterCatalog;
 import net.kimon.kimon.stats.ModStatAttachments;
 import net.kimon.kimon.stats.StatBlock;
 import net.kimon.kimon.stats.StatEffects;
@@ -27,7 +28,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 public final class ModNetworking {
 
     /** Bump this string when the wire format changes incompatibly. */
-    private static final String PROTOCOL_VERSION = "4";
+    private static final String PROTOCOL_VERSION = "5";
 
     private ModNetworking() {
     }
@@ -47,6 +48,12 @@ public final class ModNetworking {
                 PowerSyncPayload.TYPE,
                 PowerSyncPayload.STREAM_CODEC,
                 ModNetworking::handlePowerSync
+        );
+
+        registrar.playToClient(
+                CatalogPayload.TYPE,
+                CatalogPayload.STREAM_CODEC,
+                ModNetworking::handleCatalog
         );
 
         registrar.playToClient(
@@ -115,6 +122,11 @@ public final class ModNetworking {
     /** Client: stores the server's resource state on the local player (the HUD reads it from there). */
     private static void handlePowerSync(final PowerSyncPayload payload, final IPayloadContext context) {
         context.enqueueWork(() -> context.player().setData(ModAttachments.STATE.get(), payload.state()));
+    }
+
+    /** Client: adopts the server's race/class catalog so derived stats match the server's. */
+    private static void handleCatalog(final CatalogPayload payload, final IPayloadContext context) {
+        context.enqueueWork(() -> CharacterCatalog.set(payload.catalog()));
     }
 
     /** Client: remembers how to draw a nearby player's aura. */

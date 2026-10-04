@@ -34,7 +34,8 @@ Package root: `net.kimon.kimon`
   - Server glue: `CombatHandler` (tick loop, melee/blast scaling, transform, blast raycast),
     `PowerEffects`, `PowerEventHandler`, `ModAttachments` (POWER, STATE, MASTERY).
 - `stats/` — six attributes + TP economy, races/classes, derived stats.
-  - Pure/unit-tested: `StatBlock`, `StatCalculator`, `Race`, `PlayerClass`, `CharacterProfile`.
+  - Pure/unit-tested: `StatBlock`, `StatCalculator`, `RaceDef`, `ClassDef`, `StatMods`, `CharacterCatalog`, `CharacterProfile`.
+  Races/classes are JSON under `data/kimon/{races,classes}/`, loaded by `CharacterDataLoader` and synced by `CatalogPayload`.
   - Glue: `StatEffects`, `StatCodecs`, `ModStatAttachments` (STATS, PROFILE).
 - `network/` — serverbound payloads (raise attribute, charge input, reset release, fire blast, transform) and clientbound
   `PowerSyncPayload` / `AuraPayload` sent by `power/SyncHandler` (STATE is NOT an auto-synced attachment) +
@@ -90,7 +91,7 @@ Pick one, keep it a complete vertical slice:
 - **Visual projectile for the Energy Blast** — a `Projectile` entity + renderer so the blast is seen,
   replacing the instant raycast (or complementing it). High visual payoff.
 - **Data-driven sagas/quests** — a JSON mission format (see the schema sketch in `docs/DESIGN.md`).
-- **Move races/forms to JSON datapacks** — currently enums; the research targets datapack-defined
+- **Move forms/skills to JSON datapacks** — races and classes are done; the research targets datapack-defined
   content for server customization.
 - **Skills** — e.g. Fly/Dash/Endurance as learnable, TP-costed abilities (pure cost logic + effects).
 
