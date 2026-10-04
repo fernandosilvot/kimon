@@ -1,0 +1,20 @@
+{
+  "races": [
+    "kimon:saiyan",
+    "kimon:half_saiyan"
+  ],
+  "order": 6,
+  "requires": {
+    "skill": "kimon:super_form",
+    "level": 7
+  },
+  "multipliers": {
+    "str": 4.0,
+    "dex": 4.0,
+    "wil": 4.0
+  },
+  "flat_bonus": 36,
+  "damage_taken_divisor": 4.0,
+  "ki_per_second": 10.0,
+  "min_release": 45
+}

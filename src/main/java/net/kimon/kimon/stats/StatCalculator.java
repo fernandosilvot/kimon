@@ -64,6 +64,17 @@ public final class StatCalculator {
         return maxStamina(stats) * StatMods.factor(mods(profile).stamina());
     }
 
+    /** Melee bonus for an effective STRENGTH value, with race/class modifiers, scaled by Release. */
+    public static double meleeDamageBonus(double effectiveStrength, CharacterProfile profile, double releaseFraction) {
+        double clamped = Math.max(0.0, Math.min(1.0, releaseFraction));
+        return bonusAttackDamageFor(effectiveStrength) * StatMods.factor(mods(profile).melee()) * clamped;
+    }
+
+    /** Movement-speed bonus for an effective DEXTERITY value, with race/class modifiers. */
+    public static double bonusMovementSpeed(double effectiveDexterity, CharacterProfile profile) {
+        return bonusMovementSpeedFor(effectiveDexterity) * StatMods.factor(mods(profile).run());
+    }
+
     public static double meleeDamageBonus(StatBlock stats, CharacterProfile profile, double releaseFraction) {
         double clamped = Math.max(0.0, Math.min(1.0, releaseFraction));
         return bonusAttackDamage(stats, profile) * clamped;
@@ -76,12 +87,24 @@ public final class StatCalculator {
 
     /** Bonus attack damage contributed by STRENGTH. */
     public static double bonusAttackDamage(StatBlock stats) {
-        return Math.min(MAX_BONUS_DAMAGE, above(stats, Attribute.STRENGTH) * DAMAGE_PER_STRENGTH);
+        return bonusAttackDamageFor(stats.get(Attribute.STRENGTH));
     }
 
-    /** Bonus movement speed contributed by AGILITY. */
+    /** Bonus attack damage for an effective STRENGTH value (e.g. after a form's multiplier). */
+    public static double bonusAttackDamageFor(double effectiveStrength) {
+        return Math.min(MAX_BONUS_DAMAGE,
+                Math.max(0.0, effectiveStrength - StatBlock.START_VALUE) * DAMAGE_PER_STRENGTH);
+    }
+
+    /** Bonus movement speed contributed by DEXTERITY. */
     public static double bonusMovementSpeed(StatBlock stats) {
-        return Math.min(MAX_BONUS_SPEED, above(stats, Attribute.DEXTERITY) * SPEED_PER_AGILITY);
+        return bonusMovementSpeedFor(stats.get(Attribute.DEXTERITY));
+    }
+
+    /** Bonus movement speed for an effective DEXTERITY value (e.g. after a form's multiplier). */
+    public static double bonusMovementSpeedFor(double effectiveDexterity) {
+        return Math.min(MAX_BONUS_SPEED,
+                Math.max(0.0, effectiveDexterity - StatBlock.START_VALUE) * SPEED_PER_AGILITY);
     }
 
     // --- Resource maxima (Phase 3) ---

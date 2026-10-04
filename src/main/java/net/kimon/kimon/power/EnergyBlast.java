@@ -26,10 +26,6 @@ public final class EnergyBlast {
     /** Range of the blast in blocks. */
     public static final double RANGE = 24.0;
 
-    private static int energyAbove(StatBlock stats) {
-        return Math.max(0, stats.get(Attribute.WILLPOWER) - StatBlock.START_VALUE);
-    }
-
     private static double mod(CharacterProfile profile) {
         if (profile == null) {
             return 1.0;
@@ -46,8 +42,14 @@ public final class EnergyBlast {
      * @return damage in half-hearts
      */
     public static double damage(StatBlock stats, CharacterProfile profile, double releaseFraction) {
+        return damage((double) stats.get(Attribute.WILLPOWER), profile, releaseFraction);
+    }
+
+    /** Same, for an effective WILLPOWER value (e.g. after a form's multiplier). */
+    public static double damage(double effectiveWillpower, CharacterProfile profile, double releaseFraction) {
         double clamped = Math.max(0.0, Math.min(1.0, releaseFraction));
-        double scaled = (BASE_DAMAGE + energyAbove(stats) * DAMAGE_PER_ENERGY) * mod(profile);
+        double above = Math.max(0.0, effectiveWillpower - StatBlock.START_VALUE);
+        double scaled = (BASE_DAMAGE + above * DAMAGE_PER_ENERGY) * mod(profile);
         // Base always applies; the Energy-scaled part is gated by Release.
         return BASE_DAMAGE * mod(profile) + (scaled - BASE_DAMAGE * mod(profile)) * clamped;
     }

@@ -59,12 +59,12 @@ public final class PowerHudLayer implements GuiLayer {
                 MARGIN_X, y, 0xFFFFFFFF);
         y += LINE;
         // Active form (only when transformed, in an eye-catching color).
-        if (state.form() != net.kimon.kimon.power.Form.BASE) {
+        if (!state.form().isBase()) {
             net.kimon.kimon.power.MasteryData mastery =
                     minecraft.player.getData(ModAttachments.MASTERY.get());
             guiGraphics.text(minecraft.font,
                     Component.translatable("hud.kimon.form",
-                            Component.translatable("form.kimon." + state.form().key()),
+                            net.kimon.kimon.power.CombatHandler.formName(state.form()),
                             mastery.level(state.form())),
                     MARGIN_X, y, 0xFFFF66CC);
             y += LINE;

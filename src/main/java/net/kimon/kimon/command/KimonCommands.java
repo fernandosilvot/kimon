@@ -7,6 +7,8 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 
 import net.kimon.kimon.Kimon;
 import net.kimon.kimon.power.Form;
+import net.kimon.kimon.power.FormCatalog;
+import net.kimon.kimon.power.FormRules;
 import net.kimon.kimon.power.MasteryData;
 import net.kimon.kimon.power.ModAttachments;
 import net.kimon.kimon.power.PowerData;
@@ -80,6 +82,10 @@ public final class KimonCommands {
                 .then(Commands.literal("form")
                         .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .then(Commands.argument("form", StringArgumentType.word())
+                                .suggests((ctx, builder) -> net.minecraft.commands.SharedSuggestionProvider.suggest(
+                                        ctx.getSource().getPlayer() == null ? java.util.List.<String>of()
+                                                : formNames(ctx.getSource().getPlayer()
+                                                        .getData(ModStatAttachments.PROFILE.get()).raceId()), builder))
                                 .executes(ctx -> setForm(ctx.getSource(), StringArgumentType.getString(ctx, "form")))))
                 .then(Commands.literal("mastery")
                         .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
@@ -240,18 +246,30 @@ public final class KimonCommands {
         return 1;
     }
 
+    private static java.util.List<String> formNames(Identifier raceId) {
+        java.util.List<String> names = new java.util.ArrayList<>();
+        names.add("base");
+        for (Form f : FormRules.ladder(FormCatalog.current(), raceId)) {
+            names.add(f.key());
+        }
+        return names;
+    }
+
     private static int setForm(CommandSourceStack src, String formKey) {
         ServerPlayer p = self(src);
         if (p == null) {
             return 0;
         }
+        Identifier race = p.getData(ModStatAttachments.PROFILE.get()).raceId();
         Form form = Form.byKey(formKey);
-        if (form == null) {
-            src.sendSystemMessage(Component.literal("§cUnknown form. Options: " + String.join(", ", java.util.Arrays.stream(Form.VALUES).map(Form::key).toList())));
+        if (form == null || (!form.isBase() && !FormRules.validFor(FormCatalog.current(), race, form))) {
+            src.sendSystemMessage(Component.literal("§cNo such form for your race. Options: "
+                    + String.join(", ", formNames(race))));
             return 0;
         }
         PowerState state = p.getData(ModAttachments.STATE.get());
         p.setData(ModAttachments.STATE.get(), state.withForm(form));
+        StatEffects.apply(p);
         src.sendSystemMessage(Component.literal("§aForm set to " + form.key() + "."));
         return 1;
     }
@@ -262,14 +280,16 @@ public final class KimonCommands {
             return 0;
         }
         Form form = Form.byKey(formKey);
-        if (form == null || form == Form.BASE) {
-            src.sendSystemMessage(Component.literal("§cUnknown form. Options: surge, ascent, zenith"));
+        if (form == null || form.isBase() || !FormCatalog.current().has(form.id())) {
+            src.sendSystemMessage(Component.literal("§cUnknown form. Options: " + String.join(", ",
+                    FormCatalog.current().forms().keySet().stream().map(Identifier::getPath).toList())));
             return 0;
         }
         MasteryData mastery = p.getData(ModAttachments.MASTERY.get());
         java.util.Map<Form, Integer> levels = mastery.asLevelMap();
         levels.put(form, level);
         p.setData(ModAttachments.MASTERY.get(), MasteryData.of(levels));
+        StatEffects.apply(p);
         src.sendSystemMessage(Component.literal("§aMastery of " + form.key() + " set to " + level + "."));
         return 1;
     }

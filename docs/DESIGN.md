@@ -78,8 +78,9 @@ Mirrors the research's phased plan, scoped to one vertical slice at a time:
    - ✅ **Races and classes as datapack JSON (doc 03 step 3)**, with the research tables as test oracle.
    - ✅ **Skills as JSON (doc 03 step 4)**: Jump, Dash, Fly, Endurance, Potential Unlock, Ki Sense. Not
      done: Ki Sense lock-on (Z), Dash swoop, learning from master NPCs (step 8).
-   - ⏳ Next (`docs/03`, order of 12): step 5 forms from JSON (race-specific), step 6 Form Mastery
-     rework, step 7 Ki techniques.
+   - ✅ **Forms as JSON, per race (doc 03 step 5)**, with racial skills that unlock them. Not done:
+     Kaioken, Oozaru/God forms, instant transformation (double-tap).
+   - ⏳ Next (`docs/03`, order of 12): step 5b Kaioken, step 6 Form Mastery rework, step 7 Ki techniques.
 
 Near-term refinements: a visual projectile entity, and moving races/forms to JSON datapacks.
 

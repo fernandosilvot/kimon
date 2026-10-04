@@ -1,0 +1,10 @@
+{
+  "max_level": 5,
+  "races": [
+    "kimon:namekian"
+  ],
+  "cost": {
+    "tp_base": 300,
+    "mind": 5
+  }
+}

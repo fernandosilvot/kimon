@@ -1,0 +1,10 @@
+{
+  "max_level": 5,
+  "races": [
+    "kimon:majin"
+  ],
+  "cost": {
+    "tp_base": 300,
+    "mind": 5
+  }
+}

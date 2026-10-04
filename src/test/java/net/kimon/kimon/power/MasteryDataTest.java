@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
 
+import net.minecraft.resources.Identifier;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -16,9 +18,10 @@ class MasteryDataTest {
     @DisplayName("a fresh player has zero mastery everywhere")
     void initialZero() {
         MasteryData m = MasteryData.initial();
-        for (Form f : Form.VALUES) {
-            assertEquals(0, m.level(f));
+        for (Identifier id : FormCatalog.current().forms().keySet()) {
+            assertEquals(0, m.level(new Form(id)));
         }
+        assertEquals(0, m.level(Form.BASE));
     }
 
     @Test
@@ -87,5 +90,42 @@ class MasteryDataTest {
         assertEquals(7, copy.level(Form.SUPER_SAIYAN));
         assertEquals(20, copy.level(Form.SUPER_SAIYAN_3));
         assertEquals(0, copy.level(Form.SUPER_SAIYAN_2));
+    }
+
+    @Test
+    @DisplayName("saves from before forms were data (surge/ascent/zenith) load onto the Super Saiyan forms")
+    void legacySaves() {
+        var json = com.google.gson.JsonParser.parseString("{\"surge\":12,\"ascent\":5,\"zenith\":40}");
+        MasteryData m = MasteryCodecs.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json).getOrThrow();
+        assertEquals(12, m.level(Form.SUPER_SAIYAN));
+        assertEquals(5, m.level(Form.SUPER_SAIYAN_2));
+        assertEquals(40, m.level(Form.SUPER_SAIYAN_3));
+    }
+
+    @Test
+    @DisplayName("mastery of any form (including datapack ones) round-trips through the codec and the network")
+    void newFormatRoundTrips() {
+        Form custom = new Form(Identifier.fromNamespaceAndPath("mypack", "rage"));
+        MasteryData m = MasteryData.of(Map.of(Form.SUPER_SAIYAN, 9, custom, 33));
+        MasteryData viaCodec = MasteryCodecs.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE,
+                MasteryCodecs.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE, m).getOrThrow()).getOrThrow();
+        assertEquals(9, viaCodec.level(Form.SUPER_SAIYAN));
+        assertEquals(33, viaCodec.level(custom));
+
+        var buf = new net.minecraft.network.RegistryFriendlyByteBuf(io.netty.buffer.Unpooled.buffer(),
+                net.minecraft.core.RegistryAccess.EMPTY);
+        MasteryCodecs.STREAM_CODEC.encode(buf, m);
+        MasteryData viaNet = MasteryCodecs.STREAM_CODEC.decode(buf);
+        assertEquals(9, viaNet.level(Form.SUPER_SAIYAN));
+        assertEquals(33, viaNet.level(custom));
+    }
+
+    @Test
+    @DisplayName("mastery bonus is added to the form's multipliers, never to Base")
+    void damageBonusScales() {
+        MasteryData full = MasteryData.of(Map.of(Form.SUPER_SAIYAN, MasteryData.MAX_LEVEL));
+        assertEquals(MasteryData.MAX_DAMAGE_BONUS, full.damageBonus(Form.SUPER_SAIYAN), 1e-9);
+        assertEquals(0.0, full.damageBonus(Form.BASE), 1e-9);
+        assertEquals(0.0, MasteryData.initial().damageBonus(Form.SUPER_SAIYAN), 1e-9);
     }
 }

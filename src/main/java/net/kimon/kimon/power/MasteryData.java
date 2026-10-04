@@ -1,6 +1,6 @@
 package net.kimon.kimon.power;
 
-import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -35,12 +35,12 @@ public final class MasteryData {
 
     /** A fresh player: zero mastery in every form. */
     public static MasteryData initial() {
-        return new MasteryData(new EnumMap<>(Form.class));
+        return new MasteryData(new HashMap<>());
     }
 
     /** Build from explicit integer levels (used by serialization). */
     public static MasteryData of(Map<Form, Integer> levels) {
-        EnumMap<Form, Double> map = new EnumMap<>(Form.class);
+        HashMap<Form, Double> map = new HashMap<>();
         for (Map.Entry<Form, Integer> e : levels.entrySet()) {
             map.put(e.getKey(), (double) clampLevel(e.getValue()));
         }
@@ -62,21 +62,26 @@ public final class MasteryData {
      * mastery (there's nothing to master). Clamped at the cap.
      */
     public MasteryData practice(Form form, double dt) {
-        if (form == Form.BASE || dt <= 0) {
+        if (form.isBase() || dt <= 0) {
             return this;
         }
         double current = points.getOrDefault(form, 0.0);
         if (current >= MAX_LEVEL) {
             return this;
         }
-        EnumMap<Form, Double> next = new EnumMap<>(points);
+        HashMap<Form, Double> next = new HashMap<>(points);
         next.put(form, Math.min(MAX_LEVEL, current + GAIN_PER_SECOND * dt));
         return new MasteryData(next);
     }
 
-    /** The effective damage multiplier for a form, including its mastery bonus. */
+    /** Extra amount added to each of the form's attribute multipliers at the current mastery. */
+    public double damageBonus(Form form) {
+        return MAX_DAMAGE_BONUS * fraction(form);
+    }
+
+    /** The headline multiplier of a form including its mastery bonus (what the form is "worth"). */
     public double effectiveDamageMultiplier(Form form) {
-        return form.damageMultiplier() + MAX_DAMAGE_BONUS * fraction(form);
+        return form.damageMultiplier() + damageBonus(form);
     }
 
     /** The effective Energy drain for a form, reduced by mastery. */
@@ -84,10 +89,10 @@ public final class MasteryData {
         return form.energyDrainPerSecond() * (1.0 - MAX_DRAIN_REDUCTION * fraction(form));
     }
 
-    /** Immutable snapshot of levels (for serialization). */
+    /** Immutable snapshot of levels (only forms with at least one level). */
     public Map<Form, Integer> asLevelMap() {
-        EnumMap<Form, Integer> out = new EnumMap<>(Form.class);
-        for (Form f : Form.VALUES) {
+        Map<Form, Integer> out = new HashMap<>();
+        for (Form f : points.keySet()) {
             int lvl = level(f);
             if (lvl > 0) {
                 out.put(f, lvl);
