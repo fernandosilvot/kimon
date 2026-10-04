@@ -3,9 +3,12 @@
   "key.kimon.stats": "Open Character Sheet",
   "key.kimon.charge": "Charge (Power Up)",
   "key.kimon.blast": "Fire Energy Blast",
+  "key.kimon.form_up": "Transform Up",
+  "key.kimon.form_down": "Transform Down",
   "key.categories.misc": "Miscellaneous",
 
   "hud.kimon.profile": "%s / %s",
+  "hud.kimon.form": "Form: %s",
   "hud.kimon.power": "Power: %s",
   "hud.kimon.tier": "Tier: %s",
   "hud.kimon.release": "Release: %s%%",
@@ -16,6 +19,15 @@
   "msg.kimon.blast_hit": "Energy Blast hit for %s",
   "msg.kimon.blast_miss": "Energy Blast missed",
   "msg.kimon.no_energy": "Not enough Energy",
+  "msg.kimon.form_up": "Transformed: %s",
+  "msg.kimon.form_down": "Reverted to %s",
+  "msg.kimon.form_max": "Already at the highest form",
+  "msg.kimon.form_locked": "%s locked (needs Tier %s, Release %s%%)",
+
+  "form.kimon.base": "Base",
+  "form.kimon.surge": "Surge",
+  "form.kimon.ascent": "Ascent",
+  "form.kimon.zenith": "Zenith",
 
   "screen.kimon.stats.title": "Character Sheet",
   "screen.kimon.stats.tp": "Training Points: %s",

@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **Forms / transformations.** Three forms above Base — Surge, Ascent, Zenith — that multiply all
+  combat damage (melee and Energy Blast) while draining Energy per second, gated by Power tier and
+  minimum Release. Transform up with <kbd>R</kbd>, down with <kbd>V</kbd>; running out of Energy or
+  dropping below the required Release reverts you to Base. (`Form` pure + 9 tests, `TransformPayload`,
+  `/kimon form <name>`.) The active form shows on the HUD.
+
 ## [0.2.0] - 2026-10-04
 
 ### Added
