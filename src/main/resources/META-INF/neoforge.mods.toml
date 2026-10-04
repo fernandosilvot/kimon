@@ -1,0 +1,31 @@
+# Kimon mod metadata. TOML v0.5.0. Placeholders are expanded by Gradle at build time.
+
+# SPDX license identifier. See https://spdx.org/licenses/
+license="${mod_license}"
+issueTrackerURL="https://github.com/fernandosilvot/kimon/issues"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+authors="${mod_authors}"
+description='''
+${mod_description}
+'''
+displayURL="https://github.com/fernandosilvot/kimon"
+
+# Dependency: NeoForge loader
+[[dependencies.${mod_id}]]
+    modId="neoforge"
+    type="required"
+    versionRange="[${neo_version},)"
+    ordering="NONE"
+    side="BOTH"
+
+# Dependency: Minecraft
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    type="required"
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
