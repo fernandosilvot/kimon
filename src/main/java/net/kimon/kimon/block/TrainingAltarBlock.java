@@ -69,7 +69,7 @@ public class TrainingAltarBlock extends Block {
 
             double chanceMultiplier = TrainingEffects.tpChanceMultiplier(
                     serverPlayer.getData(ModStatAttachments.LOAD.get()), KimonConfig.trainingParams());
-            long tp = TpGain.forHit(stats.get(Attribute.FOCUS), power.release(),
+            long tp = TpGain.forHit(stats.get(Attribute.MIND), power.release(),
                     serverPlayer.getRandom().nextDouble(), params, chanceMultiplier);
             if (tp > 0) {
                 serverPlayer.setData(ModStatAttachments.STATS.get(), stats.addTrainingPoints(tp));

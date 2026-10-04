@@ -14,7 +14,7 @@ NeoForge 26.2.0.88 progression mod.
 ## TL;DR for Claude
 
 - **Toolchain:** JDK 25. `./gradlew test`, `./gradlew build`, `./gradlew runClient`.
-- **Clean-room:** original names/assets only — never Dragon Ball / Dragon Block C IP.
+- **Clean-room:** never copy Dragon Block C / Dragon Ball code or assets (textures, models, sounds, configs). Names and terms DO follow Dragon Ball's (owner's decision).
 - **Server-authoritative:** client sends intent payloads; the server validates and applies; synced
   data attachments push state back to the client.
 - **Test pure logic:** balance math lives in Minecraft-free classes with JUnit tests.

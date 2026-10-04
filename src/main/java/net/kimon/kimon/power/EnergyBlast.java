@@ -27,7 +27,7 @@ public final class EnergyBlast {
     public static final double RANGE = 24.0;
 
     private static int energyAbove(StatBlock stats) {
-        return Math.max(0, stats.get(Attribute.ENERGY) - StatBlock.START_VALUE);
+        return Math.max(0, stats.get(Attribute.WILLPOWER) - StatBlock.START_VALUE);
     }
 
     private static double mod(CharacterProfile profile) {

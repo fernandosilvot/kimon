@@ -18,7 +18,7 @@ import net.kimon.kimon.stats.StatBlock;
 class EnergyBlastTest {
 
     private static StatBlock withEnergy(int value) {
-        return StatBlock.of(Map.of(Attribute.ENERGY, value), 0);
+        return StatBlock.of(Map.of(Attribute.WILLPOWER, value), 0);
     }
 
     @Test
@@ -60,8 +60,8 @@ class EnergyBlastTest {
     @DisplayName("Sage/Channeler energy build out-damages a plain Human for the same stats")
     void profileBoostsBlast() {
         StatBlock stats = withEnergy(StatBlock.START_VALUE + 100);
-        CharacterProfile human = new CharacterProfile(CharacterCatalog.id("human"), CharacterCatalog.id("brawler"));
-        CharacterProfile sage = new CharacterProfile(CharacterCatalog.id("sage"), CharacterCatalog.id("channeler"));
+        CharacterProfile human = new CharacterProfile(CharacterCatalog.id("human"), CharacterCatalog.id("martial_artist"));
+        CharacterProfile sage = new CharacterProfile(CharacterCatalog.id("namekian"), CharacterCatalog.id("spiritualist"));
         assertTrue(EnergyBlast.damage(stats, sage, 1.0) > EnergyBlast.damage(stats, human, 1.0));
     }
 }

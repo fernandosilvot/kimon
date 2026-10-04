@@ -63,9 +63,9 @@ class StatBlockTest {
     @Test
     @DisplayName("only the targeted attribute changes")
     void onlyTargetChanges() {
-        StatBlock raised = StatBlock.initial().addTrainingPoints(1000).raise(Attribute.ENERGY);
+        StatBlock raised = StatBlock.initial().addTrainingPoints(1000).raise(Attribute.WILLPOWER);
         for (Attribute a : Attribute.VALUES) {
-            int expected = a == Attribute.ENERGY ? StatBlock.START_VALUE + 1 : StatBlock.START_VALUE;
+            int expected = a == Attribute.WILLPOWER ? StatBlock.START_VALUE + 1 : StatBlock.START_VALUE;
             assertEquals(expected, raised.get(a));
         }
     }
@@ -96,7 +96,7 @@ class StatBlockTest {
         StatBlock block = StatBlock.of(vals, 99);
 
         assertEquals(42, block.get(Attribute.STRENGTH));
-        assertEquals(StatBlock.START_VALUE, block.get(Attribute.VITALITY)); // defaulted
+        assertEquals(StatBlock.START_VALUE, block.get(Attribute.CONSTITUTION)); // defaulted
         assertEquals(99L, block.trainingPoints());
     }
 
@@ -105,18 +105,18 @@ class StatBlockTest {
     void ofClamps() {
         Map<Attribute, Integer> vals = new EnumMap<>(Attribute.class);
         vals.put(Attribute.STRENGTH, -10);
-        vals.put(Attribute.ENERGY, StatBlock.MAX_VALUE + 500);
+        vals.put(Attribute.WILLPOWER, StatBlock.MAX_VALUE + 500);
         StatBlock block = StatBlock.of(vals, 0);
 
         assertEquals(0, block.get(Attribute.STRENGTH));
-        assertEquals(StatBlock.MAX_VALUE, block.get(Attribute.ENERGY));
+        assertEquals(StatBlock.MAX_VALUE, block.get(Attribute.WILLPOWER));
     }
 
     @Test
     @DisplayName("equal blocks are equal and hash equally")
     void equalityContract() {
-        StatBlock a = StatBlock.initial().addTrainingPoints(10).raise(Attribute.FOCUS);
-        StatBlock b = StatBlock.initial().addTrainingPoints(10).raise(Attribute.FOCUS);
+        StatBlock a = StatBlock.initial().addTrainingPoints(10).raise(Attribute.MIND);
+        StatBlock b = StatBlock.initial().addTrainingPoints(10).raise(Attribute.MIND);
         assertEquals(a, b);
         assertEquals(a.hashCode(), b.hashCode());
     }

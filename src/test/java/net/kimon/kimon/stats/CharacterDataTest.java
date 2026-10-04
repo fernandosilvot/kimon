@@ -38,10 +38,10 @@ class CharacterDataTest {
     void shipsAllData() {
         assertEquals(6, CATALOG.races().size());
         assertEquals(3, CATALOG.classes().size());
-        for (String r : new String[] {"human", "titan", "sage", "frost", "mystic", "hybrid"}) {
+        for (String r : new String[] {"human", "saiyan", "namekian", "arcosian", "majin", "half_saiyan"}) {
             assertTrue(CATALOG.hasRace(id(r)), r);
         }
-        for (String c : new String[] {"warrior", "brawler", "channeler"}) {
+        for (String c : new String[] {"warrior", "martial_artist", "spiritualist"}) {
             assertTrue(CATALOG.hasClass(id(c)), c);
         }
     }
@@ -61,21 +61,21 @@ class CharacterDataTest {
         // strength, agility, vitality, energy, focus, spirit  (= STR, DEX, CON, WIL, MND, SPI)
         int[][] expected = {
             {10, 10, 10, 10, 10, 10},   // human
-            {15, 10, 10, 15, 5, 5},     // titan  (first warrior race)
-            {10, 10, 10, 15, 10, 5},    // hybrid
-            {5, 5, 7, 10, 15, 18},      // sage
-            {10, 15, 8, 7, 10, 10},     // mystic
-            {10, 5, 15, 10, 5, 15},     // frost (STR + WIL = 20 split evenly)
+            {15, 10, 10, 15, 5, 5},     // saiyan  (Saiyan)
+            {10, 10, 10, 15, 10, 5},    // half-saiyan
+            {5, 5, 7, 10, 15, 18},      // namekian
+            {10, 15, 8, 7, 10, 10},     // majin
+            {10, 5, 15, 10, 5, 15},     // arcosian (STR + WIL = 20 split evenly)
         };
-        String[] names = {"human", "titan", "hybrid", "sage", "mystic", "frost"};
+        String[] names = {"human", "saiyan", "half_saiyan", "namekian", "majin", "arcosian"};
         for (int i = 0; i < names.length; i++) {
             RaceDef def = CATALOG.race(id(names[i]));
             for (int a = 0; a < Attribute.VALUES.length; a++) {
                 assertEquals(expected[i][a], def.attributes().get(Attribute.VALUES[a]), names[i] + " " + Attribute.VALUES[a]);
             }
         }
-        RaceDef frost = CATALOG.race(id("frost"));
-        assertEquals(20, frost.attributes().get(Attribute.STRENGTH) + frost.attributes().get(Attribute.ENERGY));
+        RaceDef frost = CATALOG.race(id("arcosian"));
+        assertEquals(20, frost.attributes().get(Attribute.STRENGTH) + frost.attributes().get(Attribute.WILLPOWER));
     }
 
     @Test
@@ -83,13 +83,13 @@ class CharacterDataTest {
     void modifiersMatchTables() {
         // [race][class] with classes in the order brawler (martial artist), channeler (spiritualist), warrior
         Object[][] table = {
-            {"human",  row(0, 0, 0, 30, 10, 10, 10, 0),  row(-10, 10, -10, 20, 20, 20, 20, 10), row(10, -10, 10, 40, 0, 0, 0, -10)},
-            {"titan",  row(30, 0, 0, 0, 20, 0, 0, 10),   row(20, 10, -10, -10, 30, 10, 10, 20),  row(40, -10, 10, 10, 10, -10, -10, 0)},
-            {"hybrid", row(15, 0, 0, 15, 15, 5, 5, 5),   row(5, 10, -10, 5, 25, 15, 15, 15),     null},
-            {"sage",   row(0, 0, 10, 0, 30, 20, 0, 0),   row(-10, 10, 0, -10, 40, 30, 10, 10),   row(10, -10, 20, 10, 20, 10, -10, -10)},
-            {"mystic", row(10, 0, 0, 30, 10, 0, 10, 0),  row(0, 10, -10, 20, 20, 10, 20, 10),    row(20, -10, 10, 40, 0, -10, 0, -10)},
+            {"human",     row(0, 0, 0, 30, 10, 10, 10, 0),  row(-10, 10, -10, 20, 20, 20, 20, 10), row(10, -10, 10, 40, 0, 0, 0, -10)},
+            {"saiyan",    row(30, 0, 0, 0, 20, 0, 0, 10),   row(20, 10, -10, -10, 30, 10, 10, 20),  row(40, -10, 10, 10, 10, -10, -10, 0)},
+            {"half_saiyan", row(15, 0, 0, 15, 15, 5, 5, 5),   row(5, 10, -10, 5, 25, 15, 15, 15),     null},
+            {"namekian", row(0, 0, 10, 0, 30, 20, 0, 0),   row(-10, 10, 0, -10, 40, 30, 10, 10),   row(10, -10, 20, 10, 20, 10, -10, -10)},
+            {"majin",   row(10, 0, 0, 30, 10, 0, 10, 0),  row(0, 10, -10, 20, 20, 10, 20, 10),    row(20, -10, 10, 40, 0, -10, 0, -10)},
         };
-        String[] classes = {"brawler", "channeler", "warrior"};
+        String[] classes = {"martial_artist", "spiritualist", "warrior"};
         for (Object[] r : table) {
             for (int c = 0; c < 3; c++) {
                 StatMods expected = (StatMods) r[c + 1];
@@ -104,7 +104,7 @@ class CharacterDataTest {
     @Test
     @DisplayName("frost (the 'all classes' race) has +20% defense, +10% stamina and +30% speed")
     void frostBase() {
-        StatMods base = CATALOG.race(id("frost")).modifiers();
+        StatMods base = CATALOG.race(id("arcosian")).modifiers();
         assertEquals(20.0, base.defense(), 1e-9);
         assertEquals(10.0, base.stamina(), 1e-9);
         assertEquals(30.0, base.run(), 1e-9);
@@ -113,11 +113,11 @@ class CharacterDataTest {
     @Test
     @DisplayName("the class offsets are the same on every race (data stays decomposable)")
     void classesAreRaceIndependent() {
-        StatMods spirit = CATALOG.clazz(id("channeler")).modifiers();
+        StatMods spirit = CATALOG.clazz(id("spiritualist")).modifiers();
         StatMods warrior = CATALOG.clazz(id("warrior")).modifiers();
         assertEquals(new StatMods(-10, 10, -10, -10, 10, 10, 10, 10), spirit);
         assertEquals(new StatMods(10, -10, 10, 10, -10, -10, -10, -10), warrior);
-        assertEquals(StatMods.NONE, CATALOG.clazz(id("brawler")).modifiers());
+        assertEquals(StatMods.NONE, CATALOG.clazz(id("martial_artist")).modifiers());
     }
 
     // ------------------------------------------------------------------ JSON codecs
@@ -126,7 +126,7 @@ class CharacterDataTest {
     }
 
     private static final String ALL_SIX =
-            "\"attributes\":{\"strength\":10,\"agility\":10,\"vitality\":10,\"energy\":10,\"focus\":10,\"spirit\":10}";
+            "\"attributes\":{\"strength\":10,\"dexterity\":10,\"constitution\":10,\"willpower\":10,\"mind\":10,\"spirit\":10}";
 
     @Test
     @DisplayName("a minimal race parses and its modifiers default to zero")
@@ -159,7 +159,7 @@ class CharacterDataTest {
     @Test
     @DisplayName("a race survives an encode/decode round trip")
     void raceRoundTrip() {
-        RaceDef original = CATALOG.race(id("titan"));
+        RaceDef original = CATALOG.race(id("saiyan"));
         var json = RaceDef.CODEC.encodeStart(JsonOps.INSTANCE, original).getOrThrow();
         assertEquals(original, RaceDef.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow());
     }
@@ -190,8 +190,8 @@ class CharacterDataTest {
     @Test
     @DisplayName("ids: bare names are kimon:, full ids kept, junk rejected")
     void parseIds() {
-        assertEquals(id("titan"), CharacterCatalog.parseId("titan"));
-        assertEquals(id("titan"), CharacterCatalog.parseId("  TITAN "));
+        assertEquals(id("saiyan"), CharacterCatalog.parseId("titan"));
+        assertEquals(id("saiyan"), CharacterCatalog.parseId("  TITAN "));
         assertEquals(Identifier.fromNamespaceAndPath("mypack", "orc"), CharacterCatalog.parseId("mypack:orc"));
         assertNull(CharacterCatalog.parseId(""));
         assertNull(CharacterCatalog.parseId(null));
@@ -216,28 +216,45 @@ class CharacterDataTest {
         races.put(orc, parseRace("{" + ALL_SIX + ",\"modifiers\":{\"melee\":50}}").getOrThrow());
         CharacterCatalog custom = new CharacterCatalog(races, CATALOG.classes());
         assertTrue(custom.hasRace(orc));
-        assertEquals(50.0, custom.modsFor(orc, id("brawler")).melee(), 1e-9);
+        assertEquals(50.0, custom.modsFor(orc, id("martial_artist")).melee(), 1e-9);
     }
 
     // ------------------------------------------------------------------------ profile
     @Test
+    @DisplayName("names from the first versions still resolve to the current ids")
+    void legacyNamesMigrate() {
+        assertEquals(id("saiyan"), CharacterCatalog.parseId("titan"));
+        assertEquals(id("namekian"), CharacterCatalog.parseId("sage"));
+        assertEquals(id("arcosian"), CharacterCatalog.parseId("kimon:frost"));
+        assertEquals(id("majin"), CharacterCatalog.parseId("MYSTIC"));
+        assertEquals(id("half_saiyan"), CharacterCatalog.parseId("hybrid"));
+        assertEquals(id("martial_artist"), CharacterCatalog.parseId("brawler"));
+        assertEquals(id("spiritualist"), CharacterCatalog.parseId("channeler"));
+        assertEquals(id("martial_artist"), CharacterCatalog.parseId("Martial Artist"), "spaces become underscores");
+        assertEquals(Identifier.fromNamespaceAndPath("mypack", "titan"), CharacterCatalog.parseId("mypack:titan"),
+                "other namespaces are never remapped");
+        CharacterProfile oldSave = CharacterProfile.fromKeys("titan", "brawler");
+        assertEquals(new CharacterProfile(id("saiyan"), id("martial_artist")), oldSave);
+    }
+
+    @Test
     @DisplayName("old saves with bare names load as kimon ids; garbage falls back to the default")
     void legacyProfiles() {
-        assertEquals(new CharacterProfile(id("titan"), id("warrior")), CharacterProfile.fromKeys("titan", "warrior"));
-        assertEquals(new CharacterProfile(id("sage"), id("channeler")), CharacterProfile.fromKeys("kimon:sage", "kimon:channeler"));
+        assertEquals(new CharacterProfile(id("saiyan"), id("warrior")), CharacterProfile.fromKeys("titan", "warrior"));
+        assertEquals(new CharacterProfile(id("namekian"), id("spiritualist")), CharacterProfile.fromKeys("kimon:sage", "kimon:channeler"));
         assertEquals(CharacterProfile.DEFAULT, CharacterProfile.fromKeys("???", ""));
     }
 
     @Test
     @DisplayName("a profile survives a codec round trip and builds translation keys")
     void profileRoundTrip() {
-        CharacterProfile p = new CharacterProfile(id("frost"), id("warrior"));
+        CharacterProfile p = new CharacterProfile(id("arcosian"), id("warrior"));
         var nbt = CharacterProfile.CODEC.encodeStart(JsonOps.INSTANCE, p).getOrThrow();
         assertEquals(p, CharacterProfile.CODEC.parse(JsonOps.INSTANCE, nbt).getOrThrow());
-        assertEquals("race.kimon.frost", p.raceKey());
+        assertEquals("race.kimon.arcosian", p.raceKey());
         assertEquals("class.kimon.warrior", p.classKey());
-        assertEquals(id("sage"), p.withRace(id("sage")).raceId());
-        assertEquals(id("brawler"), p.withClass(id("brawler")).classId());
+        assertEquals(id("namekian"), p.withRace(id("namekian")).raceId());
+        assertEquals(id("martial_artist"), p.withClass(id("martial_artist")).classId());
         assertEquals(CharacterProfile.DEFAULT.raceId(), id("human"));
     }
 
@@ -253,10 +270,10 @@ class CharacterDataTest {
                     + ",\"modifiers\":{\"body\":100,\"max_ki\":50,\"stamina\":-50,\"melee\":10,\"run\":20}}").getOrThrow());
             CharacterCatalog.set(new CharacterCatalog(races, CATALOG.classes()));
 
-            StatBlock stats = StatBlock.of(Map.of(Attribute.VITALITY, 50, Attribute.SPIRIT, 20, Attribute.STRENGTH, 50,
-                    Attribute.AGILITY, 50), 0);
-            CharacterProfile probeProfile = new CharacterProfile(probe, id("brawler"));
-            CharacterProfile plain = new CharacterProfile(id("human"), id("brawler"));
+            StatBlock stats = StatBlock.of(Map.of(Attribute.CONSTITUTION, 50, Attribute.SPIRIT, 20, Attribute.STRENGTH, 50,
+                    Attribute.DEXTERITY, 50), 0);
+            CharacterProfile probeProfile = new CharacterProfile(probe, id("martial_artist"));
+            CharacterProfile plain = new CharacterProfile(id("human"), id("martial_artist"));
             StatMods humanMods = plain.mods();
 
             assertEquals(StatCalculator.bonusHealth(stats) * 2.0, StatCalculator.bonusHealth(stats, probeProfile), 1e-9);

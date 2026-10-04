@@ -1,10 +1,10 @@
 {
   "attributes": {
     "strength": 10,
-    "agility": 5,
-    "vitality": 15,
-    "energy": 10,
-    "focus": 5,
+    "dexterity": 5,
+    "constitution": 15,
+    "willpower": 10,
+    "mind": 5,
     "spirit": 15
   },
   "modifiers": {

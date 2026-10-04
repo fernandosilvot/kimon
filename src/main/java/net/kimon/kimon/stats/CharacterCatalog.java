@@ -34,11 +34,11 @@ public final class CharacterCatalog {
 
     public static final String NAMESPACE = "kimon";
     public static final Identifier DEFAULT_RACE = id("human");
-    public static final Identifier DEFAULT_CLASS = id("brawler");
+    public static final Identifier DEFAULT_CLASS = id("martial_artist");
 
     /** Names of the data files the mod ships (the JSON is the data; this list is only the index). */
-    private static final String[] BUILTIN_RACES = {"human", "titan", "sage", "frost", "mystic", "hybrid"};
-    private static final String[] BUILTIN_CLASSES = {"warrior", "brawler", "channeler"};
+    private static final String[] BUILTIN_RACES = {"human", "saiyan", "namekian", "arcosian", "majin", "half_saiyan"};
+    private static final String[] BUILTIN_CLASSES = {"warrior", "martial_artist", "spiritualist"};
 
     private final Map<Identifier, RaceDef> races;
     private final Map<Identifier, ClassDef> classes;
@@ -52,6 +52,11 @@ public final class CharacterCatalog {
         return Identifier.fromNamespaceAndPath(NAMESPACE, path);
     }
 
+    /** Names the first versions used; saves and commands that still say them are mapped to the new ids. */
+    private static final Map<String, String> LEGACY_NAMES = Map.of(
+            "titan", "saiyan", "sage", "namekian", "frost", "arcosian", "mystic", "majin",
+            "hybrid", "half_saiyan", "brawler", "martial_artist", "channeler", "spiritualist");
+
     /**
      * Turns user input into an id: a full {@code namespace:name} is kept, a bare name (also what old
      * saves stored) is taken to be in the {@code kimon} namespace. Returns null if it isn't valid.
@@ -60,8 +65,12 @@ public final class CharacterCatalog {
         if (text == null || text.isBlank()) {
             return null;
         }
-        String trimmed = text.trim().toLowerCase(java.util.Locale.ROOT);
-        return trimmed.contains(":") ? Identifier.tryParse(trimmed) : Identifier.tryParse(NAMESPACE + ":" + trimmed);
+        String trimmed = text.trim().toLowerCase(java.util.Locale.ROOT).replace(' ', '_');
+        Identifier parsed = trimmed.contains(":") ? Identifier.tryParse(trimmed) : Identifier.tryParse(NAMESPACE + ":" + trimmed);
+        if (parsed != null && NAMESPACE.equals(parsed.getNamespace()) && LEGACY_NAMES.containsKey(parsed.getPath())) {
+            return id(LEGACY_NAMES.get(parsed.getPath()));
+        }
+        return parsed;
     }
 
     // ----------------------------------------------------------------------- lookup

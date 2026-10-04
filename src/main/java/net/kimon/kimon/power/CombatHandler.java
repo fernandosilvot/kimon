@@ -191,7 +191,7 @@ public final class CombatHandler {
         TpParams params = KimonConfig.tpParams();
         double chanceMultiplier = TrainingEffects.tpChanceMultiplier(
                 attacker.getData(ModStatAttachments.LOAD.get()), KimonConfig.trainingParams());
-        long tp = TpGain.forHit(source.get(Attribute.FOCUS), state.release(),
+        long tp = TpGain.forHit(source.get(Attribute.MIND), state.release(),
                 attacker.getRandom().nextDouble(), params, chanceMultiplier);
         if (tp > 0) {
             StatBlock own = attacker.getData(ModStatAttachments.STATS.get());

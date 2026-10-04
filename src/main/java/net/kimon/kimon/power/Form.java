@@ -14,11 +14,11 @@ public enum Form {
     /** No transformation. The baseline. */
     BASE("base", 1.0, 0.0, 0, 0.0),
     /** First form: modest boost, cheap. */
-    SURGE("surge", 1.5, 2.0, 5, 10.0),
+    SUPER_SAIYAN("super_saiyan", 1.5, 2.0, 5, 10.0),
     /** Second form: strong boost, pricier. */
-    ASCENT("ascent", 2.0, 5.0, 15, 25.0),
+    SUPER_SAIYAN_2("super_saiyan_2", 2.0, 5.0, 15, 25.0),
     /** Peak form: huge boost, expensive, high requirements. */
-    ZENITH("zenith", 3.0, 12.0, 30, 40.0);
+    SUPER_SAIYAN_3("super_saiyan_3", 3.0, 12.0, 30, 40.0);
 
     private final String key;
     private final double damageMultiplier;
@@ -79,9 +79,23 @@ public enum Form {
         return i > 0 ? VALUES[i - 1] : BASE;
     }
 
+    /**
+     * Finds a form by key, case-insensitive; spaces count as underscores, and the names the forms had
+     * before ({@code surge}, {@code ascent}, {@code zenith}) still work.
+     */
     public static Form byKey(String key) {
+        if (key == null) {
+            return null;
+        }
+        String normalized = key.trim().toLowerCase(java.util.Locale.ROOT).replace(' ', '_');
+        normalized = switch (normalized) {
+            case "surge" -> "super_saiyan";
+            case "ascent" -> "super_saiyan_2";
+            case "zenith" -> "super_saiyan_3";
+            default -> normalized;
+        };
         for (Form f : VALUES) {
-            if (f.key.equalsIgnoreCase(key)) {
+            if (f.key.equals(normalized)) {
                 return f;
             }
         }

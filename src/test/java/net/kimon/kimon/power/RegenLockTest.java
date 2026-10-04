@@ -76,7 +76,7 @@ class RegenLockTest {
     void lockIsPreserved() {
         PowerState s = idle(100, 10).hurt(50);
         assertEquals(50, s.withInput(true, false, true).regenLock());
-        assertEquals(50, s.withForm(Form.SURGE).regenLock());
+        assertEquals(50, s.withForm(Form.SUPER_SAIYAN).regenLock());
         assertEquals(50, s.reset().regenLock());
         assertEquals(50, s.withResources(1, 2, 3, 50, 400, 70).regenLock());
     }

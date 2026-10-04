@@ -7,7 +7,7 @@ Read it first, then `README.md`, `docs/DESIGN.md`, and `CHANGELOG.md`. Follow th
 ## What Kimon is
 
 An original, clean-room anime-style **Power/energy progression** mod for **Minecraft 26.2** on
-**NeoForge 26.2.0.88**, built with original names/assets only (no Dragon Ball / DBC IP). Mechanics
+**NeoForge 26.2.0.88**, built clean-room (no Dragon Ball / DBC code or assets; names and terms follow Dragon Ball's by the owner's decision). Mechanics
 are reimplemented from the research in `docs/DESIGN.md`.
 
 ## Environment (verified working)
@@ -51,7 +51,7 @@ item defs), `data/kimon/` (`loot_table/`, `recipe/`), `META-INF/neoforge.mods.to
 
 ## Non-negotiable conventions
 
-1. **Clean-room / original IP only.** No DBC/Dragon Ball code, assets, or names. Invented terms only.
+1. **Clean-room.** No DBC/Dragon Ball code, textures, models, sounds or configs. Names and terms follow Dragon Ball's (owner's decision, 2026-10-04); keep them in lang files and data JSON so a rename stays cheap.
 2. **Server-authoritative.** Client sends intents (payloads); server validates and applies; synced
    data attachments push state back. Never trust client values.
 3. **Pure logic is unit-tested.** Put balance math in Minecraft-free classes and add JUnit tests.
@@ -100,7 +100,7 @@ Pick one, keep it a complete vertical slice:
 ```
 /op <you>                 # or a creative world with cheats
 /kimon tp 100000
-/kimon race titan
+/kimon race saiyan
 /kimon class warrior
 /kimon attr strength 1000
 /kimon power 5000

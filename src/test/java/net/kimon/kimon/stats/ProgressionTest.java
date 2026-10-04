@@ -156,4 +156,24 @@ class ProgressionTest {
         assertEquals(0L, TpGain.forHit(10, 2, 0.0, p, 100.0), "still needs the minimum Release");
         assertEquals(0L, TpGain.forHit(10, 50, 0.0, p, 0.0), "multiplier 0 never grants");
     }
+
+    @Test
+    @DisplayName("attribute names: full keys, doc abbreviations and old names all resolve")
+    void attributeAliases() {
+        assertEquals(Attribute.DEXTERITY, Attribute.byKey("dexterity"));
+        assertEquals(Attribute.DEXTERITY, Attribute.byKey("DEX"));
+        assertEquals(Attribute.DEXTERITY, Attribute.byKey("agility"));
+        assertEquals(Attribute.CONSTITUTION, Attribute.byKey("con"));
+        assertEquals(Attribute.WILLPOWER, Attribute.byKey("wil"));
+        assertEquals(Attribute.WILLPOWER, Attribute.byKey("energy"));
+        assertEquals(Attribute.MIND, Attribute.byKey("mnd"));
+        assertEquals(Attribute.MIND, Attribute.byKey(" Focus "));
+        assertEquals(Attribute.STRENGTH, Attribute.byKey("str"));
+        assertEquals(Attribute.SPIRIT, Attribute.byKey("spi"));
+        assertEquals(null, Attribute.byKey("luck"));
+        assertEquals(null, Attribute.byKey(null));
+        for (Attribute a : Attribute.VALUES) {
+            assertEquals(a, Attribute.byKey(a.key()), "every key resolves to itself");
+        }
+    }
 }

@@ -55,6 +55,8 @@ public final class KimonCommands {
                 .then(Commands.literal("attr")
                         .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .then(Commands.argument("name", StringArgumentType.word())
+                                .suggests((ctx, builder) -> net.minecraft.commands.SharedSuggestionProvider.suggest(
+                                        java.util.Arrays.stream(Attribute.VALUES).map(Attribute::key), builder))
                                 .then(Commands.argument("value", IntegerArgumentType.integer(0))
                                         .executes(ctx -> setAttr(ctx.getSource(),
                                                 StringArgumentType.getString(ctx, "name"),
@@ -144,13 +146,7 @@ public final class KimonCommands {
         if (p == null) {
             return 0;
         }
-        Attribute attribute = null;
-        for (Attribute a : Attribute.VALUES) {
-            if (a.key().equalsIgnoreCase(name)) {
-                attribute = a;
-                break;
-            }
-        }
+        Attribute attribute = Attribute.byKey(name);
         if (attribute == null) {
             src.sendSystemMessage(Component.literal("§cUnknown attribute: " + name));
             return 0;
@@ -164,7 +160,7 @@ public final class KimonCommands {
         return 1;
     }
 
-    /** Ids in the mod's own namespace are shown without it ("titan"); others keep theirs. */
+    /** Ids in the mod's own namespace are shown without it ("saiyan"); others keep theirs. */
     private static String shortId(Identifier id) {
         return CharacterCatalog.NAMESPACE.equals(id.getNamespace()) ? id.getPath() : id.toString();
     }
@@ -218,7 +214,7 @@ public final class KimonCommands {
         }
         Form form = Form.byKey(formKey);
         if (form == null) {
-            src.sendSystemMessage(Component.literal("§cUnknown form. Options: base, surge, ascent, zenith"));
+            src.sendSystemMessage(Component.literal("§cUnknown form. Options: " + String.join(", ", java.util.Arrays.stream(Form.VALUES).map(Form::key).toList())));
             return 0;
         }
         PowerState state = p.getData(ModAttachments.STATE.get());

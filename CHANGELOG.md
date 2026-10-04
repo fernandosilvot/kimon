@@ -6,6 +6,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- **Dragon Ball terminology everywhere (owner's decision; the "invented names only" rule is lifted).**
+  - Races: Human, **Saiyan**, **Namekian**, **Arcosian**, **Majin**, **Half-Saiyan** (were Titan, Sage,
+    Frost, Mystic, Hybrid). Classes: Warrior, **Martial Artist**, **Spiritualist** (were Brawler,
+    Channeler). Attributes: Strength, **Dexterity, Constitution, Willpower, Mind**, Spirit. Forms:
+    **Super Saiyan / 2 / 3**. The Energy resource is now **Ki** (Ki Blast); the Wish Orb is shown as
+    **Dragon Ball**. English and Spanish language files rewritten.
+  - Ids changed with the names (`kimon:saiyan`, `kimon:martial_artist`, datapack attribute keys
+    `dexterity`/`constitution`/`willpower`/`mind`, form keys `super_saiyan…`). **Nothing breaks**: old
+    race/class/form/attribute names still work in commands and saves (`titan`, `brawler`, `surge`,
+    `agility`…), and stored data keeps its field names.
+  - `/kimon attr` also accepts the docs' abbreviations (`str dex con wil mnd spi`).
+  - Docs updated: the clean-room rule now means "do not copy Dragon Block C / Dragon Ball code or assets";
+    names are the owner's choice and may have to change if a rights holder asks.
+- Forms are still available to every race (they become race-specific in step 5), so a Human can reach
+  "Super Saiyan" for now.
+- Fixed README leftovers from the previous step (a duplicated races table).
+- 3 new tests (legacy names, attribute aliases, form aliases): 162 total.
+
 ### Added
 - **Races and classes as datapack JSON (doc 03, step 3).** `data/<ns>/races/*.json` and
   `data/<ns>/classes/*.json`, loaded by `CharacterDataLoader` on every (re)load and synced to clients

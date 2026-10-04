@@ -71,7 +71,7 @@ public final class StatCalculator {
 
     /** Bonus max health contributed by VITALITY. */
     public static double bonusHealth(StatBlock stats) {
-        return Math.min(MAX_BONUS_HEALTH, above(stats, Attribute.VITALITY) * HEALTH_PER_VITALITY);
+        return Math.min(MAX_BONUS_HEALTH, above(stats, Attribute.CONSTITUTION) * HEALTH_PER_VITALITY);
     }
 
     /** Bonus attack damage contributed by STRENGTH. */
@@ -81,7 +81,7 @@ public final class StatCalculator {
 
     /** Bonus movement speed contributed by AGILITY. */
     public static double bonusMovementSpeed(StatBlock stats) {
-        return Math.min(MAX_BONUS_SPEED, above(stats, Attribute.AGILITY) * SPEED_PER_AGILITY);
+        return Math.min(MAX_BONUS_SPEED, above(stats, Attribute.DEXTERITY) * SPEED_PER_AGILITY);
     }
 
     // --- Resource maxima (Phase 3) ---
@@ -107,7 +107,7 @@ public final class StatCalculator {
 
     /** Maximum Stamina pool from VITALITY. */
     public static double maxStamina(StatBlock stats) {
-        return stats.get(Attribute.VITALITY) * STAMINA_PER_VITALITY;
+        return stats.get(Attribute.CONSTITUTION) * STAMINA_PER_VITALITY;
     }
 
     /** The player's Release ceiling: base 50 plus a FOCUS-driven bonus, capped at 100. */
@@ -120,7 +120,7 @@ public final class StatCalculator {
      * (a stand-in for the "Potential Unlock" skill), never above {@code hardMax}.
      */
     public static double maxRelease(StatBlock stats, double baseMax, double hardMax) {
-        double bonus = Math.min(MAX_BONUS_RELEASE, above(stats, Attribute.FOCUS) * RELEASE_PER_FOCUS);
+        double bonus = Math.min(MAX_BONUS_RELEASE, above(stats, Attribute.MIND) * RELEASE_PER_FOCUS);
         return Math.min(hardMax, baseMax + bonus);
     }
 

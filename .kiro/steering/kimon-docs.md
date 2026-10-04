@@ -34,7 +34,7 @@ After implementing or changing any feature, BEFORE committing:
 - Run `./gradlew test` and `./gradlew build` (JDK 25) and confirm they pass.
 - Verify `runClient` loads without crashing before claiming a gameplay feature works.
 - Keep everything server-authoritative; client sends intents only.
-- Original names/assets only — no third-party IP (clean-room; see docs/DESIGN.md).
+- Clean-room: never copy Dragon Block C / Dragon Ball code or assets. Names and terms follow Dragon Ball's (owner's decision; see docs/DESIGN.md).
 
 ## Releases
 

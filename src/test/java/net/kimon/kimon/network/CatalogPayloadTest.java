@@ -44,10 +44,10 @@ class CatalogPayloadTest {
         Identifier orc = Identifier.fromNamespaceAndPath("mypack", "orc");
         EnumMap<Attribute, Integer> spread = new EnumMap<>(Attribute.class);
         spread.put(Attribute.STRENGTH, 25);
-        spread.put(Attribute.AGILITY, 1);
-        spread.put(Attribute.VITALITY, 20);
-        spread.put(Attribute.ENERGY, 3);
-        spread.put(Attribute.FOCUS, 3);
+        spread.put(Attribute.DEXTERITY, 1);
+        spread.put(Attribute.CONSTITUTION, 20);
+        spread.put(Attribute.WILLPOWER, 3);
+        spread.put(Attribute.MIND, 3);
         spread.put(Attribute.SPIRIT, 8);
         RaceDef race = new RaceDef(spread, new StatMods(12.5, -3.25, 0, 7, 0, 0, -1, 99));
         CharacterCatalog custom = new CharacterCatalog(Map.of(orc, race),
