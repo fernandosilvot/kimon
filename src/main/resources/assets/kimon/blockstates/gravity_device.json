@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "kimon:block/gravity_device"
+    }
+  }
+}

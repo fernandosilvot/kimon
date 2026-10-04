@@ -39,6 +39,18 @@ public final class ModStatAttachments {
                     .copyOnDeath()
                     .build());
 
+    /**
+     * What the player is training under (carried weight and gravity). Not serialized (recomputed every
+     * second by {@code TrainingHandler}); synced to the owner for the HUD, and it changes rarely.
+     */
+    public static final Supplier<AttachmentType<net.kimon.kimon.training.TrainingLoad>> LOAD =
+            ATTACHMENT_TYPES.register(
+                    "load",
+                    () -> AttachmentType.builder(() -> net.kimon.kimon.training.TrainingLoad.NONE)
+                            .sync((holder, to) -> holder == to,
+                                    net.kimon.kimon.training.TrainingLoad.STREAM_CODEC)
+                            .build());
+
     public static void register(IEventBus modEventBus) {
         ATTACHMENT_TYPES.register(modEventBus);
     }

@@ -38,7 +38,17 @@ public final class TpGain {
      * @return the amount, or 0 if Release is too low or the roll misses {@code hitChance}
      */
     public static long forHit(int focus, double releasePercent, double roll, TpParams p) {
-        if (!eligible(releasePercent) || roll >= p.hitChance()) {
+        return forHit(focus, releasePercent, roll, p, 1.0);
+    }
+
+    /**
+     * Same, with the hit chance scaled by {@code chanceMultiplier} (training weights and gravity make
+     * TP easier). The effective chance is capped at 1.
+     */
+    public static long forHit(int focus, double releasePercent, double roll, TpParams p,
+                              double chanceMultiplier) {
+        double chance = Math.min(1.0, p.hitChance() * Math.max(0.0, chanceMultiplier));
+        if (!eligible(releasePercent) || roll >= chance) {
             return 0L;
         }
         return amount(focus, releasePercent, p);

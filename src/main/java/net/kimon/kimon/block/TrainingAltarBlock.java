@@ -10,6 +10,7 @@ import net.kimon.kimon.stats.StatBlock;
 import net.kimon.kimon.stats.StatCalculator;
 import net.kimon.kimon.stats.TpGain;
 import net.kimon.kimon.stats.TpParams;
+import net.kimon.kimon.training.TrainingEffects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -66,8 +67,10 @@ public class TrainingAltarBlock extends Block {
                     StatCalculator.maxEnergy(stats, profile, KimonConfig.params().kiPerSpirit()),
                     maxStamina));
 
+            double chanceMultiplier = TrainingEffects.tpChanceMultiplier(
+                    serverPlayer.getData(ModStatAttachments.LOAD.get()), KimonConfig.trainingParams());
             long tp = TpGain.forHit(stats.get(Attribute.FOCUS), power.release(),
-                    serverPlayer.getRandom().nextDouble(), params);
+                    serverPlayer.getRandom().nextDouble(), params, chanceMultiplier);
             if (tp > 0) {
                 serverPlayer.setData(ModStatAttachments.STATS.get(), stats.addTrainingPoints(tp));
                 serverPlayer.sendSystemMessage(Component.translatable("msg.kimon.altar_train", tp), true);

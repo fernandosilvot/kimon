@@ -2,7 +2,9 @@ package net.kimon.kimon.config;
 
 import net.kimon.kimon.power.KiRegenRate;
 import net.kimon.kimon.power.PowerParams;
+import net.kimon.kimon.stats.CostParams;
 import net.kimon.kimon.stats.TpParams;
+import net.kimon.kimon.training.TrainingParams;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
@@ -135,6 +137,83 @@ public final class KimonConfig {
             .translation("config.kimon.combat.hitStaminaCost")
             .defineInRange("combat.hitStaminaCost", PowerParams.DEFAULTS.hitStaminaCost(), 0.0, 1.0);
 
+    // --- attribute cost (UC) ---
+    private static final ModConfigSpec.DoubleValue COST_BASE = SERVER_BUILDER
+            .comment("Attribute cost: flat part. cost = max(minCost, round(base + rate*x + x^2/startMinus)), x = level*multiplier.")
+            .translation("config.kimon.progression.costBase")
+            .defineInRange("progression.costBase", CostParams.DEFAULTS.baseCost(), 0.0, 1.0e6);
+
+    private static final ModConfigSpec.DoubleValue COST_RATE = SERVER_BUILDER
+            .comment("Attribute cost: linear growth per scaled level.")
+            .translation("config.kimon.progression.costRate")
+            .defineInRange("progression.costRate", CostParams.DEFAULTS.costRate(), 0.0, 1.0e6);
+
+    private static final ModConfigSpec.DoubleValue COST_MULTIPLIER = SERVER_BUILDER
+            .comment("Attribute cost: scales the level before the curve (0.75 in the reference design).")
+            .translation("config.kimon.progression.costMultiplier")
+            .defineInRange("progression.costMultiplier", CostParams.DEFAULTS.attributeMultiplier(), 0.0, 100.0);
+
+    private static final ModConfigSpec.DoubleValue COST_START_MINUS = SERVER_BUILDER
+            .comment("Attribute cost: divisor of the quadratic term; larger = costs start climbing later.")
+            .translation("config.kimon.progression.costStartMinus")
+            .defineInRange("progression.costStartMinus", CostParams.DEFAULTS.startMinus(), 1.0, 1.0e9);
+
+    private static final ModConfigSpec.LongValue COST_MIN = SERVER_BUILDER
+            .comment("Attribute cost: minimum TP per point.")
+            .translation("config.kimon.progression.costMin")
+            .defineInRange("progression.costMin", CostParams.DEFAULTS.minCost(), 0L, 1_000_000_000L);
+
+    // --- training load (weights and gravity) ---
+    private static final ModConfigSpec.DoubleValue WEIGHT_PENALTY = SERVER_BUILDER
+            .comment("Melee damage lost per point of effective weight (weight x gravity). 0.002 = 0.2%.")
+            .translation("config.kimon.training.weightPenaltyPerPoint")
+            .defineInRange("training.weightPenaltyPerPoint", TrainingParams.DEFAULTS.weightPenaltyPerPoint(), 0.0, 1.0);
+
+    private static final ModConfigSpec.DoubleValue MAX_WEIGHT_PENALTY = SERVER_BUILDER
+            .comment("Cap of the weight damage penalty (0.6 = at most -60%).")
+            .translation("config.kimon.training.maxWeightPenalty")
+            .defineInRange("training.maxWeightPenalty", TrainingParams.DEFAULTS.maxWeightPenalty(), 0.0, 1.0);
+
+    private static final ModConfigSpec.DoubleValue WEIGHT_TP_BONUS = SERVER_BUILDER
+            .comment("TP-chance bonus per point of effective weight.")
+            .translation("config.kimon.training.weightTpBonusPerPoint")
+            .defineInRange("training.weightTpBonusPerPoint", TrainingParams.DEFAULTS.weightTpBonusPerPoint(), 0.0, 10.0);
+
+    private static final ModConfigSpec.DoubleValue GRAVITY_STAT_DROP = SERVER_BUILDER
+            .comment("How fast STR/DEX fall under gravity: factor = 1 / (1 + (G-1) * drop).")
+            .translation("config.kimon.training.gravityStatDrop")
+            .defineInRange("training.gravityStatDrop", TrainingParams.DEFAULTS.gravityStatDrop(), 0.0, 10.0);
+
+    private static final ModConfigSpec.DoubleValue GRAVITY_TP_BONUS = SERVER_BUILDER
+            .comment("TP-chance bonus per extra G.")
+            .translation("config.kimon.training.gravityTpBonusPerG")
+            .defineInRange("training.gravityTpBonusPerG", TrainingParams.DEFAULTS.gravityTpBonusPerG(), 0.0, 10.0);
+
+    private static final ModConfigSpec.DoubleValue MAX_TP_MULT = SERVER_BUILDER
+            .comment("Cap of the TP-chance multiplier from weights and gravity.")
+            .translation("config.kimon.training.maxTpMultiplier")
+            .defineInRange("training.maxTpMultiplier", TrainingParams.DEFAULTS.maxTpMultiplier(), 1.0, 100.0);
+
+    private static final ModConfigSpec.DoubleValue DEVICE_GRAVITY = SERVER_BUILDER
+            .comment("Gravity (in G) inside a Gravity Device's field.")
+            .translation("config.kimon.training.deviceGravity")
+            .defineInRange("training.deviceGravity", TrainingParams.DEFAULTS.deviceGravity(), 1.0, 1000.0);
+
+    private static final ModConfigSpec.IntValue SCAN_RADIUS = SERVER_BUILDER
+            .comment("Radius in blocks of a Gravity Device's field.")
+            .translation("config.kimon.training.scanRadius")
+            .defineInRange("training.scanRadius", TrainingParams.DEFAULTS.scanRadius(), 1, 32);
+
+    private static final ModConfigSpec.DoubleValue GRAVITY_ATTR_FACTOR = SERVER_BUILDER
+            .comment("How much of (G-1) is applied to the real gravity attribute, i.e. how heavy movement feels.")
+            .translation("config.kimon.training.gravityAttributeFactor")
+            .defineInRange("training.gravityAttributeFactor", TrainingParams.DEFAULTS.gravityAttributeFactor(), 0.0, 5.0);
+
+    private static final ModConfigSpec.DoubleValue MAX_WEIGHT = SERVER_BUILDER
+            .comment("Cap of the total carried weight.")
+            .translation("config.kimon.training.maxWeight")
+            .defineInRange("training.maxWeight", TrainingParams.DEFAULTS.maxWeight(), 0.0, 100000.0);
+
     public static final ModConfigSpec SERVER_SPEC = SERVER_BUILDER.build();
 
     // ---------------------------------------------------------------- client
@@ -150,6 +229,8 @@ public final class KimonConfig {
     // --------------------------------------------------------------- snapshot
     private static volatile PowerParams cached = PowerParams.DEFAULTS;
     private static volatile TpParams cachedTp = TpParams.DEFAULTS;
+    private static volatile CostParams cachedCost = CostParams.DEFAULTS;
+    private static volatile TrainingParams cachedTraining = TrainingParams.DEFAULTS;
 
     /** The current balance values (defaults until the config has loaded). */
     public static PowerParams params() {
@@ -159,6 +240,16 @@ public final class KimonConfig {
     /** The current Training Point rules (defaults until the config has loaded). */
     public static TpParams tpParams() {
         return cachedTp;
+    }
+
+    /** The current attribute-cost curve (defaults until the config has loaded). */
+    public static CostParams costParams() {
+        return cachedCost;
+    }
+
+    /** The current weight / gravity rules (defaults until the config has loaded). */
+    public static TrainingParams trainingParams() {
+        return cachedTraining;
     }
 
     /** HUD Release step in %, from the client config (5 until it has loaded). */
@@ -204,6 +295,12 @@ public final class KimonConfig {
             cached = build();
             cachedTp = new TpParams(TP_BASE.getAsInt(), TP_PER_FOCUS_STEP.getAsInt(), TP_FOCUS_DIVISOR.getAsInt(),
                     TP_HIT_CHANCE.getAsDouble(), ALTAR_STAMINA_COST.getAsDouble(), POWER_PER_POINT.getAsInt());
+            cachedCost = new CostParams(COST_BASE.getAsDouble(), COST_RATE.getAsDouble(),
+                    COST_MULTIPLIER.getAsDouble(), COST_START_MINUS.getAsDouble(), COST_MIN.getAsLong());
+            cachedTraining = new TrainingParams(WEIGHT_PENALTY.getAsDouble(), MAX_WEIGHT_PENALTY.getAsDouble(),
+                    WEIGHT_TP_BONUS.getAsDouble(), GRAVITY_STAT_DROP.getAsDouble(), GRAVITY_TP_BONUS.getAsDouble(),
+                    MAX_TP_MULT.getAsDouble(), DEVICE_GRAVITY.getAsDouble(), SCAN_RADIUS.getAsInt(),
+                    GRAVITY_ATTR_FACTOR.getAsDouble(), MAX_WEIGHT.getAsDouble());
         }
     }
 }

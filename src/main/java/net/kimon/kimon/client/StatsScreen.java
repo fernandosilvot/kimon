@@ -1,9 +1,13 @@
 package net.kimon.kimon.client;
 
+import net.kimon.kimon.config.KimonConfig;
 import net.kimon.kimon.network.RaiseAttributePayload;
 import net.kimon.kimon.stats.Attribute;
+import net.kimon.kimon.stats.CostParams;
+import net.kimon.kimon.stats.LevelCalculator;
 import net.kimon.kimon.stats.ModStatAttachments;
 import net.kimon.kimon.stats.StatBlock;
+import net.kimon.kimon.training.TrainingLoad;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
@@ -29,6 +33,8 @@ public final class StatsScreen extends Screen {
     private static final int VALUE_COLOR = 0xFF55FFFF;
     private static final int DIM_COLOR = 0xFFAAAAAA;
 
+    private static final int[] BULK = {1, 10, 100, 1000};
+
     private int topY;
 
     public StatsScreen() {
@@ -38,15 +44,20 @@ public final class StatsScreen extends Screen {
     @Override
     protected void init() {
         int cx = this.width / 2;
-        this.topY = 50;
+        this.topY = 62;
 
         Attribute[] attrs = Attribute.VALUES;
         for (int i = 0; i < attrs.length; i++) {
             final Attribute attribute = attrs[i];
             int rowY = topY + i * ROW_HEIGHT;
-            addRenderableWidget(Button.builder(Component.literal("+"), b -> onRaise(attribute))
-                    .bounds(cx + 90, rowY, 20, 20)
-                    .build());
+            // One button per bulk size: +1, +10, +100, +1000 (the server buys as many as it can afford).
+            for (int j = 0; j < BULK.length; j++) {
+                final int amount = BULK[j];
+                addRenderableWidget(Button.builder(Component.literal("+" + amount),
+                                b -> onRaise(attribute, amount))
+                        .bounds(cx + 20 + j * 34, rowY, 32, 20)
+                        .build());
+            }
         }
 
         addRenderableWidget(Button.builder(Component.translatable("gui.done"), b -> onClose())
@@ -59,12 +70,23 @@ public final class StatsScreen extends Screen {
         super.extractRenderState(g, mouseX, mouseY, partialTick);
 
         StatBlock stats = currentStats();
+        CostParams costs = KimonConfig.costParams();
         int cx = this.width / 2;
 
-        g.centeredText(this.font, this.title, cx, 18, LABEL_COLOR);
+        g.centeredText(this.font, this.title, cx, 14, LABEL_COLOR);
 
         Component tp = Component.translatable("screen.kimon.stats.tp", stats.trainingPoints());
-        g.centeredText(this.font, tp, cx, 32, VALUE_COLOR);
+        g.centeredText(this.font, tp, cx, 28, VALUE_COLOR);
+
+        Component level = Component.translatable("screen.kimon.stats.level",
+                LevelCalculator.level(stats), LevelCalculator.pointsToNextLevel(stats));
+        g.centeredText(this.font, level, cx, 40, LABEL_COLOR);
+
+        TrainingLoad load = currentLoad();
+        if (!load.isNone()) {
+            g.centeredText(this.font, Component.translatable("hud.kimon.load",
+                    (int) Math.round(load.weight()), String.format("%.0f", load.gravity())), cx, 51, DIM_COLOR);
+        }
 
         Attribute[] attrs = Attribute.VALUES;
         for (int i = 0; i < attrs.length; i++) {
@@ -72,19 +94,24 @@ public final class StatsScreen extends Screen {
             int rowY = topY + i * ROW_HEIGHT + 6;
 
             Component name = Component.translatable("attribute.kimon." + a.key());
-            g.text(this.font, name, cx - 110, rowY, LABEL_COLOR);
+            g.text(this.font, name, cx - 150, rowY, LABEL_COLOR);
 
             Component value = Component.literal(Integer.toString(stats.get(a)));
-            g.text(this.font, value, cx + 20, rowY, VALUE_COLOR);
+            g.text(this.font, value, cx - 70, rowY, VALUE_COLOR);
 
-            Component cost = Component.translatable("screen.kimon.stats.cost", stats.costToRaise(a));
-            int costColor = stats.canRaise(a) ? DIM_COLOR : 0xFFFF5555;
-            g.text(this.font, cost, cx - 70, rowY, costColor);
+            Component cost = Component.translatable("screen.kimon.stats.cost", stats.costToRaise(a, costs));
+            int costColor = stats.canRaise(a, costs) ? DIM_COLOR : 0xFFFF5555;
+            g.text(this.font, cost, cx - 40, rowY, costColor);
         }
     }
 
-    private void onRaise(Attribute attribute) {
-        ClientPacketDistributor.sendToServer(new RaiseAttributePayload(attribute));
+    private void onRaise(Attribute attribute, int count) {
+        ClientPacketDistributor.sendToServer(new RaiseAttributePayload(attribute, count));
+    }
+
+    private TrainingLoad currentLoad() {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.player == null ? TrainingLoad.NONE : mc.player.getData(ModStatAttachments.LOAD.get());
     }
 
     private StatBlock currentStats() {

@@ -44,6 +44,33 @@ public final class ModBlocks {
     public static final DeferredItem<BlockItem> TRAINING_ALTAR_ITEM =
             ITEMS.registerSimpleBlockItem("training_altar", TRAINING_ALTAR);
 
+    /** Gravity Device: multiplies gravity in a field around it (training under G). */
+    public static final DeferredBlock<Block> GRAVITY_DEVICE = BLOCKS.registerBlock(
+            "gravity_device",
+            Block::new,
+            p -> p.mapColor(MapColor.COLOR_BLACK)
+                    .strength(4.0f, 8.0f)
+                    .pushReaction(PushReaction.BLOCK));
+
+    public static final DeferredItem<BlockItem> GRAVITY_DEVICE_ITEM =
+            ITEMS.registerSimpleBlockItem("gravity_device", GRAVITY_DEVICE);
+
+    /** Training weights: carried in the inventory, they trade damage for easier TP. */
+    public static final DeferredItem<net.kimon.kimon.training.WeightItem> WEIGHTED_WRAPS = ITEMS.registerItem(
+            "weighted_wraps",
+            p -> new net.kimon.kimon.training.WeightItem(p, net.kimon.kimon.training.WeightItem.WRAPS_WEIGHT),
+            p -> p.stacksTo(1));
+
+    public static final DeferredItem<net.kimon.kimon.training.WeightItem> WEIGHTED_VEST = ITEMS.registerItem(
+            "weighted_vest",
+            p -> new net.kimon.kimon.training.WeightItem(p, net.kimon.kimon.training.WeightItem.VEST_WEIGHT),
+            p -> p.stacksTo(1));
+
+    public static final DeferredItem<net.kimon.kimon.training.WeightItem> HEAVY_PLATES = ITEMS.registerItem(
+            "heavy_plates",
+            p -> new net.kimon.kimon.training.WeightItem(p, net.kimon.kimon.training.WeightItem.PLATES_WEIGHT),
+            p -> p.stacksTo(1));
+
     /** Wish Orb: a consumable that grants a random progression wish. */
     public static final DeferredItem<net.kimon.kimon.wish.WishOrbItem> WISH_ORB = ITEMS.registerItem(
             "wish_orb",
@@ -59,6 +86,10 @@ public final class ModBlocks {
                     .icon(() -> TRAINING_ALTAR_ITEM.get().getDefaultInstance())
                     .displayItems((params, output) -> {
                         output.accept(TRAINING_ALTAR_ITEM.get());
+                        output.accept(GRAVITY_DEVICE_ITEM.get());
+                        output.accept(WEIGHTED_WRAPS.get());
+                        output.accept(WEIGHTED_VEST.get());
+                        output.accept(HEAVY_PLATES.get());
                         output.accept(WISH_ORB.get());
                     })
                     .build());
