@@ -71,6 +71,16 @@ public final class PowerHudLayer implements GuiLayer {
         }
         guiGraphics.text(minecraft.font, Component.translatable("hud.kimon.power", data.power()), MARGIN_X, y, ACCENT);
         y += LINE;
+        guiGraphics.text(minecraft.font, Component.translatable("hud.kimon.level",
+                net.kimon.kimon.stats.LevelCalculator.level(stats)), MARGIN_X, y, ACCENT);
+        y += LINE;
+        net.kimon.kimon.training.TrainingLoad load = minecraft.player.getData(ModStatAttachments.LOAD.get());
+        if (!load.isNone()) {
+            guiGraphics.text(minecraft.font, Component.translatable("hud.kimon.load",
+                    (int) Math.round(load.weight()), String.format("%.0f", load.gravity())),
+                    MARGIN_X, y, 0xFFFFAA55);
+            y += LINE;
+        }
         guiGraphics.text(minecraft.font, Component.translatable("hud.kimon.tier", tier), MARGIN_X, y, ACCENT);
         y += LINE;
         // Release: shown in display steps; white up to 50%, amber to 100%, red when overcharged.

@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "L": "minecraft:leather"
+  },
+  "pattern": [
+    "ILI"
+  ],
+  "result": {
+    "id": "kimon:weighted_wraps",
+    "count": 1
+  }
+}

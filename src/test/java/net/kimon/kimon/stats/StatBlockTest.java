@@ -27,7 +27,7 @@ class StatBlockTest {
     @Test
     @DisplayName("cost rises with attribute level")
     void costRises() {
-        assertEquals(StatBlock.BASE_COST, StatBlock.costAt(0));
+        assertEquals(CostParams.DEFAULTS.minCost(), StatBlock.costAt(0));
         assertTrue(StatBlock.costAt(100) > StatBlock.costAt(10));
         assertTrue(StatBlock.costAt(1000) > StatBlock.costAt(100));
     }

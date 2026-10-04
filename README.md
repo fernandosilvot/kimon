@@ -8,7 +8,7 @@
 ![Minecraft](https://img.shields.io/badge/Minecraft-26.2-brightgreen)
 ![NeoForge](https://img.shields.io/badge/NeoForge-26.2.0.88-orange)
 ![Java](https://img.shields.io/badge/Java-25-red)
-![Tests](https://img.shields.io/badge/tests-124%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-146%20passing-brightgreen)
 
 Kimon is a from-scratch RPG progression mod inspired by the *feel* of classic anime-fighter mods
 (train, grow stronger, power up, transform) — built as a **clean-room reimplementation** with
@@ -56,6 +56,9 @@ Minecraft 26.2 / NeoForge 26.2.0.88.
 | **Six races** (Human, Titan, Sage, Frost, Mystic, Hybrid) with unique starting spreads & modifiers | ✅ |
 | **Three classes** (Warrior, Brawler, Channeler) that further tweak modifiers | ✅ |
 | **Release %** state machine — charge (<kbd>C</kbd>), discharge (<kbd>Ctrl+C</kbd>), reset (<kbd>H</kbd>), turbo (<kbd>R</kbd>); states Stable / Charging / At max / Lowering / Exhausted; scales combat output | ✅ |
+| **Character level** derived from attributes (every 5 points above 55 = 1 level), shown on the HUD and sheet | ✅ |
+| **Attribute cost curve** (UC) configurable via `progression.cost*`; the sheet buys **+1 / +10 / +100 / +1000** points at once (server-validated, stops when you run out of TP) | ✅ |
+| **Training load**: carry **Weighted Wraps / Vest / Heavy Plates** (10 / 25 / 50 weight) and stand near a **Gravity Device** (10G). Weight × gravity lowers melee damage, gravity lowers STR/DEX and makes you heavier, and both make TP likelier | ✅ |
 | **Combat costs & regen lock**: an empowered hit (Release ≥ 5%) costs Energy (`1 + STR/200`) and Stamina, with vanilla damage if you can't pay; being hurt by a living entity stops Energy regen for 30 s (configurable) | ✅ |
 | **Throttled sync**: your resources reach your client every 2 ticks and only when changed; neighbours get a coarse aura state; full re-sync on login, respawn and dimension change | ✅ |
 | **Config** (`kimon-server.toml` / `kimon-client.toml`): Release/Energy balance is tunable, no hardcoded numbers | ✅ |
@@ -237,6 +240,12 @@ loads on a dedicated server, and keeps every stat/resource computation **server-
 ```
 net.kimon.kimon
 ├── Kimon.java                  # @Mod entry point; registers attachments on the mod bus
+├── training/
+│   ├── TrainingLoad.java       # weight + gravity (pure)
+│   ├── TrainingEffects.java    # what the load does (pure, unit-tested)
+│   ├── TrainingParams.java     # tunable values (pure)
+│   ├── TrainingHandler.java    # server: computes the load every second
+│   └── WeightItem.java         # carried weights
 ├── config/
 │   └── KimonConfig.java        # SERVER (Release/Energy balance) + CLIENT (HUD) ModConfigSpec
 ├── power/
@@ -267,6 +276,8 @@ net.kimon.kimon
 │   ├── StatEffects.java        # applies attribute-derived bonuses to the player
 │   ├── Race.java               # six races: starting spreads + modifiers
 │   ├── PlayerClass.java        # three classes: modifiers
+│   ├── CostParams.java         # attribute cost curve (pure, unit-tested)
+│   ├── LevelCalculator.java    # level from attribute points (pure, unit-tested)
 │   ├── CharacterProfile.java   # chosen race + class (persisted+synced)
 │   └── ModStatAttachments.java # STATS and PROFILE attachments
 ├── block/
@@ -320,7 +331,7 @@ Training Points or stats.
 
 ## Testing
 
-- **Unit tests** (`src/test/java`, 124 tests) cover all pure logic: Power tiers, the TP economy and
+- **Unit tests** (`src/test/java`, 146 tests) cover all pure logic: Power tiers, the TP economy and
   cost curve, attribute-derived stats, the Release/Energy/Stamina loop, race/class modifiers, the
   Energy Blast damage/cost rules, the form ladder, Form Mastery, and the Wish reward table.
   They run on a plain JVM with no Minecraft bootstrap, so they are fast and reliable in CI.

@@ -108,4 +108,6 @@ Pick one, keep it a complete vertical slice:
 # press B to fire an Energy Blast, press K for the character sheet.
 /give @s kimon:wish_orb 4
 /give @s kimon:training_altar
+/give @s kimon:gravity_device      # stand within 8 blocks: 10G, heavier, STR/DEX down, TP likelier
+/give @s kimon:weighted_vest        # carried weight: lowers melee damage, TP likelier
 ```

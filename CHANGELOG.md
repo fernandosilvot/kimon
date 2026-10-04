@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- **Progression (doc 03, step 2).**
+  - **Character level**: every 5 attribute points above 55 is one level (a fresh character is level 1).
+    Shown on the HUD and the sheet. (`LevelCalculator`)
+  - **Attribute cost curve (UC)**, configurable: `cost = max(min, round(base + rate·x + x²/startMinus))`,
+    `x = level·multiplier` (`progression.costBase/costRate/costMultiplier/costStartMinus/costMin`).
+    (`CostParams`)
+  - **Bulk buying**: the Character Sheet buys +1 / +10 / +100 / +1000 points per click; the server
+    buys one at a time at the rising price and stops at the first unaffordable point
+    (`StatBlock.raiseMany`). `RaiseAttributePayload` now carries a count; protocol version 4.
+  - **Training load**: Weighted Wraps / Vest / Heavy Plates (weight 10 / 25 / 50, carried in the
+    inventory) and the **Gravity Device** block (10G in a radius of 8). Weight × gravity lowers melee
+    damage; gravity lowers STR/DEX (melee bonus and DEX-driven speed) and raises the real gravity
+    attribute; both raise the chance of earning TP. `training.*` config keys; HUD and sheet show the
+    load. (`TrainingLoad`, `TrainingEffects`, `TrainingHandler`, `WeightItem`, `LOAD` attachment)
+- 22 new unit tests (`ProgressionTest`, `TrainingEffectsTest`): 146 total.
 - **Regeneration lock.** After being hurt by a living entity, Energy stops regenerating for
   `combat.regenLockTicks` (default 600 = 30 s); `combat.staminaRegenLocked` (default false) extends it
   to Stamina. Server-only counter inside `PowerState` (`hurt()`), so it costs no bandwidth.
@@ -35,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - 19 new unit tests (`ReleaseStateMachineTest`, `StatCalculator` overloads): 100 total.
 
 ### Changed
+- Attribute costs follow the new curve (a bit steeper at high levels than the old linear one).
 - **No more free Training Points.** The Train button/packet is gone; the only organic TP source is
   now hitting things with Release ≥ 5% (melee and Energy Blast), per the research:
   `TP = 2 + 2·⌊FOCUS/5⌋·Release/100`, rolled against `tp.hitChance` (default 0.2). Against another

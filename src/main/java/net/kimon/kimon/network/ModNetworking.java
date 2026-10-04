@@ -27,7 +27,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 public final class ModNetworking {
 
     /** Bump this string when the wire format changes incompatibly. */
-    private static final String PROTOCOL_VERSION = "3";
+    private static final String PROTOCOL_VERSION = "4";
 
     private ModNetworking() {
     }
@@ -95,16 +95,18 @@ public final class ModNetworking {
                 return;
             }
             StatBlock stats = serverPlayer.getData(ModStatAttachments.STATS.get());
-            StatBlock raised = stats.raise(attribute); // returns same instance if unaffordable
-            if (raised != stats) {
-                serverPlayer.setData(ModStatAttachments.STATS.get(), raised);
+            int count = Math.max(1, Math.min(RaiseAttributePayload.MAX_COUNT, payload.count()));
+            // Buys point by point at the rising price, stopping at the first one it can't afford.
+            StatBlock.RaiseResult result = stats.raiseMany(attribute, count, KimonConfig.costParams());
+            if (result.raised() > 0) {
+                serverPlayer.setData(ModStatAttachments.STATS.get(), result.block());
                 StatEffects.apply(serverPlayer);
 
-                // Spending TP on an attribute raises Power (tier bonuses, form gating): progression
-                // is earned by fighting for TP, then investing it — there is no free Power source.
+                // Spending TP on attributes raises Power (tier bonuses, form gating): progression is
+                // earned by fighting for TP, then investing it — there is no free Power source.
                 PowerData power = serverPlayer.getData(ModAttachments.POWER.get());
-                serverPlayer.setData(ModAttachments.POWER.get(),
-                        power.withPower(power.power() + KimonConfig.tpParams().powerPerPoint()));
+                serverPlayer.setData(ModAttachments.POWER.get(), power.withPower(
+                        power.power() + result.raised() * KimonConfig.tpParams().powerPerPoint()));
                 PowerEffects.apply(serverPlayer);
             }
         });

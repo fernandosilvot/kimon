@@ -70,8 +70,10 @@ Mirrors the research's phased plan, scoped to one vertical slice at a time:
      (`TpGain`), and spending TP on attributes raises Power.
    - ✅ **Combat costs, regen lock and sync**: hit costs (Energy + Stamina), 30 s Energy-regen lock
      after being hurt, throttled sync every 2 ticks, aura state for neighbours, dimension re-sync.
-   - ⏳ Next (`docs/03`, order of 12): step 2 progression (levels, weights, gravity), step 3 races and
-     classes as datapack JSON, step 4 skills, step 5 forms from JSON, step 6 Form Mastery rework.
+   - ✅ **Progression (doc 03 step 2)**: character level, configurable attribute cost curve with bulk
+     buying, training weights and Gravity Device. Simple minigames are not done.
+   - ⏳ Next (`docs/03`, order of 12): step 3 races and classes as datapack JSON, step 4 skills, step 5
+     forms from JSON, step 6 Form Mastery rework.
 
 Near-term refinements: a visual projectile entity, and moving races/forms to JSON datapacks.
 

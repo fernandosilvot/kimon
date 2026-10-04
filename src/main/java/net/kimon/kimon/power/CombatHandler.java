@@ -9,6 +9,9 @@ import net.kimon.kimon.stats.Attribute;
 import net.kimon.kimon.stats.StatCalculator;
 import net.kimon.kimon.stats.TpGain;
 import net.kimon.kimon.stats.TpParams;
+import net.kimon.kimon.training.TrainingEffects;
+import net.kimon.kimon.training.TrainingLoad;
+import net.kimon.kimon.training.TrainingParams;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -134,8 +137,13 @@ public final class CombatHandler {
                 maxRelease, maxEnergy, maxStamina));
         PAID_HITS.add(attacker.getUUID());
 
+        // Carried weight lowers damage and gravity lowers STR; both scale the bonus part of the hit.
+        TrainingLoad load = attacker.getData(ModStatAttachments.LOAD.get());
+        TrainingParams training = KimonConfig.trainingParams();
         double bonus = StatCalculator.meleeDamageBonus(stats, profile, state.releaseMultiplier())
-                * mastery.effectiveDamageMultiplier(state.form());
+                * mastery.effectiveDamageMultiplier(state.form())
+                * TrainingEffects.damageFactor(load, training)
+                * TrainingEffects.statFactor(load, training);
         if (bonus > 0) {
             event.setAmount(event.getAmount() + (float) bonus);
         }
@@ -181,8 +189,10 @@ public final class CombatHandler {
                 ? other.getData(ModStatAttachments.STATS.get())
                 : attacker.getData(ModStatAttachments.STATS.get());
         TpParams params = KimonConfig.tpParams();
+        double chanceMultiplier = TrainingEffects.tpChanceMultiplier(
+                attacker.getData(ModStatAttachments.LOAD.get()), KimonConfig.trainingParams());
         long tp = TpGain.forHit(source.get(Attribute.FOCUS), state.release(),
-                attacker.getRandom().nextDouble(), params);
+                attacker.getRandom().nextDouble(), params, chanceMultiplier);
         if (tp > 0) {
             StatBlock own = attacker.getData(ModStatAttachments.STATS.get());
             attacker.setData(ModStatAttachments.STATS.get(), own.addTrainingPoints(tp));

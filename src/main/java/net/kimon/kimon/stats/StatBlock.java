@@ -25,12 +25,6 @@ public final class StatBlock {
     /** Hard ceiling per attribute. */
     public static final int MAX_VALUE = 10_000;
 
-    /** Flat part of the cost to raise one attribute point. */
-    public static final int BASE_COST = 1;
-
-    /** How much the cost grows per current attribute level. */
-    public static final double COST_RATE = 0.5;
-
     private final Map<Attribute, Integer> values;
     private final long trainingPoints;
 
@@ -67,19 +61,28 @@ public final class StatBlock {
         return trainingPoints;
     }
 
-    /** TP cost to raise {@code attribute} by one point from its current value. */
+    /** TP cost to raise {@code attribute} by one point from its current value (default curve). */
     public long costToRaise(Attribute attribute) {
-        return costAt(values.get(attribute));
+        return costToRaise(attribute, CostParams.DEFAULTS);
     }
 
-    /** TP cost to raise an attribute that currently sits at {@code level}. */
+    /** TP cost to raise {@code attribute} by one point with an explicit cost curve. */
+    public long costToRaise(Attribute attribute, CostParams params) {
+        return params.costAt(values.get(attribute));
+    }
+
+    /** TP cost to raise an attribute that currently sits at {@code level} (default curve). */
     public static long costAt(int level) {
-        return BASE_COST + Math.round(level * COST_RATE);
+        return CostParams.DEFAULTS.costAt(level);
     }
 
     /** Whether the player can currently afford to raise {@code attribute} by one point. */
     public boolean canRaise(Attribute attribute) {
-        return values.get(attribute) < MAX_VALUE && trainingPoints >= costToRaise(attribute);
+        return canRaise(attribute, CostParams.DEFAULTS);
+    }
+
+    public boolean canRaise(Attribute attribute, CostParams params) {
+        return values.get(attribute) < MAX_VALUE && trainingPoints >= costToRaise(attribute, params);
     }
 
     /**
@@ -87,13 +90,41 @@ public final class StatBlock {
      * {@code this} unchanged if it can't be afforded or is already maxed.
      */
     public StatBlock raise(Attribute attribute) {
-        if (!canRaise(attribute)) {
+        return raise(attribute, CostParams.DEFAULTS);
+    }
+
+    public StatBlock raise(Attribute attribute, CostParams params) {
+        if (!canRaise(attribute, params)) {
             return this;
         }
-        long cost = costToRaise(attribute);
+        long cost = costToRaise(attribute, params);
         EnumMap<Attribute, Integer> next = new EnumMap<>(values);
         next.put(attribute, next.get(attribute) + 1);
         return new StatBlock(next, trainingPoints - cost);
+    }
+
+    /** Outcome of a bulk purchase. */
+    public record RaiseResult(StatBlock block, int raised, long spent) {
+    }
+
+    /**
+     * Buys up to {@code count} points of {@code attribute}, one at a time at the rising price, and
+     * stops at the first point that can't be afforded or when the attribute is maxed. This is what
+     * the x10 / x100 / x1000 buttons do. Always validated here, never trusted from the client.
+     */
+    public RaiseResult raiseMany(Attribute attribute, int count, CostParams params) {
+        StatBlock current = this;
+        int raised = 0;
+        int wanted = Math.max(0, count);
+        while (raised < wanted) {
+            StatBlock next = current.raise(attribute, params);
+            if (next == current) {
+                break;
+            }
+            current = next;
+            raised++;
+        }
+        return new RaiseResult(current, raised, trainingPoints - current.trainingPoints);
     }
 
     /** Returns a new block with {@code amount} TP added (clamped at zero). */

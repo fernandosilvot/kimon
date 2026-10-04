@@ -33,7 +33,11 @@ public final class StatEffects {
 
         set(player, Attributes.MAX_HEALTH, HEALTH_ID, StatCalculator.bonusHealth(stats, profile));
         set(player, Attributes.ATTACK_DAMAGE, DAMAGE_ID, StatCalculator.bonusAttackDamage(stats, profile));
-        set(player, Attributes.MOVEMENT_SPEED, SPEED_ID, StatCalculator.bonusMovementSpeed(stats, profile));
+        net.kimon.kimon.training.TrainingLoad load = player.getData(ModStatAttachments.LOAD.get());
+        double dexFactor = net.kimon.kimon.training.TrainingEffects.statFactor(load,
+                net.kimon.kimon.config.KimonConfig.trainingParams());
+        set(player, Attributes.MOVEMENT_SPEED, SPEED_ID,
+                StatCalculator.bonusMovementSpeed(stats, profile) * dexFactor);
 
         if (player.getHealth() > player.getMaxHealth()) {
             player.setHealth(player.getMaxHealth());
