@@ -44,6 +44,12 @@ public final class ModBlocks {
     public static final DeferredItem<BlockItem> TRAINING_ALTAR_ITEM =
             ITEMS.registerSimpleBlockItem("training_altar", TRAINING_ALTAR);
 
+    /** Wish Orb: a consumable that grants a random progression wish. */
+    public static final DeferredItem<net.kimon.kimon.wish.WishOrbItem> WISH_ORB = ITEMS.registerItem(
+            "wish_orb",
+            net.kimon.kimon.wish.WishOrbItem::new,
+            p -> p.stacksTo(16));
+
     /** Kimon creative tab holding the mod's items. */
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> KIMON_TAB = TABS.register(
             "kimon",
@@ -51,7 +57,10 @@ public final class ModBlocks {
                     .title(Component.translatable("itemGroup.kimon"))
                     .withTabsBefore(CreativeModeTabs.COMBAT)
                     .icon(() -> TRAINING_ALTAR_ITEM.get().getDefaultInstance())
-                    .displayItems((params, output) -> output.accept(TRAINING_ALTAR_ITEM.get()))
+                    .displayItems((params, output) -> {
+                        output.accept(TRAINING_ALTAR_ITEM.get());
+                        output.accept(WISH_ORB.get());
+                    })
                     .build());
 
     public static void register(IEventBus modEventBus) {

@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **Wish Orb item (Phase 7).** A craftable consumable (ender eye + amethyst + gold) that, on
+  right-click, grants a random `Wish` — a Training-Point boon, a Power surge, or a balanced mix —
+  then is consumed. Server-authoritative roll. (`Wish` pure + 5 tests, `WishOrbItem`, client item
+  definition + model, recipe, creative-tab entry, en/es names.)
+
 ## [0.3.0] - 2026-10-04
 
 ### Added

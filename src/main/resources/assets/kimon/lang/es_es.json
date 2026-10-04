@@ -24,9 +24,17 @@
   "msg.kimon.form_max": "Ya estás en la forma máxima",
   "msg.kimon.form_locked": "%s bloqueada (requiere Nivel %s, Liberación %s%%)",
   "msg.kimon.altar_train": "Entrenaste en el altar: +%s de Poder, +%s TP",
+  "msg.kimon.wish_granted": "Deseo concedido — %s: +%s de Poder, +%s TP",
 
   "itemGroup.kimon": "Kimon",
   "block.kimon.training_altar": "Altar de Entrenamiento",
+  "item.kimon.wish_orb": "Orbe de Deseos",
+
+  "wish.kimon.training_boon": "Bendición de Entrenamiento",
+  "wish.kimon.great_training_boon": "Gran Bendición de Entrenamiento",
+  "wish.kimon.power_surge": "Oleada de Poder",
+  "wish.kimon.great_power_surge": "Gran Oleada de Poder",
+  "wish.kimon.balanced_blessing": "Bendición Equilibrada",
 
   "form.kimon.base": "Base",
   "form.kimon.surge": "Oleada",

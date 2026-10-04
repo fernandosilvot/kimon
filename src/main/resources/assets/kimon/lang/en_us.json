@@ -24,9 +24,17 @@
   "msg.kimon.form_max": "Already at the highest form",
   "msg.kimon.form_locked": "%s locked (needs Tier %s, Release %s%%)",
   "msg.kimon.altar_train": "Trained at the altar: +%s Power, +%s TP",
+  "msg.kimon.wish_granted": "Wish granted — %s: +%s Power, +%s TP",
 
   "itemGroup.kimon": "Kimon",
   "block.kimon.training_altar": "Training Altar",
+  "item.kimon.wish_orb": "Wish Orb",
+
+  "wish.kimon.training_boon": "Training Boon",
+  "wish.kimon.great_training_boon": "Great Training Boon",
+  "wish.kimon.power_surge": "Power Surge",
+  "wish.kimon.great_power_surge": "Great Power Surge",
+  "wish.kimon.balanced_blessing": "Balanced Blessing",
 
   "form.kimon.base": "Base",
   "form.kimon.surge": "Surge",
