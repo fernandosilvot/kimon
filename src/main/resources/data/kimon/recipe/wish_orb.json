@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": "minecraft:ender_eye",
+    "A": "minecraft:amethyst_shard",
+    "G": "minecraft:gold_ingot"
+  },
+  "pattern": [
+    "AGA",
+    "GEG",
+    "AGA"
+  ],
+  "result": {
+    "id": "kimon:wish_orb",
+    "count": 1
+  }
+}

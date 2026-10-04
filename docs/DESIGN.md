@@ -61,7 +61,8 @@ Mirrors the research's phased plan, scoped to one vertical slice at a time:
    −drain) with use. *(done)*
 7. 🔜 **World / masters / sagas / wishes** — long-horizon, data-driven. *(in progress)*
    - ✅ **Training Altar** block: craftable, right-click to train for a bigger reward.
-   - ⏳ Wishes/rewards, master NPCs that teach skills/forms, data-driven sagas.
+   - ✅ **Wish Orb** item: craftable consumable granting a random progression wish.
+   - ⏳ Master NPCs that teach skills/forms, data-driven sagas.
 
 Near-term refinements: a visual projectile entity, and moving races/forms to JSON datapacks.
 

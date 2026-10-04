@@ -8,7 +8,7 @@
 ![Minecraft](https://img.shields.io/badge/Minecraft-26.2-brightgreen)
 ![NeoForge](https://img.shields.io/badge/NeoForge-26.2.0.88-orange)
 ![Java](https://img.shields.io/badge/Java-25-red)
-![Tests](https://img.shields.io/badge/tests-76%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-81%20passing-brightgreen)
 
 Kimon is a from-scratch RPG progression mod inspired by the *feel* of classic anime-fighter mods
 (train, grow stronger, power up, transform) — built as a **clean-room reimplementation** with
@@ -61,6 +61,7 @@ Minecraft 26.2 / NeoForge 26.2.0.88.
 | **Forms / transformations** (<kbd>R</kbd> up / <kbd>V</kbd> down): multiply combat damage, drain Energy, gated by Power tier + Release | ✅ |
 | **Form Mastery**: forms grow stronger (+damage) and cheaper (−drain) the more you use them | ✅ |
 | **Training Altar** block: craft it, place it, right-click to train (+Power, +TP) — world presence | ✅ |
+| **Wish Orb** item: right-click to be granted a random wish (Power and/or Training Points) | ✅ |
 | **HUD** showing Race/Class, active Form + Mastery, Power, Tier, Release %, Energy, Stamina | ✅ |
 | **`/kimon` debug/admin command** to set progression without grinding | ✅ |
 | Server-authoritative logic (the client cannot forge values) | ✅ |
@@ -139,6 +140,9 @@ A quick tour that exercises every system:
 10. **Train at an altar**: craft a **Training Altar** (amethyst shards around obsidian; find it in the
     Kimon creative tab too), place it, and right-click it to train for a bigger reward (+15 Power,
     +15 TP) than the free keybind — giving your training a place in the world.
+11. **Make a wish**: craft a **Wish Orb** (ender eye + amethyst + gold) and right-click it to be
+    granted a random wish — a boon of Training Points, a surge of Power, or a mix. The orb is
+    consumed. Great for a quick power spike.
 
 ### "See how hard you hit"
 
@@ -252,7 +256,10 @@ net.kimon.kimon
 │   └── ModStatAttachments.java # STATS and PROFILE attachments
 ├── block/
 │   ├── TrainingAltarBlock.java # right-click to train (+Power, +TP), server-authoritative
-│   └── ModBlocks.java          # registers blocks, block-items, and the Kimon creative tab
+│   └── ModBlocks.java          # registers blocks, items (incl. Wish Orb), the Kimon creative tab
+├── wish/
+│   ├── Wish.java               # wish reward table (pure, unit-tested)
+│   └── WishOrbItem.java        # consumable: right-click grants a random wish
 ├── network/
 │   ├── TrainPowerPayload.java       # C→S: train
 │   ├── RaiseAttributePayload.java   # C→S: spend TP on an attribute
@@ -291,10 +298,9 @@ Training Points or stats.
 
 ## Testing
 
-- **Unit tests** (`src/test/java`, 76 tests) cover all pure logic: Power tiers, the TP economy and
+- **Unit tests** (`src/test/java`, 81 tests) cover all pure logic: Power tiers, the TP economy and
   cost curve, attribute-derived stats, the Release/Energy/Stamina loop, race/class modifiers, the
-  Energy Blast damage/cost rules, the form ladder (multipliers, drain, tier/Release gating), and
-  Form Mastery (gain over time, damage/drain scaling, caps).
+  Energy Blast damage/cost rules, the form ladder, Form Mastery, and the Wish reward table.
   They run on a plain JVM with no Minecraft bootstrap, so they are fast and reliable in CI.
 
   ```bash
@@ -341,11 +347,11 @@ full plan and [`docs/roadmap.svg`](docs/roadmap.svg) for the diagram source.
 - ✅ **Phase 5** — Energy Blast: ranged attack consuming Energy, scaling with Energy × Release.
 - ✅ **Phase 6** — forms / transformations: multiply combat damage, drain Energy, gated by tier + Release.
 - ✅ **Form Mastery** — forms grow stronger (+damage) and cheaper (−drain) the more you use them.
-- ✅ **Phase 7 (started)** — **Training Altar** block: a craftable world block you right-click to
-  train, giving progression a physical place in the world.
+- ✅ **Phase 7 (started)** — **Training Altar** block + **Wish Orb** item: a craftable world block
+  you right-click to train, and a consumable that grants a random progression wish.
 
 **Next**
-- 🔜 More Phase 7 — wishes/rewards and master NPCs that teach skills/forms.
+- 🔜 More Phase 7 — master NPCs that teach skills/forms, and data-driven sagas.
 
 **Later**
 - ⏳ A visual projectile entity for the Energy Blast; player aura/transform animations.
