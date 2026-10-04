@@ -8,7 +8,7 @@
 ![Minecraft](https://img.shields.io/badge/Minecraft-26.2-brightgreen)
 ![NeoForge](https://img.shields.io/badge/NeoForge-26.2.0.88-orange)
 ![Java](https://img.shields.io/badge/Java-25-red)
-![Tests](https://img.shields.io/badge/tests-188%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-207%20passing-brightgreen)
 
 Kimon is a from-scratch RPG progression mod inspired by the *feel* of classic anime-fighter mods
 (train, grow stronger, power up, transform). It is a **clean-room reimplementation of the mechanics**:
@@ -65,7 +65,7 @@ Minecraft 26.2 / NeoForge 26.2.0.88.
 | **Energy & Stamina** resources with regen (Energy regens faster at low Release) | ✅ |
 | Melee damage scales with **Strength × Release**; action-bar **"Hit for X"** feedback | ✅ |
 | **Energy Blast** attack (<kbd>B</kbd>): raycast that consumes Energy and scales with Energy × Release | ✅ |
-| **Forms / transformations** (<kbd>G</kbd> up; <kbd>H</kbd> reverts): multiply combat damage, drain Energy, gated by Power tier + Release | ✅ |
+| **Forms as datapack JSON, per race**: each race has its own ladder (Saiyan/Half-Saiyan: Super Saiyan → Grade 2 → Grade 3 → SSJ2 → SSJ3 → SSJ4; Human, Namekian, Arcosian and Majin have theirs). Unlocked by the **racial skill** level and Release; they multiply STR/DEX/WIL, divide damage taken and drain Ki. <kbd>G</kbd> up, <kbd>H</kbd> reverts | ✅ |
 | **Form Mastery**: forms grow stronger (+damage) and cheaper (−drain) the more you use them | ✅ |
 | **Training Altar** block: a training dummy — right-click counts as a hit (needs Release ≥ 5%, costs Stamina, chance of TP; no Power) | ✅ |
 | **Wish Orb** item: right-click to be granted a random wish (Power and/or Training Points) | ✅ |
@@ -246,6 +246,42 @@ Skills are data: `data/<namespace>/skills/<name>.json`.
 `base + per_level × level`, and any skill can add to any type. Not done yet: Ki Sense's lock-on (Z) and
 Dash's "swoop" in flight.
 
+### Racial skills and forms
+
+Each race has one **racial skill** that only it can learn and whose level unlocks its forms, as in the
+research: **Super Form** (Saiyan, Half-Saiyan, 7 levels), **Human Potential** (Human, 5), **Power Boost**
+(Namekian, 5), **Transformations** (Arcosian, 6), **Abilities** (Majin, 5). Press <kbd>G</kbd> to go up one
+rung of your race's ladder: it needs the skill level of that form and enough Release.
+
+| Race | Forms (skill level that unlocks, multiplier) |
+| --- | --- |
+| Saiyan / Half-Saiyan | Super Saiyan (1, ×1.5) · Grade 2 (2, ×2) · Grade 3 (3, ×2.5) · Super Saiyan 2 (5, ×3) · Super Saiyan 3 (6, ×3.5) · Super Saiyan 4 (7, ×4) |
+| Human | Full Released (1, ×1.5) · Buffed (2, ×2) |
+| Namekian | Full Released (1, ×1.5) · Giant Form (2, ×2) |
+| Arcosian | Fifth Form (3, ×2) · Golden Form (6, ×2.5) |
+| Majin | Evil Majin (2, ×2.2) · Super Majin (3, ×2.6) · Pure Majin (5, ×3) |
+
+A form multiplies Strength, Dexterity and Willpower with `effective = max(value × multiplier,
+value + flat bonus)` (the flat bonus keeps a form useful at low levels), divides the damage you take by
+its divisor, and drains Ki per second. Forms are data: `data/<namespace>/forms/<name>.json`.
+
+```json
+{
+  "races": ["kimon:saiyan", "kimon:half_saiyan"],
+  "order": 1,
+  "requires": { "skill": "kimon:super_form", "level": 1 },
+  "multipliers": { "str": 1.5, "dex": 1.5, "wil": 1.5 },
+  "flat_bonus": 10,
+  "damage_taken_divisor": 1.5,
+  "ki_per_second": 2.0,
+  "min_release": 10
+}
+```
+
+`races` empty = every race; `order` is the position in the ladder; everything else is optional. Not done
+yet: Kaioken (a stacking multiplier that costs health), Oozaru and the God forms, the instant
+transformation on double-tap, and race-specific visuals.
+
 ---
 
 ## Attributes & derived stats
@@ -402,7 +438,7 @@ Training Points or stats.
 
 ## Testing
 
-- **Unit tests** (`src/test/java`, 188 tests) cover all pure logic: Power tiers, the TP economy and
+- **Unit tests** (`src/test/java`, 207 tests) cover all pure logic: Power tiers, the TP economy and
   cost curve, attribute-derived stats, the Release/Energy/Stamina loop, race/class modifiers, the
   Energy Blast damage/cost rules, the form ladder, Form Mastery, and the Wish reward table.
   They run on a plain JVM with no Minecraft bootstrap, so they are fast and reliable in CI.

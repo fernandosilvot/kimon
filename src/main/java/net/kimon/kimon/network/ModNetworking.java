@@ -4,6 +4,7 @@ import net.kimon.kimon.Kimon;
 import net.kimon.kimon.config.KimonConfig;
 import net.kimon.kimon.power.AuraCache;
 import net.kimon.kimon.power.CombatHandler;
+import net.kimon.kimon.power.FormCatalog;
 import net.kimon.kimon.power.ModAttachments;
 import net.kimon.kimon.power.PowerData;
 import net.kimon.kimon.power.PowerEffects;
@@ -33,7 +34,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 public final class ModNetworking {
 
     /** Bump this string when the wire format changes incompatibly. */
-    private static final String PROTOCOL_VERSION = "6";
+    private static final String PROTOCOL_VERSION = "7";
 
     private ModNetworking() {
     }
@@ -65,6 +66,12 @@ public final class ModNetworking {
                 SkillCatalogPayload.TYPE,
                 SkillCatalogPayload.STREAM_CODEC,
                 ModNetworking::handleSkillCatalog
+        );
+
+        registrar.playToClient(
+                FormCatalogPayload.TYPE,
+                FormCatalogPayload.STREAM_CODEC,
+                ModNetworking::handleFormCatalog
         );
 
         registrar.playToServer(
@@ -161,6 +168,11 @@ public final class ModNetworking {
     /** Client: adopts the server's skill catalog. */
     private static void handleSkillCatalog(final SkillCatalogPayload payload, final IPayloadContext context) {
         context.enqueueWork(() -> SkillCatalog.set(payload.catalog()));
+    }
+
+    /** Client: adopts the server's form catalog. */
+    private static void handleFormCatalog(final FormCatalogPayload payload, final IPayloadContext context) {
+        context.enqueueWork(() -> FormCatalog.set(payload.catalog()));
     }
 
     /** Raises a skill by one level (validated server-side). */

@@ -1,0 +1,19 @@
+{
+  "races": [
+    "kimon:arcosian"
+  ],
+  "order": 1,
+  "requires": {
+    "skill": "kimon:transformations",
+    "level": 3
+  },
+  "multipliers": {
+    "str": 2.0,
+    "dex": 2.0,
+    "wil": 2.0
+  },
+  "flat_bonus": 14,
+  "damage_taken_divisor": 2.0,
+  "ki_per_second": 3.0,
+  "min_release": 15
+}

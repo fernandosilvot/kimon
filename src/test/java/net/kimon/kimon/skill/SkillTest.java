@@ -38,13 +38,18 @@ class SkillTest {
 
     // --------------------------------------------------------------- shipped data
     @Test
-    @DisplayName("the mod ships the six skills of step 4")
+    @DisplayName("the mod ships the six general skills and the five racial ones")
     void shipsSkills() {
-        assertEquals(6, CATALOG.skills().size());
+        assertEquals(11, CATALOG.skills().size());
         for (Identifier id : new Identifier[] {SkillCatalog.JUMP, SkillCatalog.DASH, SkillCatalog.FLY,
                 SkillCatalog.ENDURANCE, SkillCatalog.POTENTIAL_UNLOCK, SkillCatalog.KI_SENSE}) {
             assertTrue(CATALOG.has(id), id.toString());
             assertEquals(10, CATALOG.get(id).maxLevel(), id + " max level");
+            assertTrue(CATALOG.get(id).races().isEmpty(), id + " is open to every race");
+        }
+        for (Identifier id : new Identifier[] {SkillCatalog.SUPER_FORM, SkillCatalog.HUMAN_POTENTIAL,
+                SkillCatalog.POWER_BOOST, SkillCatalog.TRANSFORMATIONS, SkillCatalog.ABILITIES}) {
+            assertFalse(CATALOG.get(id).races().isEmpty(), id + " is a racial skill");
         }
     }
 

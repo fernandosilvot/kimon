@@ -41,7 +41,16 @@ public final class SkillsScreen extends Screen {
 
     public SkillsScreen() {
         super(Component.translatable("screen.kimon.skills.title"));
-        ids.addAll(SkillCatalog.current().skills().keySet());
+        Minecraft mc = Minecraft.getInstance();
+        net.minecraft.resources.Identifier race = mc.player == null
+                ? net.kimon.kimon.stats.CharacterCatalog.DEFAULT_RACE
+                : mc.player.getData(ModStatAttachments.PROFILE.get()).raceId();
+        // Only the skills this character can learn: racial skills of other races stay hidden.
+        SkillCatalog.current().skills().forEach((id, def) -> {
+            if (def.allowsRace(race)) {
+                ids.add(id);
+            }
+        });
     }
 
     @Override

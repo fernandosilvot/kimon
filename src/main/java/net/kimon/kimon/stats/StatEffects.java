@@ -36,8 +36,12 @@ public final class StatEffects {
         net.kimon.kimon.training.TrainingLoad load = player.getData(ModStatAttachments.LOAD.get());
         double dexFactor = net.kimon.kimon.training.TrainingEffects.statFactor(load,
                 net.kimon.kimon.config.KimonConfig.trainingParams());
+        net.kimon.kimon.power.PowerState state = player.getData(net.kimon.kimon.power.ModAttachments.STATE.get());
+        net.kimon.kimon.power.MasteryData mastery = player.getData(net.kimon.kimon.power.ModAttachments.MASTERY.get());
+        net.kimon.kimon.power.FormEffect form = net.kimon.kimon.power.FormEffect.of(
+                state.form().def(), mastery.damageBonus(state.form()));
         set(player, Attributes.MOVEMENT_SPEED, SPEED_ID,
-                StatCalculator.bonusMovementSpeed(stats, profile) * dexFactor);
+                StatCalculator.bonusMovementSpeed(form.dexterity(stats.get(net.kimon.kimon.stats.Attribute.DEXTERITY)), profile) * dexFactor);
 
         if (player.getHealth() > player.getMaxHealth()) {
             player.setHealth(player.getMaxHealth());

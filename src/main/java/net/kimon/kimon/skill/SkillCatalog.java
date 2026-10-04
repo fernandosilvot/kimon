@@ -35,7 +35,14 @@ public final class SkillCatalog {
     public static final Identifier KI_SENSE = id("ki_sense");
 
     /** Names of the data files the mod ships (the JSON is the data; this list is only the index). */
-    private static final Identifier[] BUILTIN = {JUMP, DASH, FLY, ENDURANCE, POTENTIAL_UNLOCK, KI_SENSE};
+    public static final Identifier SUPER_FORM = id("super_form");
+    public static final Identifier HUMAN_POTENTIAL = id("human_potential");
+    public static final Identifier POWER_BOOST = id("power_boost");
+    public static final Identifier TRANSFORMATIONS = id("transformations");
+    public static final Identifier ABILITIES = id("abilities");
+
+    private static final Identifier[] BUILTIN = {JUMP, DASH, FLY, ENDURANCE, POTENTIAL_UNLOCK, KI_SENSE,
+        SUPER_FORM, HUMAN_POTENTIAL, POWER_BOOST, TRANSFORMATIONS, ABILITIES};
 
     private final Map<Identifier, SkillDef> skills;
 

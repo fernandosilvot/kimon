@@ -58,13 +58,13 @@ public record PowerState(double release, double energy, double stamina,
                         buf.writeBoolean(s.charging());
                         buf.writeBoolean(s.turbo());
                         buf.writeVarInt(s.releaseState().ordinal());
-                        buf.writeVarInt(s.form().ordinal());
+                        buf.writeUtf(s.form().id().toString());
                     },
                     buf -> new PowerState(
                             buf.readDouble(), buf.readDouble(), buf.readDouble(),
                             buf.readBoolean(), false, buf.readBoolean(),
                             ReleaseState.byOrdinal(buf.readVarInt()),
-                            Form.VALUES[Math.floorMod(buf.readVarInt(), Form.VALUES.length)],
+                            Form.fromStored(buf.readUtf()),
                             0)
             );
 
@@ -137,7 +137,7 @@ public record PowerState(double release, double energy, double stamina,
             nextForm = Form.BASE;
             nextState = ReleaseState.EXHAUSTED;
         } else {
-            if (nextForm != Form.BASE && nextRelease < nextForm.requiredRelease()) {
+            if (!nextForm.isBase() && nextRelease < nextForm.requiredRelease()) {
                 // Release dropped below what the form needs to stay active → revert.
                 nextForm = Form.BASE;
             }

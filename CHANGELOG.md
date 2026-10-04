@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- **Forms as datapack JSON, per race (doc 03, step 5).** `data/<ns>/forms/*.json` → `FormDef` (races,
+  order, required racial skill + level, STR/DEX/WIL multipliers, flat bonus, damage-taken divisor, Ki
+  per second, minimum Release), loaded by `FormDataLoader`, synced (`FormCatalogPayload`). `Form` is now
+  a reference by id instead of an enum, so a datapack can add forms with no code.
+  - 15 forms shipped: Saiyan/Half-Saiyan (Super Saiyan, Grade 2, Grade 3, SSJ2, SSJ3, SSJ4, ×1.5–×4),
+    Human (Full Released, Buffed), Namekian (Full Released, Giant), Arcosian (Fifth, Golden), Majin (Evil,
+    Super, Pure). Multipliers from the research's modern config.
+  - **Racial skills** (Super Form, Human Potential, Power Boost, Transformations, Abilities): skills with
+    a `races` list that only those races can learn; their level unlocks the forms. A Human can no longer
+    reach "Super Saiyan".
+  - **Pipeline**: `effective = max(attribute × multiplier, attribute + flat)` for STR (melee), DEX
+    (speed) and WIL (Ki Blast); damage taken ÷ the form's divisor; Ki drain and minimum Release per form.
+    (`FormEffect`, `FormRules`, pure and unit-tested.)
+  - Transforming (<kbd>G</kbd>) climbs the race's ladder and is checked server-side for skill level and
+    Release; a form the race can't use is dropped. `/kimon form` suggests only your race's forms.
+  - Form Mastery is now keyed by form id; old saves (`surge`/`ascent`/`zenith`) still load onto the Super
+    Saiyan forms.
+  - Protocol version 7. 19 new tests (207 total).
+
+### Fixed
+- **The transform key did nothing for existing installs**: the old binding for "Transform" (R, from before
+  the controls were remapped) was saved in `options.txt` and overrode the new default (G), clashing with
+  Turbo. The mapping was renamed (`key.kimon.transform`) so a fresh default applies; if you rebound it
+  yourself, set it again under Options → Controls.
+
+### Changed
+- **Forms are no longer gated by Power tier**, but by the racial skill level (the research's rule).
+  Super Saiyan 2 is now ×3 (was ×2) and Super Saiyan 3 ×3.5 (was ×3), following the research's table.
+- The doc lists the Human and Namekian "Full Released" unlock after "Buffed"/"Giant" although its multiplier
+  is lower; the forms are ordered by strength, so the two unlock levels are swapped (Full Released is
+  level 1, Buffed/Giant level 2).
+- The Saiyan "Full Power" form and Oozaru/Golden Oozaru are not included yet.
 - **Skills as datapack JSON (doc 03, step 4).** `data/<ns>/skills/*.json` → `SkillDef` (max level, cost,
   effects), loaded by `SkillDataLoader`, synced (`SkillCatalogPayload`) and stored per player
   (`SkillData`, a synced attachment). Reaching level *n* costs `tp_base × n` TP and every level uses

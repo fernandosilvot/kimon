@@ -39,7 +39,8 @@ public final class SkillHandler {
         SkillData data = player.getData(ModSkillAttachments.SKILLS.get());
         int budget = SkillRules.mindBudget(stats.get(Attribute.MIND), KimonConfig.skillParams().mindPerPoint());
 
-        SkillRules.Result result = SkillRules.learn(data, catalog, id, stats.trainingPoints(), budget);
+        net.kimon.kimon.stats.CharacterProfile profile = player.getData(ModStatAttachments.PROFILE.get());
+        SkillRules.Result result = SkillRules.learn(data, catalog, id, stats.trainingPoints(), budget, profile.raceId());
         Component name = skillName(id);
         switch (result.outcome()) {
             case LEARNED -> {
@@ -52,6 +53,7 @@ public final class SkillHandler {
             case MAX_LEVEL -> player.sendSystemMessage(Component.translatable("msg.kimon.skill_max", name), true);
             case NOT_ENOUGH_TP -> player.sendSystemMessage(Component.translatable("msg.kimon.skill_no_tp", name), true);
             case NOT_ENOUGH_MIND -> player.sendSystemMessage(Component.translatable("msg.kimon.skill_no_mind", name), true);
+            case WRONG_RACE -> player.sendSystemMessage(Component.translatable("msg.kimon.skill_wrong_race", name), true);
             case UNKNOWN_SKILL -> player.sendSystemMessage(Component.translatable("msg.kimon.skill_unknown"), true);
         }
     }

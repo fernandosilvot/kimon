@@ -5,7 +5,11 @@ import net.kimon.kimon.config.KimonConfig;
 import net.kimon.kimon.stats.CharacterProfile;
 import net.kimon.kimon.stats.ModStatAttachments;
 import net.kimon.kimon.stats.StatBlock;
+import net.kimon.kimon.skill.ModSkillAttachments;
+import net.kimon.kimon.skill.SkillData;
+import net.kimon.kimon.skill.SkillHandler;
 import net.kimon.kimon.stats.Attribute;
+import net.kimon.kimon.stats.StatEffects;
 import net.kimon.kimon.stats.StatCalculator;
 import net.kimon.kimon.stats.TpGain;
 import net.kimon.kimon.stats.TpParams;
@@ -68,6 +72,11 @@ public final class CombatHandler {
         PowerState state = player.getData(ModAttachments.STATE.get());
         MasteryData mastery = player.getData(ModAttachments.MASTERY.get());
 
+        // A form the race can't use (e.g. after changing race or a datapack reload) is dropped.
+        if (!FormRules.validFor(FormCatalog.current(), profile.raceId(), state.form())) {
+            state = state.withForm(Form.BASE);
+        }
+
         PowerParams params = KimonConfig.params();
         double maxRelease = ReleaseCeiling.of(player);
         double maxEnergy = StatCalculator.maxEnergy(stats, profile, params.kiPerSpirit());
@@ -78,7 +87,7 @@ public final class CombatHandler {
         // Mastery makes the active form cheaper: tick() drained the base amount, so refund the
         // portion saved by mastery (only while still in that form after the tick).
         Form activeForm = next.form();
-        if (activeForm != Form.BASE && next.energy() > 0) {
+        if (!activeForm.isBase() && next.energy() > 0) {
             double saved = (activeForm.energyDrainPerSecond() - mastery.effectiveDrain(activeForm)) * DT;
             if (saved > 0) {
                 next = next.withResources(next.release(), next.energy() + saved, next.stamina(),
@@ -91,8 +100,12 @@ public final class CombatHandler {
             }
         }
 
-        if (!SyncPolicy.sameForSync(next, state) || next.regenLock() != state.regenLock()) {
+        boolean formChanged = !next.form().equals(player.getData(ModAttachments.STATE.get()).form());
+        if (!SyncPolicy.sameForSync(next, state) || next.regenLock() != state.regenLock() || formChanged) {
             player.setData(ModAttachments.STATE.get(), next);
+        }
+        if (formChanged) {
+            StatEffects.apply(player); // the form's Dexterity multiplier changes the speed bonus
         }
 
         // Throttled send of the (possibly updated) state to the owner and the aura to neighbours.
@@ -140,8 +153,9 @@ public final class CombatHandler {
         // Carried weight lowers damage and gravity lowers STR; both scale the bonus part of the hit.
         TrainingLoad load = attacker.getData(ModStatAttachments.LOAD.get());
         TrainingParams training = KimonConfig.trainingParams();
-        double bonus = StatCalculator.meleeDamageBonus(stats, profile, state.releaseMultiplier())
-                * mastery.effectiveDamageMultiplier(state.form())
+        FormEffect form = FormEffect.of(state.form().def(), mastery.damageBonus(state.form()));
+        double bonus = StatCalculator.meleeDamageBonus(form.strength(stats.get(Attribute.STRENGTH)), profile,
+                        state.releaseMultiplier())
                 * TrainingEffects.damageFactor(load, training)
                 * TrainingEffects.statFactor(load, training);
         if (bonus > 0) {
@@ -201,36 +215,59 @@ public final class CombatHandler {
     }
 
     /**
-     * Transforms the player one step up (to the next available form) or down (toward BASE).
-     * Validates the target form's tier/Release requirements server-side.
+     * Transforms the player one rung up their race's ladder, or one down (toward Base). Going up needs
+     * the racial skill level the form asks for and enough Release; everything is checked server-side.
      */
     public static void transform(ServerPlayer player, boolean up) {
         PowerState state = player.getData(ModAttachments.STATE.get());
-        PowerData power = player.getData(ModAttachments.POWER.get());
-        int tier = PowerScaling.tiers(power.power());
+        CharacterProfile profile = player.getData(ModStatAttachments.PROFILE.get());
+        SkillData skills = player.getData(ModSkillAttachments.SKILLS.get());
+        FormCatalog catalog = FormCatalog.current();
+        java.util.List<Form> ladder = FormRules.ladder(catalog, profile.raceId());
 
-        Form current = state.form();
-        if (up) {
-            Form target = current.next();
-            if (target == null) {
-                player.sendSystemMessage(Component.translatable("msg.kimon.form_max"), true);
-                return;
-            }
-            if (!target.isAvailable(tier, state.release())) {
-                player.sendSystemMessage(Component.translatable("msg.kimon.form_locked",
-                        Component.translatable("form.kimon." + target.key()),
-                        target.requiredTier(),
-                        (int) target.requiredRelease()), true);
-                return;
-            }
+        if (!up) {
+            Form target = FormRules.previous(ladder, state.form());
             player.setData(ModAttachments.STATE.get(), state.withForm(target));
-            player.sendSystemMessage(Component.translatable("msg.kimon.form_up",
-                    Component.translatable("form.kimon." + target.key())), true);
-        } else {
-            Form target = current.previous();
-            player.setData(ModAttachments.STATE.get(), state.withForm(target));
-            player.sendSystemMessage(Component.translatable("msg.kimon.form_down",
-                    Component.translatable("form.kimon." + target.key())), true);
+            StatEffects.apply(player);
+            player.sendSystemMessage(Component.translatable("msg.kimon.form_down", formName(target)), true);
+            return;
+        }
+
+        Form target = FormRules.next(ladder, state.form());
+        if (target == null) {
+            player.sendSystemMessage(Component.translatable(ladder.isEmpty()
+                    ? "msg.kimon.form_none" : "msg.kimon.form_max"), true);
+            return;
+        }
+        FormDef def = catalog.get(target.id());
+        switch (FormRules.canEnter(catalog, profile.raceId(), skills, target, state.release())) {
+            case OK -> {
+                player.setData(ModAttachments.STATE.get(), state.withForm(target));
+                StatEffects.apply(player);
+                player.sendSystemMessage(Component.translatable("msg.kimon.form_up", formName(target)), true);
+            }
+            case SKILL_LOCKED -> player.sendSystemMessage(Component.translatable("msg.kimon.form_locked_skill",
+                    formName(target), SkillHandler.skillName(def.skill()), def.skillLevel()), true);
+            case NEEDS_RELEASE -> player.sendSystemMessage(Component.translatable("msg.kimon.form_locked_release",
+                    formName(target), (int) def.minRelease()), true);
+            default -> player.sendSystemMessage(Component.translatable("msg.kimon.form_none"), true);
+        }
+    }
+
+    /** The display name of a form (falls back to its id path for datapack forms without a lang entry). */
+    public static Component formName(Form form) {
+        return Component.translatableWithFallback(
+                "form." + form.id().getNamespace() + "." + form.id().getPath(), form.id().getPath());
+    }
+
+    /** Damage the player takes is divided by the active form's divisor (stronger forms are tougher). */
+    @SubscribeEvent
+    static void onIncomingDamageToPlayer(LivingIncomingDamageEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            double divisor = player.getData(ModAttachments.STATE.get()).form().def().damageTakenDivisor();
+            if (divisor > 1.0) {
+                event.setAmount((float) (event.getAmount() / divisor));
+            }
         }
     }
 
@@ -268,8 +305,9 @@ public final class CombatHandler {
 
         if (hit.getType() == HitResult.Type.ENTITY
                 && ((EntityHitResult) hit).getEntity() instanceof LivingEntity target) {
-            double dmg = EnergyBlast.damage(stats, profile, state.releaseMultiplier())
-                    * mastery.effectiveDamageMultiplier(state.form());
+            FormEffect form = FormEffect.of(state.form().def(), mastery.damageBonus(state.form()));
+            double dmg = EnergyBlast.damage(form.willpower(stats.get(Attribute.WILLPOWER)), profile,
+                    state.releaseMultiplier());
             DamageSource source = player.damageSources().indirectMagic(player, player);
             if (player.level() instanceof ServerLevel serverLevel) {
                 target.hurtServer(serverLevel, source, (float) dmg);

@@ -34,6 +34,10 @@ public record SkillCatalogPayload(SkillCatalog catalog) implements CustomPacketP
                         buf.writeDouble(e.base());
                         buf.writeDouble(e.perLevel());
                     }
+                    buf.writeVarInt(def.races().size());
+                    for (Identifier race : def.races()) {
+                        buf.writeIdentifier(race);
+                    }
                 });
             },
             buf -> {
@@ -50,7 +54,12 @@ public record SkillCatalogPayload(SkillCatalog catalog) implements CustomPacketP
                     for (int j = 0; j < effectCount; j++) {
                         effects.add(new SkillEffect(buf.readUtf(), buf.readDouble(), buf.readDouble()));
                     }
-                    skills.put(id, new SkillDef(max, tpBase, tpPerLevel, mind, effects));
+                    List<Identifier> races = new java.util.ArrayList<>();
+                    int raceCount = buf.readVarInt();
+                    for (int j = 0; j < raceCount; j++) {
+                        races.add(buf.readIdentifier());
+                    }
+                    skills.put(id, new SkillDef(max, tpBase, tpPerLevel, mind, effects, races));
                 }
                 return new SkillCatalogPayload(new SkillCatalog(skills));
             });

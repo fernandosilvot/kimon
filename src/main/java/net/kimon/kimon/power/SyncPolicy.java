@@ -21,7 +21,7 @@ public final class SyncPolicy {
                 && a.discharging() == b.discharging()
                 && a.turbo() == b.turbo()
                 && a.releaseState() == b.releaseState()
-                && a.form() == b.form()
+                && a.form().equals(b.form())
                 && Math.abs(a.release() - b.release()) < EPS
                 && Math.abs(a.energy() - b.energy()) < EPS
                 && Math.abs(a.stamina() - b.stamina()) < EPS;

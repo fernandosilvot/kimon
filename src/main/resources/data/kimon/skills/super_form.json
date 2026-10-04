@@ -1,0 +1,11 @@
+{
+  "max_level": 7,
+  "races": [
+    "kimon:saiyan",
+    "kimon:half_saiyan"
+  ],
+  "cost": {
+    "tp_base": 300,
+    "mind": 5
+  }
+}

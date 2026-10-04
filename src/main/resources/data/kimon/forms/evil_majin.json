@@ -1,0 +1,19 @@
+{
+  "races": [
+    "kimon:majin"
+  ],
+  "order": 1,
+  "requires": {
+    "skill": "kimon:abilities",
+    "level": 2
+  },
+  "multipliers": {
+    "str": 2.2,
+    "dex": 2.2,
+    "wil": 2.2
+  },
+  "flat_bonus": 16,
+  "damage_taken_divisor": 2.2,
+  "ki_per_second": 3.0,
+  "min_release": 15
+}

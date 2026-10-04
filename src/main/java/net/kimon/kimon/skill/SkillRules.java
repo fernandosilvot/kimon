@@ -14,7 +14,7 @@ public final class SkillRules {
 
     /** Why a learn attempt did or did not work. */
     public enum Outcome {
-        LEARNED, UNKNOWN_SKILL, MAX_LEVEL, NOT_ENOUGH_TP, NOT_ENOUGH_MIND
+        LEARNED, UNKNOWN_SKILL, WRONG_RACE, MAX_LEVEL, NOT_ENOUGH_TP, NOT_ENOUGH_MIND
     }
 
     /**
@@ -39,9 +39,20 @@ public final class SkillRules {
      * @param mindBudget the player's total Mind budget
      */
     public static Result learn(SkillData data, SkillCatalog catalog, Identifier id, long tp, int mindBudget) {
+        return learn(data, catalog, id, tp, mindBudget, null);
+    }
+
+    /**
+     * Same, also checking the skill is open to the character's race ({@code raceId} null skips the check).
+     */
+    public static Result learn(SkillData data, SkillCatalog catalog, Identifier id, long tp, int mindBudget,
+                               Identifier raceId) {
         SkillDef def = catalog.get(id);
         if (def == null) {
             return new Result(Outcome.UNKNOWN_SKILL, data, 0L);
+        }
+        if (raceId != null && !def.allowsRace(raceId)) {
+            return new Result(Outcome.WRONG_RACE, data, 0L);
         }
         int level = data.level(id);
         if (level >= def.maxLevel()) {

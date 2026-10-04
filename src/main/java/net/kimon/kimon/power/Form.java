@@ -1,120 +1,82 @@
 package net.kimon.kimon.power;
 
+import java.util.Locale;
+
+import net.minecraft.resources.Identifier;
+
 /**
- * Temporary transformation states ("forms") that multiply combat output while draining Energy.
+ * A reference to a transformation by id. The numbers behind it ({@link FormDef}) live in the form
+ * catalog (datapacks); this class only names one, so a form can be added without code. {@link #BASE}
+ * is "no transformation".
  *
- * <p>Original names/values; the "forms multiply offense, cost Energy per second, and gate on
- * progression" shape is adapted from the design research (see {@code docs/DESIGN.md}). Forms are
- * unlocked by reaching Power tiers and require a minimum Release to activate.</p>
+ * <p>The convenience accessors read the catalog currently in use.</p>
  *
- * <p>Pure data — no Minecraft types — so the balance is unit-testable. The combat multiplier
- * applies to melee and Energy Blast damage; the drain is paid per second by the server tick loop.</p>
+ * @param id the form's id, e.g. {@code kimon:super_saiyan}
  */
-public enum Form {
-    /** No transformation. The baseline. */
-    BASE("base", 1.0, 0.0, 0, 0.0),
-    /** First form: modest boost, cheap. */
-    SUPER_SAIYAN("super_saiyan", 1.5, 2.0, 5, 10.0),
-    /** Second form: strong boost, pricier. */
-    SUPER_SAIYAN_2("super_saiyan_2", 2.0, 5.0, 15, 25.0),
-    /** Peak form: huge boost, expensive, high requirements. */
-    SUPER_SAIYAN_3("super_saiyan_3", 3.0, 12.0, 30, 40.0);
+public record Form(Identifier id) {
 
-    private final String key;
-    private final double damageMultiplier;
-    private final double energyDrainPerSecond;
-    private final int requiredTier;
-    private final double requiredRelease;
+    public static final String NAMESPACE = "kimon";
 
-    Form(String key, double damageMultiplier, double energyDrainPerSecond,
-         int requiredTier, double requiredRelease) {
-        this.key = key;
-        this.damageMultiplier = damageMultiplier;
-        this.energyDrainPerSecond = energyDrainPerSecond;
-        this.requiredTier = requiredTier;
-        this.requiredRelease = requiredRelease;
+    public static final Form BASE = of("base");
+    public static final Form SUPER_SAIYAN = of("super_saiyan");
+    public static final Form SUPER_SAIYAN_2 = of("super_saiyan_2");
+    public static final Form SUPER_SAIYAN_3 = of("super_saiyan_3");
+
+    public static Form of(String path) {
+        return new Form(Identifier.fromNamespaceAndPath(NAMESPACE, path));
     }
 
+    public boolean isBase() {
+        return BASE.id.equals(id);
+    }
+
+    /** The id's path, e.g. {@code super_saiyan}. */
     public String key() {
-        return key;
+        return id.getPath();
     }
 
-    /** Multiplier applied to melee and Energy-Blast damage while in this form. */
-    public double damageMultiplier() {
-        return damageMultiplier;
+    /** The form's numbers from the current catalog; neutral numbers for Base or an unknown form. */
+    public FormDef def() {
+        return isBase() ? FormDef.BASE : FormCatalog.current().formOrBase(id);
     }
 
-    /** Energy drained per second to sustain this form. */
+    /** Ki drained per second to stay in this form. */
     public double energyDrainPerSecond() {
-        return energyDrainPerSecond;
+        return def().kiPerSecond();
     }
 
-    /** Minimum Power tier required to use this form. */
-    public int requiredTier() {
-        return requiredTier;
-    }
-
-    /** Minimum Release % required to activate / sustain this form. */
+    /** Release % needed to enter and to stay in this form. */
     public double requiredRelease() {
-        return requiredRelease;
+        return def().minRelease();
+    }
+
+    /** Headline multiplier of the form (the largest attribute multiplier). */
+    public double damageMultiplier() {
+        return def().headlineMultiplier();
     }
 
     /**
-     * Whether a player with the given Power tier and Release can activate/sustain this form.
-     * BASE is always available.
+     * Finds a form by name: a full id, a bare name (taken as {@code kimon:}), spaces as underscores,
+     * and the names forms had before ({@code surge}, {@code ascent}, {@code zenith}). Returns null if
+     * the text is not a valid id (it may still not exist in the catalog).
      */
-    public boolean isAvailable(int powerTier, double release) {
-        return this == BASE || (powerTier >= requiredTier && release >= requiredRelease);
+    public static Form byKey(String text) {
+        Identifier id = FormCatalog.parseId(text);
+        return id == null ? null : new Form(id);
     }
 
-    /** The next form up the ladder, or null if already at the top. */
-    public Form next() {
-        int i = ordinal();
-        return i + 1 < VALUES.length ? VALUES[i + 1] : null;
+    /** Safe parse for stored/synced text; anything unreadable is Base. */
+    public static Form fromStored(String text) {
+        Form form = byKey(text);
+        return form == null ? BASE : form;
     }
 
-    /** The previous form down the ladder (BASE at the bottom). */
-    public Form previous() {
-        int i = ordinal();
-        return i > 0 ? VALUES[i - 1] : BASE;
+    @Override
+    public String toString() {
+        return id.toString();
     }
 
-    /**
-     * Finds a form by key, case-insensitive; spaces count as underscores, and the names the forms had
-     * before ({@code surge}, {@code ascent}, {@code zenith}) still work.
-     */
-    public static Form byKey(String key) {
-        if (key == null) {
-            return null;
-        }
-        String normalized = key.trim().toLowerCase(java.util.Locale.ROOT).replace(' ', '_');
-        normalized = switch (normalized) {
-            case "surge" -> "super_saiyan";
-            case "ascent" -> "super_saiyan_2";
-            case "zenith" -> "super_saiyan_3";
-            default -> normalized;
-        };
-        for (Form f : VALUES) {
-            if (f.key.equals(normalized)) {
-                return f;
-            }
-        }
-        return null;
+    static String normalize(String text) {
+        return text.trim().toLowerCase(Locale.ROOT).replace(' ', '_');
     }
-
-    /**
-     * The highest form a player can currently reach given their tier and Release.
-     * Returns BASE if none of the transformed forms are available.
-     */
-    public static Form highestAvailable(int powerTier, double release) {
-        Form best = BASE;
-        for (Form f : VALUES) {
-            if (f != BASE && f.isAvailable(powerTier, release)) {
-                best = f;
-            }
-        }
-        return best;
-    }
-
-    public static final Form[] VALUES = values();
 }
