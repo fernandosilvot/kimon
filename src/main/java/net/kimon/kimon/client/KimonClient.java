@@ -123,7 +123,7 @@ public final class KimonClient {
 
     /** Transform up to the next form. Default: <kbd>G</kbd>. */
     public static final Lazy<KeyMapping> FORM_UP_KEY = Lazy.of(() -> new KeyMapping(
-            "key.kimon.form_up",
+            "key.kimon.transform",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_G,
             KeyMapping.Category.MISC

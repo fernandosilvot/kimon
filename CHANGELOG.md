@@ -26,6 +26,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
     Saiyan forms.
   - Protocol version 7. 19 new tests (207 total).
 
+### Fixed
+- **The transform key did nothing for existing installs**: the old binding for "Transform" (R, from before
+  the controls were remapped) was saved in `options.txt` and overrode the new default (G), clashing with
+  Turbo. The mapping was renamed (`key.kimon.transform`) so a fresh default applies; if you rebound it
+  yourself, set it again under Options → Controls.
+
 ### Changed
 - **Forms are no longer gated by Power tier**, but by the racial skill level (the research's rule).
   Super Saiyan 2 is now ×3 (was ×2) and Super Saiyan 3 ×3.5 (was ×3), following the research's table.

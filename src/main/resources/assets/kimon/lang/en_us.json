@@ -5,7 +5,7 @@
   "key.kimon.turbo": "Turbo",
   "key.kimon.reset": "Reset Release / Revert Form",
   "key.kimon.blast": "Fire Ki Blast",
-  "key.kimon.form_up": "Transform",
+  "key.kimon.transform": "Transform",
   "key.categories.misc": "Miscellaneous",
   "hud.kimon.profile": "%s / %s",
   "hud.kimon.form": "Form: %s (Mastery %s)",
