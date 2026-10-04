@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- **Form Mastery.** Each form now accumulates mastery while active, raising its damage multiplier
+  (up to +0.25) and lowering its Energy drain (up to −40%) as you practise it. Mastery is per-form,
+  persisted and synced, shown on the HUD next to the active form. (`MasteryData` pure + 8 tests,
+  `MasteryCodecs`, `MASTERY` attachment, `/kimon mastery <form> <level>`.)
 - **Forms / transformations.** Three forms above Base — Surge, Ascent, Zenith — that multiply all
   combat damage (melee and Energy Blast) while draining Energy per second, gated by Power tier and
   minimum Release. Transform up with <kbd>R</kbd>, down with <kbd>V</kbd>; running out of Energy or

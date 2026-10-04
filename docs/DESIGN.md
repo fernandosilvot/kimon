@@ -57,11 +57,11 @@ Mirrors the research's phased plan, scoped to one vertical slice at a time:
 5. ✅ **Energy attacks** — Energy Blast: raycast attack consuming Energy, scaling with Energy ×
    Release. *(done)*
 6. ✅ **Forms** — Base→Surge→Ascent→Zenith; multiply combat damage, drain Energy, gated by tier +
-   Release; transform up/down keys; HUD indicator. *(done)*
+   Release; transform up/down keys; HUD indicator. **Form Mastery**: forms improve (+damage,
+   −drain) with use. *(done)*
 7. 💤 **World / masters / sagas / wishes** — long-horizon, data-driven. *(next big arc)*
 
-Near-term refinements: Form Mastery (forms improve with use), a visual projectile entity, and
-moving races/forms to JSON datapacks.
+Near-term refinements: a visual projectile entity, and moving races/forms to JSON datapacks.
 
 Deferred (need libraries not yet on 26.2): player animation (forms visuals), in-game GameTests.
 Also deferred: moving races/forms/skills to JSON datapacks (currently enum-based; the research's

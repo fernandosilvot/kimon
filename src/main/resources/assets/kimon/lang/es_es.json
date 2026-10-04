@@ -8,7 +8,7 @@
   "key.categories.misc": "Miscelánea",
 
   "hud.kimon.profile": "%s / %s",
-  "hud.kimon.form": "Forma: %s",
+  "hud.kimon.form": "Forma: %s (Maestría %s)",
   "hud.kimon.power": "Poder: %s",
   "hud.kimon.tier": "Nivel: %s",
   "hud.kimon.release": "Liberación: %s%%",

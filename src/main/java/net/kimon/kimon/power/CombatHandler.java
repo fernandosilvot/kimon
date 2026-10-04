@@ -48,14 +48,30 @@ public final class CombatHandler {
         StatBlock stats = player.getData(ModStatAttachments.STATS.get());
         CharacterProfile profile = player.getData(ModStatAttachments.PROFILE.get());
         PowerState state = player.getData(ModAttachments.STATE.get());
+        MasteryData mastery = player.getData(ModAttachments.MASTERY.get());
 
-        PowerState next = state.tick(
-                DT,
-                StatCalculator.maxRelease(stats),
-                StatCalculator.maxEnergy(stats, profile),
-                StatCalculator.maxStamina(stats, profile));
+        double maxRelease = StatCalculator.maxRelease(stats);
+        double maxEnergy = StatCalculator.maxEnergy(stats, profile);
+        double maxStamina = StatCalculator.maxStamina(stats, profile);
 
-        // Only write (and thus sync) when something actually changed, to avoid packet spam.
+        PowerState next = state.tick(DT, maxRelease, maxEnergy, maxStamina);
+
+        // Mastery makes the active form cheaper: tick() drained the base amount, so refund the
+        // portion saved by mastery (only while still in that form after the tick).
+        Form activeForm = next.form();
+        if (activeForm != Form.BASE && next.energy() > 0) {
+            double saved = (activeForm.energyDrainPerSecond() - mastery.effectiveDrain(activeForm)) * DT;
+            if (saved > 0) {
+                next = next.withResources(next.release(), next.energy() + saved, next.stamina(),
+                        maxRelease, maxEnergy, maxStamina);
+            }
+            // Practising the form raises its mastery over time.
+            MasteryData grown = mastery.practice(activeForm, DT);
+            if (grown.level(activeForm) != mastery.level(activeForm)) {
+                player.setData(ModAttachments.MASTERY.get(), grown);
+            }
+        }
+
         if (!approxEqual(next, state)) {
             player.setData(ModAttachments.STATE.get(), next);
         }
@@ -74,9 +90,10 @@ public final class CombatHandler {
         StatBlock stats = attacker.getData(ModStatAttachments.STATS.get());
         CharacterProfile profile = attacker.getData(ModStatAttachments.PROFILE.get());
         PowerState state = attacker.getData(ModAttachments.STATE.get());
+        MasteryData mastery = attacker.getData(ModAttachments.MASTERY.get());
 
         double bonus = StatCalculator.meleeDamageBonus(stats, profile, state.releaseMultiplier())
-                * state.formMultiplier();
+                * mastery.effectiveDamageMultiplier(state.form());
         if (bonus > 0) {
             event.setAmount(event.getAmount() + (float) bonus);
         }
@@ -145,6 +162,7 @@ public final class CombatHandler {
         StatBlock stats = player.getData(ModStatAttachments.STATS.get());
         CharacterProfile profile = player.getData(ModStatAttachments.PROFILE.get());
         PowerState state = player.getData(ModAttachments.STATE.get());
+        MasteryData mastery = player.getData(ModAttachments.MASTERY.get());
 
         if (!EnergyBlast.canFire(state.energy())) {
             player.sendSystemMessage(Component.translatable("msg.kimon.no_energy"), true);
@@ -169,7 +187,7 @@ public final class CombatHandler {
         if (hit.getType() == HitResult.Type.ENTITY
                 && ((EntityHitResult) hit).getEntity() instanceof LivingEntity target) {
             double dmg = EnergyBlast.damage(stats, profile, state.releaseMultiplier())
-                    * state.formMultiplier();
+                    * mastery.effectiveDamageMultiplier(state.form());
             DamageSource source = player.damageSources().indirectMagic(player, player);
             if (player.level() instanceof ServerLevel serverLevel) {
                 target.hurtServer(serverLevel, source, (float) dmg);
