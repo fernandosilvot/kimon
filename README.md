@@ -28,11 +28,13 @@ The first release is a small but **fully working, end-to-end vertical slice** of
 | **Six attributes** (Strength, Agility, Vitality, Energy, Focus, Spirit) + Training Points economy | ✅ |
 | **Character sheet GUI** (default <kbd>K</kbd>) to spend TP on attributes | ✅ |
 | Attributes drive real combat stats (Vitality→health, Strength→damage, Agility→speed) | ✅ |
+| **Release %** charge mechanic (hold <kbd>C</kbd>) + Energy/Stamina resources | ✅ |
+| Melee damage scales with **Strength × Release**; action-bar "Hit for X" feedback | ✅ |
 | Server-authoritative logic (client cannot forge values) | ✅ |
 | Automatic server → client sync of all stats | ✅ |
-| **HUD** overlay showing current Power + Tier (hidden under F3) | ✅ |
+| **HUD** showing Power, Tier, Release %, Energy, Stamina (hidden under F3) | ✅ |
 | English + Spanish localization | ✅ |
-| Unit-tested progression rules (32 tests) | ✅ |
+| Unit-tested progression rules (46 tests) | ✅ |
 
 > This is deliberately a *thin slice*, not a half-finished galaxy of features. It proves the
 > three genuinely hard subsystems (data attachments, payload networking, client HUD) work
@@ -47,7 +49,10 @@ The first release is a small but **fully working, end-to-end vertical slice** of
 4. Press <kbd>K</kbd> to open the **Character Sheet** and spend Training Points on attributes
    (Strength, Agility, Vitality…). Raising Vitality gives more health, Strength more damage,
    Agility more speed.
-5. Rebind keys under **Options → Controls → Miscellaneous**.
+6. **Hold <kbd>C</kbd> to charge** (power up): your Release % rises. Melee damage scales with
+   Strength × Release, so power up before fighting — then hit something and watch `Hit for X`
+   on the action bar.
+7. Rebind keys under **Options → Controls → Miscellaneous**.
 
 ---
 

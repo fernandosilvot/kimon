@@ -1,10 +1,16 @@
 {
   "key.kimon.train": "Train Power",
   "key.kimon.stats": "Open Character Sheet",
+  "key.kimon.charge": "Charge (Power Up)",
   "key.categories.misc": "Miscellaneous",
 
   "hud.kimon.power": "Power: %s",
   "hud.kimon.tier": "Tier: %s",
+  "hud.kimon.release": "Release: %s%%",
+  "hud.kimon.energy": "Energy: %s / %s",
+  "hud.kimon.stamina": "Stamina: %s / %s",
+
+  "msg.kimon.hit": "Hit for %s",
 
   "screen.kimon.stats.title": "Character Sheet",
   "screen.kimon.stats.tp": "Training Points: %s",

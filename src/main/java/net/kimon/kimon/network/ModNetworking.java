@@ -4,6 +4,7 @@ import net.kimon.kimon.Kimon;
 import net.kimon.kimon.power.ModAttachments;
 import net.kimon.kimon.power.PowerData;
 import net.kimon.kimon.power.PowerEffects;
+import net.kimon.kimon.power.PowerState;
 import net.kimon.kimon.stats.Attribute;
 import net.kimon.kimon.stats.ModStatAttachments;
 import net.kimon.kimon.stats.StatBlock;
@@ -46,6 +47,12 @@ public final class ModNetworking {
                 RaiseAttributePayload.STREAM_CODEC,
                 ModNetworking::handleRaiseAttribute
         );
+
+        registrar.playToServer(
+                SetChargingPayload.TYPE,
+                SetChargingPayload.STREAM_CODEC,
+                ModNetworking::handleSetCharging
+        );
     }
 
     /**
@@ -86,6 +93,18 @@ public final class ModNetworking {
             if (raised != stats) {
                 serverPlayer.setData(ModStatAttachments.STATS.get(), raised);
                 StatEffects.apply(serverPlayer);
+            }
+        });
+    }
+
+    /** Flips the charging flag on the player's PowerState; the tick loop does the rest. */
+    private static void handleSetCharging(final SetChargingPayload payload, final IPayloadContext context) {
+        context.enqueueWork(() -> {
+            if (context.player() instanceof ServerPlayer serverPlayer) {
+                PowerState state = serverPlayer.getData(ModAttachments.STATE.get());
+                if (state.charging() != payload.charging()) {
+                    serverPlayer.setData(ModAttachments.STATE.get(), state.withCharging(payload.charging()));
+                }
             }
         });
     }

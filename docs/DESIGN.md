@@ -50,8 +50,9 @@ Mirrors the research's phased plan, scoped to one vertical slice at a time:
 1. ✅ **Power → attributes** — tiered scaling of health/damage/speed. *(done)*
 2. ✅ **Six attributes + TP economy** — per-player attribute block, TP, spend-to-raise with growing
    cost, character sheet GUI, attributes driving vanilla stats. *(done)*
-3. 🔜 **Resources** — Body / Energy / Stamina with regen; Release % charge mechanic. *(next)*
-4. ⏳ **Races & classes** (data-driven JSON) + character creation screen.
+3. ✅ **Resources** — Energy / Stamina with regen; Release % charge mechanic; melee scales with
+   Strength × Release; action-bar damage feedback. *(done)*
+4. 🔜 **Races & classes** (data-driven JSON) + character creation screen. *(next)*
 5. ⏳ **Energy attacks** — generic projectile entity, configurable techniques.
 6. ⏳ **Forms** — data-driven multipliers, transform state machine, mastery.
 7. 💤 **World / masters / sagas / wishes** — long-horizon, data-driven.

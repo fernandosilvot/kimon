@@ -40,6 +40,18 @@ public final class ModAttachments {
                     .build());
 
     /**
+     * Per-player live combat resources: Release %, Energy, Stamina (Phase 3).
+     *
+     * <p>Not serialized: resources are transient and recomputed/regenerated each session from the
+     * player's attributes. Synced to the owning client for the HUD.</p>
+     */
+    public static final Supplier<AttachmentType<PowerState>> STATE = ATTACHMENT_TYPES.register(
+            "state",
+            () -> AttachmentType.builder(() -> PowerState.INITIAL)
+                    .sync((holder, to) -> holder == to, PowerState.STREAM_CODEC)
+                    .build());
+
+    /**
      * Registers the attachment types to the given mod event bus.
      *
      * @param modEventBus the mod-specific event bus from the mod constructor
