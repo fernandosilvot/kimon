@@ -1,6 +1,8 @@
 package net.kimon.kimon.network;
 
 import net.kimon.kimon.Kimon;
+import net.kimon.kimon.config.KimonConfig;
+import net.kimon.kimon.power.AuraCache;
 import net.kimon.kimon.power.CombatHandler;
 import net.kimon.kimon.power.ModAttachments;
 import net.kimon.kimon.power.PowerData;
@@ -25,10 +27,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 public final class ModNetworking {
 
     /** Bump this string when the wire format changes incompatibly. */
-    private static final String PROTOCOL_VERSION = "1";
-
-    /** Training Points granted per training action. */
-    public static final long TP_PER_TRAIN = 5L;
+    private static final String PROTOCOL_VERSION = "3";
 
     private ModNetworking() {
     }
@@ -38,21 +37,34 @@ public final class ModNetworking {
         final PayloadRegistrar registrar = event.registrar(PROTOCOL_VERSION);
 
         registrar.playToServer(
-                TrainPowerPayload.TYPE,
-                TrainPowerPayload.STREAM_CODEC,
-                ModNetworking::handleTrain
-        );
-
-        registrar.playToServer(
                 RaiseAttributePayload.TYPE,
                 RaiseAttributePayload.STREAM_CODEC,
                 ModNetworking::handleRaiseAttribute
         );
 
+        // Clientbound: owner resources (throttled) and neighbours' aura buckets.
+        registrar.playToClient(
+                PowerSyncPayload.TYPE,
+                PowerSyncPayload.STREAM_CODEC,
+                ModNetworking::handlePowerSync
+        );
+
+        registrar.playToClient(
+                AuraPayload.TYPE,
+                AuraPayload.STREAM_CODEC,
+                ModNetworking::handleAura
+        );
+
         registrar.playToServer(
-                SetChargingPayload.TYPE,
-                SetChargingPayload.STREAM_CODEC,
-                ModNetworking::handleSetCharging
+                ChargeInputPayload.TYPE,
+                ChargeInputPayload.STREAM_CODEC,
+                ModNetworking::handleChargeInput
+        );
+
+        registrar.playToServer(
+                ResetReleasePayload.TYPE,
+                ResetReleasePayload.STREAM_CODEC,
+                ModNetworking::handleResetRelease
         );
 
         registrar.playToServer(
@@ -66,25 +78,6 @@ public final class ModNetworking {
                 TransformPayload.STREAM_CODEC,
                 ModNetworking::handleTransform
         );
-    }
-
-    /**
-     * Handles a training request: raises Power (legacy stat + attribute scaling) and grants
-     * Training Points to the stat block. Both attachments auto-sync to the owning client.
-     */
-    private static void handleTrain(final TrainPowerPayload payload, final IPayloadContext context) {
-        context.enqueueWork(() -> {
-            if (context.player() instanceof ServerPlayer serverPlayer) {
-                // Legacy Power stat + its tiered attribute scaling.
-                PowerData current = serverPlayer.getData(ModAttachments.POWER.get());
-                serverPlayer.setData(ModAttachments.POWER.get(), current.train());
-                PowerEffects.apply(serverPlayer);
-
-                // New: training also earns Training Points to spend on attributes.
-                StatBlock stats = serverPlayer.getData(ModStatAttachments.STATS.get());
-                serverPlayer.setData(ModStatAttachments.STATS.get(), stats.addTrainingPoints(TP_PER_TRAIN));
-            }
-        });
     }
 
     /**
@@ -106,18 +99,46 @@ public final class ModNetworking {
             if (raised != stats) {
                 serverPlayer.setData(ModStatAttachments.STATS.get(), raised);
                 StatEffects.apply(serverPlayer);
+
+                // Spending TP on an attribute raises Power (tier bonuses, form gating): progression
+                // is earned by fighting for TP, then investing it — there is no free Power source.
+                PowerData power = serverPlayer.getData(ModAttachments.POWER.get());
+                serverPlayer.setData(ModAttachments.POWER.get(),
+                        power.withPower(power.power() + KimonConfig.tpParams().powerPerPoint()));
+                PowerEffects.apply(serverPlayer);
             }
         });
     }
 
-    /** Flips the charging flag on the player's PowerState; the tick loop does the rest. */
-    private static void handleSetCharging(final SetChargingPayload payload, final IPayloadContext context) {
+    /** Client: stores the server's resource state on the local player (the HUD reads it from there). */
+    private static void handlePowerSync(final PowerSyncPayload payload, final IPayloadContext context) {
+        context.enqueueWork(() -> context.player().setData(ModAttachments.STATE.get(), payload.state()));
+    }
+
+    /** Client: remembers how to draw a nearby player's aura. */
+    private static void handleAura(final AuraPayload payload, final IPayloadContext context) {
+        context.enqueueWork(() -> AuraCache.put(payload.entityId(), payload.aura()));
+    }
+
+    /** Stores the held-key inputs on the player's PowerState; the tick loop acts on them. */
+    private static void handleChargeInput(final ChargeInputPayload payload, final IPayloadContext context) {
         context.enqueueWork(() -> {
             if (context.player() instanceof ServerPlayer serverPlayer) {
                 PowerState state = serverPlayer.getData(ModAttachments.STATE.get());
-                if (state.charging() != payload.charging()) {
-                    serverPlayer.setData(ModAttachments.STATE.get(), state.withCharging(payload.charging()));
+                PowerState next = state.withInput(payload.charge(), payload.discharge(), payload.turbo());
+                if (!next.equals(state)) {
+                    serverPlayer.setData(ModAttachments.STATE.get(), next);
                 }
+            }
+        });
+    }
+
+    /** Drops Release to 0 and de-transforms the player. */
+    private static void handleResetRelease(final ResetReleasePayload payload, final IPayloadContext context) {
+        context.enqueueWork(() -> {
+            if (context.player() instanceof ServerPlayer serverPlayer) {
+                PowerState state = serverPlayer.getData(ModAttachments.STATE.get());
+                serverPlayer.setData(ModAttachments.STATE.get(), state.reset());
             }
         });
     }

@@ -36,7 +36,8 @@ Package root: `net.kimon.kimon`
 - `stats/` — six attributes + TP economy, races/classes, derived stats.
   - Pure/unit-tested: `StatBlock`, `StatCalculator`, `Race`, `PlayerClass`, `CharacterProfile`.
   - Glue: `StatEffects`, `StatCodecs`, `ModStatAttachments` (STATS, PROFILE).
-- `network/` — serverbound payloads (train, raise attribute, charging, fire blast, transform) +
+- `network/` — serverbound payloads (raise attribute, charge input, reset release, fire blast, transform) and clientbound
+  `PowerSyncPayload` / `AuraPayload` sent by `power/SyncHandler` (STATE is NOT an auto-synced attachment) +
   `ModNetworking` handlers.
 - `block/` — `TrainingAltarBlock`, `ModBlocks` (blocks, items incl. Wish Orb, creative tab).
 - `wish/` — `Wish` (reward table, pure), `WishOrbItem`.
@@ -102,7 +103,8 @@ Pick one, keep it a complete vertical slice:
 /kimon class warrior
 /kimon attr strength 1000
 /kimon power 5000
-# hold C to charge Release, press R to transform, left-click a mob (see "Hit for X"),
+# hold C to charge Release (Ctrl+C lowers it, H resets, hold R for turbo), press G to transform,
+# left-click a mob (see "Hit for X (+N TP)" — TP only comes from hits with Release >= 5%),
 # press B to fire an Energy Blast, press K for the character sheet.
 /give @s kimon:wish_orb 4
 /give @s kimon:training_altar

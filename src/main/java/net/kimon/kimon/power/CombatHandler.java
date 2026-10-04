@@ -1,16 +1,23 @@
 package net.kimon.kimon.power;
 
 import net.kimon.kimon.Kimon;
+import net.kimon.kimon.config.KimonConfig;
 import net.kimon.kimon.stats.CharacterProfile;
 import net.kimon.kimon.stats.ModStatAttachments;
 import net.kimon.kimon.stats.StatBlock;
+import net.kimon.kimon.stats.Attribute;
 import net.kimon.kimon.stats.StatCalculator;
+import net.kimon.kimon.stats.TpGain;
+import net.kimon.kimon.stats.TpParams;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -37,6 +44,13 @@ public final class CombatHandler {
 
     private static final double DT = 0.05; // one tick = 1/20 s
 
+    /**
+     * Players whose current melee hit was empowered (paid its Energy/Stamina cost). Set in the
+     * incoming-damage event, consumed in the post-damage event of the same hit, and cleared each tick
+     * so a cancelled hit can never leak into the next one. Server thread only.
+     */
+    private static final Set<UUID> PAID_HITS = new HashSet<>();
+
     private CombatHandler() {
     }
 
@@ -45,16 +59,18 @@ public final class CombatHandler {
         if (!(event.getEntity() instanceof ServerPlayer player)) {
             return;
         }
+        PAID_HITS.remove(player.getUUID());
         StatBlock stats = player.getData(ModStatAttachments.STATS.get());
         CharacterProfile profile = player.getData(ModStatAttachments.PROFILE.get());
         PowerState state = player.getData(ModAttachments.STATE.get());
         MasteryData mastery = player.getData(ModAttachments.MASTERY.get());
 
-        double maxRelease = StatCalculator.maxRelease(stats);
-        double maxEnergy = StatCalculator.maxEnergy(stats, profile);
+        PowerParams params = KimonConfig.params();
+        double maxRelease = StatCalculator.maxRelease(stats, params.baseMaxRelease(), params.hardMaxRelease());
+        double maxEnergy = StatCalculator.maxEnergy(stats, profile, params.kiPerSpirit());
         double maxStamina = StatCalculator.maxStamina(stats, profile);
 
-        PowerState next = state.tick(DT, maxRelease, maxEnergy, maxStamina);
+        PowerState next = state.tick(DT, maxRelease, maxEnergy, maxStamina, params);
 
         // Mastery makes the active form cheaper: tick() drained the base amount, so refund the
         // portion saved by mastery (only while still in that form after the tick).
@@ -72,9 +88,12 @@ public final class CombatHandler {
             }
         }
 
-        if (!approxEqual(next, state)) {
+        if (!SyncPolicy.sameForSync(next, state) || next.regenLock() != state.regenLock()) {
             player.setData(ModAttachments.STATE.get(), next);
         }
+
+        // Throttled send of the (possibly updated) state to the owner and the aura to neighbours.
+        SyncHandler.tick(player);
     }
 
     @SubscribeEvent
@@ -92,6 +111,29 @@ public final class CombatHandler {
         PowerState state = attacker.getData(ModAttachments.STATE.get());
         MasteryData mastery = attacker.getData(ModAttachments.MASTERY.get());
 
+        // Without an active Release the hit is plain vanilla: no bonus, no cost, no TP.
+        if (!state.isActive()) {
+            return;
+        }
+
+        // An empowered hit costs Energy and Stamina; if you can't pay, you hit with vanilla damage.
+        PowerParams params = KimonConfig.params();
+        double maxRelease = StatCalculator.maxRelease(stats, params.baseMaxRelease(), params.hardMaxRelease());
+        double maxEnergy = StatCalculator.maxEnergy(stats, profile, params.kiPerSpirit());
+        double maxStamina = StatCalculator.maxStamina(stats, profile);
+        double kiCost = CombatCosts.kiPerHit(stats.get(Attribute.STRENGTH));
+        double staminaCost = CombatCosts.staminaPerHit(maxStamina, params.hitStaminaCost());
+        if (!CombatCosts.canPay(state.energy(), state.stamina(), kiCost, staminaCost)) {
+            if (attacker instanceof ServerPlayer serverAttacker) {
+                serverAttacker.sendSystemMessage(Component.translatable("msg.kimon.hit_weak"), true);
+            }
+            return;
+        }
+        attacker.setData(ModAttachments.STATE.get(), state.withResources(
+                state.release(), state.energy() - kiCost, state.stamina() - staminaCost,
+                maxRelease, maxEnergy, maxStamina));
+        PAID_HITS.add(attacker.getUUID());
+
         double bonus = StatCalculator.meleeDamageBonus(stats, profile, state.releaseMultiplier())
                 * mastery.effectiveDamageMultiplier(state.form());
         if (bonus > 0) {
@@ -101,14 +143,51 @@ public final class CombatHandler {
 
     @SubscribeEvent
     static void onDamagePost(LivingDamageEvent.Post event) {
-        if (event.getSource().getEntity() instanceof ServerPlayer attacker) {
-            float dealt = event.getInflictedDamage();
-            if (dealt > 0) {
-                // Action-bar feedback: "Hit for 12.5".
-                attacker.sendSystemMessage(
-                        Component.translatable("msg.kimon.hit", String.format("%.1f", dealt)), true);
-            }
+        float dealt = event.getInflictedDamage();
+
+        // Being hurt by a living entity locks Energy regeneration for a while.
+        if (dealt > 0 && event.getEntity() instanceof ServerPlayer victim
+                && event.getSource().getEntity() instanceof LivingEntity) {
+            PowerState victimState = victim.getData(ModAttachments.STATE.get());
+            victim.setData(ModAttachments.STATE.get(),
+                    victimState.hurt(KimonConfig.params().regenLockTicks()));
         }
+
+        // Only direct melee: Energy Blast awards its own TP in fireEnergyBlast.
+        if (event.getSource().getEntity() instanceof ServerPlayer attacker
+                && event.getSource().getDirectEntity() == attacker && dealt > 0) {
+            // TP only comes from empowered hits (the ones that paid their cost).
+            long tp = PAID_HITS.remove(attacker.getUUID()) ? awardTp(attacker, event.getEntity()) : 0L;
+            // Action-bar feedback: "Hit for 12.5" (+ the TP earned, if any).
+            attacker.sendSystemMessage(tp > 0
+                    ? Component.translatable("msg.kimon.hit_tp", String.format("%.1f", dealt), tp)
+                    : Component.translatable("msg.kimon.hit", String.format("%.1f", dealt)), true);
+        }
+    }
+
+    /**
+     * Rolls and grants Training Points for a hit on {@code target}: needs Release of at least 5% and
+     * a successful probability roll. Against another player the target's FOCUS is used (as in the
+     * research); otherwise the attacker's. This is the only organic source of TP.
+     *
+     * @return the TP granted (0 if none)
+     */
+    static long awardTp(ServerPlayer attacker, LivingEntity target) {
+        PowerState state = attacker.getData(ModAttachments.STATE.get());
+        if (!TpGain.eligible(state.release()) || target == attacker) {
+            return 0L;
+        }
+        StatBlock source = target instanceof ServerPlayer other
+                ? other.getData(ModStatAttachments.STATS.get())
+                : attacker.getData(ModStatAttachments.STATS.get());
+        TpParams params = KimonConfig.tpParams();
+        long tp = TpGain.forHit(source.get(Attribute.FOCUS), state.release(),
+                attacker.getRandom().nextDouble(), params);
+        if (tp > 0) {
+            StatBlock own = attacker.getData(ModStatAttachments.STATS.get());
+            attacker.setData(ModStatAttachments.STATS.get(), own.addTrainingPoints(tp));
+        }
+        return tp;
     }
 
     /**
@@ -145,14 +224,6 @@ public final class CombatHandler {
         }
     }
 
-    private static boolean approxEqual(PowerState a, PowerState b) {
-        return a.charging() == b.charging()
-                && a.form() == b.form()
-                && Math.abs(a.release() - b.release()) < 1e-4
-                && Math.abs(a.energy() - b.energy()) < 1e-4
-                && Math.abs(a.stamina() - b.stamina()) < 1e-4;
-    }
-
     /**
      * Fires an Energy Blast from the given server player: raycasts along their view, and if it hits
      * a living entity within range, deducts Energy and deals Energy×Release-scaled magic damage.
@@ -163,6 +234,7 @@ public final class CombatHandler {
         CharacterProfile profile = player.getData(ModStatAttachments.PROFILE.get());
         PowerState state = player.getData(ModAttachments.STATE.get());
         MasteryData mastery = player.getData(ModAttachments.MASTERY.get());
+        PowerParams params = KimonConfig.params();
 
         if (!EnergyBlast.canFire(state.energy())) {
             player.sendSystemMessage(Component.translatable("msg.kimon.no_energy"), true);
@@ -174,8 +246,8 @@ public final class CombatHandler {
                 state.release(),
                 state.energy() - EnergyBlast.energyCost(),
                 state.stamina(),
-                StatCalculator.maxRelease(stats),
-                StatCalculator.maxEnergy(stats, profile),
+                StatCalculator.maxRelease(stats, params.baseMaxRelease(), params.hardMaxRelease()),
+                StatCalculator.maxEnergy(stats, profile, params.kiPerSpirit()),
                 StatCalculator.maxStamina(stats, profile));
         player.setData(ModAttachments.STATE.get(), afterCost);
 
@@ -192,8 +264,10 @@ public final class CombatHandler {
             if (player.level() instanceof ServerLevel serverLevel) {
                 target.hurtServer(serverLevel, source, (float) dmg);
             }
-            player.sendSystemMessage(
-                    Component.translatable("msg.kimon.blast_hit", String.format("%.1f", dmg)), true);
+            long tp = awardTp(player, target);
+            player.sendSystemMessage(tp > 0
+                    ? Component.translatable("msg.kimon.blast_hit_tp", String.format("%.1f", dmg), tp)
+                    : Component.translatable("msg.kimon.blast_hit", String.format("%.1f", dmg)), true);
         } else {
             player.sendSystemMessage(Component.translatable("msg.kimon.blast_miss"), true);
         }

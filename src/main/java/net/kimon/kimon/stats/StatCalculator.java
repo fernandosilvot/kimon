@@ -58,6 +58,11 @@ public final class StatCalculator {
         return maxEnergy(stats) * mod(profile, Attribute.SPIRIT);
     }
 
+    /** Max Energy with a configurable Energy-per-SPIRIT ratio ({@code ki.perSPI}). */
+    public static double maxEnergy(StatBlock stats, CharacterProfile profile, double energyPerSpirit) {
+        return maxEnergy(stats, energyPerSpirit) * mod(profile, Attribute.SPIRIT);
+    }
+
     public static double maxStamina(StatBlock stats, CharacterProfile profile) {
         return maxStamina(stats) * mod(profile, Attribute.VITALITY);
     }
@@ -95,7 +100,12 @@ public final class StatCalculator {
 
     /** Maximum Energy pool from SPIRIT. */
     public static double maxEnergy(StatBlock stats) {
-        return stats.get(Attribute.SPIRIT) * ENERGY_PER_SPIRIT;
+        return maxEnergy(stats, ENERGY_PER_SPIRIT);
+    }
+
+    /** Maximum Energy pool from SPIRIT with an explicit per-point ratio. */
+    public static double maxEnergy(StatBlock stats, double energyPerSpirit) {
+        return stats.get(Attribute.SPIRIT) * energyPerSpirit;
     }
 
     /** Maximum Stamina pool from VITALITY. */
@@ -105,8 +115,16 @@ public final class StatCalculator {
 
     /** The player's Release ceiling: base 50 plus a FOCUS-driven bonus, capped at 100. */
     public static double maxRelease(StatBlock stats) {
+        return maxRelease(stats, 50.0, 100.0);
+    }
+
+    /**
+     * The Release ceiling with configurable base and hard cap: {@code baseMax} plus the FOCUS bonus
+     * (a stand-in for the "Potential Unlock" skill), never above {@code hardMax}.
+     */
+    public static double maxRelease(StatBlock stats, double baseMax, double hardMax) {
         double bonus = Math.min(MAX_BONUS_RELEASE, above(stats, Attribute.FOCUS) * RELEASE_PER_FOCUS);
-        return Math.min(100.0, 50.0 + bonus);
+        return Math.min(hardMax, baseMax + bonus);
     }
 
     /**

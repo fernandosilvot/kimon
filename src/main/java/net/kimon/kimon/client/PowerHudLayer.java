@@ -1,6 +1,7 @@
 package net.kimon.kimon.client;
 
 import net.kimon.kimon.Kimon;
+import net.kimon.kimon.config.KimonConfig;
 import net.kimon.kimon.power.ModAttachments;
 import net.kimon.kimon.power.PowerData;
 import net.kimon.kimon.power.PowerScaling;
@@ -29,6 +30,7 @@ public final class PowerHudLayer implements GuiLayer {
     private static final int LINE = 11;
     private static final int ACCENT = 0xFF55FFFF; // cyan
     private static final int RELEASE_COLOR = 0xFFFFD54A; // amber
+    private static final int RELEASE_OVERCHARGE_COLOR = 0xFFFF5555; // red
     private static final int ENERGY_COLOR = 0xFF66CCFF; // light blue
     private static final int STAMINA_COLOR = 0xFF88DD88; // green
 
@@ -46,7 +48,7 @@ public final class PowerHudLayer implements GuiLayer {
                 minecraft.player.getData(ModStatAttachments.PROFILE.get());
 
         int tier = PowerScaling.tiers(data.power());
-        double maxEnergy = StatCalculator.maxEnergy(stats, profile);
+        double maxEnergy = StatCalculator.maxEnergy(stats, profile, KimonConfig.params().kiPerSpirit());
         double maxStamina = StatCalculator.maxStamina(stats, profile);
 
         int y = MARGIN_Y;
@@ -71,9 +73,17 @@ public final class PowerHudLayer implements GuiLayer {
         y += LINE;
         guiGraphics.text(minecraft.font, Component.translatable("hud.kimon.tier", tier), MARGIN_X, y, ACCENT);
         y += LINE;
+        // Release: shown in display steps; white up to 50%, amber to 100%, red when overcharged.
+        int step = KimonConfig.displayStep();
+        int shown = (int) (Math.floor(state.release() / step) * step);
+        int releaseColor = state.release() > 100.0 ? RELEASE_OVERCHARGE_COLOR
+                : state.release() > 50.0 ? RELEASE_COLOR : 0xFFFFFFFF;
         guiGraphics.text(minecraft.font,
-                Component.translatable("hud.kimon.release", String.format("%.0f", state.release())),
-                MARGIN_X, y, RELEASE_COLOR);
+                Component.translatable("hud.kimon.release", shown,
+                        Component.translatable("hud.kimon.release_state." + state.releaseState().name().toLowerCase(java.util.Locale.ROOT))
+                                .append(state.turbo() ? Component.translatable("hud.kimon.turbo") : Component.empty())),
+                MARGIN_X, y, state.releaseState() == net.kimon.kimon.power.ReleaseState.EXHAUSTED
+                        ? RELEASE_OVERCHARGE_COLOR : releaseColor);
         y += LINE;
         guiGraphics.text(minecraft.font,
                 Component.translatable("hud.kimon.energy",

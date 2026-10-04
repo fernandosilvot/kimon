@@ -5,11 +5,13 @@ import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 
 import net.kimon.kimon.block.ModBlocks;
+import net.kimon.kimon.config.KimonConfig;
 import net.kimon.kimon.power.ModAttachments;
 import net.kimon.kimon.stats.ModStatAttachments;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 
 /**
  * Kimon — an original anime-style power/energy progression mod.
@@ -44,6 +46,12 @@ public class Kimon {
 
         // Register blocks (Training Altar), their items, and the creative tab.
         ModBlocks.register(modEventBus);
+
+        // Config: SERVER = Release/Energy balance (synced to clients), CLIENT = HUD options.
+        modContainer.registerConfig(ModConfig.Type.SERVER, KimonConfig.SERVER_SPEC);
+        modContainer.registerConfig(ModConfig.Type.CLIENT, KimonConfig.CLIENT_SPEC);
+        modEventBus.addListener(KimonConfig::onLoad);
+        modEventBus.addListener(KimonConfig::onReload);
 
         // Networking (payloads) is wired via @EventBusSubscriber in ModNetworking.
         // Client-only features (keybind, HUD) are wired in KimonClient.

@@ -40,11 +40,11 @@ class PowerStateTest {
     }
 
     @Test
-    @DisplayName("not charging decays Release back toward zero")
-    void decayWhenNotCharging() {
+    @DisplayName("with no input Release holds its value (no passive decay)")
+    void holdsWhenNoInput() {
         PowerState s = new PowerState(40, MAX_ENERGY, 0, false, Form.BASE);
-        PowerState after = tickFor(s, 1.0);
-        assertTrue(after.release() < 40, "Release should decay");
+        PowerState after = tickFor(s, 5.0);
+        assertEquals(40.0, after.release(), 1e-9);
     }
 
     @Test
@@ -59,7 +59,7 @@ class PowerStateTest {
     @DisplayName("Energy does not regenerate at/above the cutoff Release")
     void noRegenAboveCutoff() {
         // Hold at the cutoff, not charging; energy should not climb from regen.
-        PowerState s = new PowerState(PowerState.ENERGY_REGEN_CUTOFF, 100, 0, false, Form.BASE);
+        PowerState s = new PowerState(PowerParams.DEFAULTS.kiRegenCutoff(), 100, 0, false, Form.BASE);
         PowerState oneTick = s.tick(0.05, 60, MAX_ENERGY, MAX_STAMINA);
         assertTrue(oneTick.energy() <= 100 + 1e-6, "no regen at/above cutoff");
     }
