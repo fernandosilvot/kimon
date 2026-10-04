@@ -5,6 +5,7 @@ import org.lwjgl.glfw.GLFW;
 import com.mojang.blaze3d.platform.InputConstants;
 
 import net.kimon.kimon.Kimon;
+import net.kimon.kimon.network.SetChargingPayload;
 import net.kimon.kimon.network.TrainPowerPayload;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -57,6 +58,17 @@ public final class KimonClient {
             KeyMapping.Category.MISC
     ));
 
+    /** Hold to charge Release (power up). Default: <kbd>C</kbd>. */
+    public static final Lazy<KeyMapping> CHARGE_KEY = Lazy.of(() -> new KeyMapping(
+            "key.kimon.charge",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_C,
+            KeyMapping.Category.MISC
+    ));
+
+    /** Tracks the last charge state we told the server, so we only send on change. */
+    private static boolean lastChargingSent = false;
+
     public KimonClient() {
         // No instance wiring needed; everything is handled by the static @SubscribeEvent methods.
     }
@@ -65,6 +77,7 @@ public final class KimonClient {
     static void registerBindings(RegisterKeyMappingsEvent event) {
         event.register(TRAIN_KEY.get());
         event.register(STATS_KEY.get());
+        event.register(CHARGE_KEY.get());
     }
 
     @SubscribeEvent
@@ -80,6 +93,13 @@ public final class KimonClient {
         }
         while (STATS_KEY.get().consumeClick()) {
             Minecraft.getInstance().setScreenAndShow(new StatsScreen());
+        }
+
+        // Charge key is a held state, not a click: send the server a packet only when it changes.
+        boolean chargingNow = CHARGE_KEY.get().isDown();
+        if (chargingNow != lastChargingSent) {
+            lastChargingSent = chargingNow;
+            ClientPacketDistributor.sendToServer(new SetChargingPayload(chargingNow));
         }
     }
 }

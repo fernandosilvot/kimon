@@ -1,10 +1,16 @@
 {
   "key.kimon.train": "Entrenar Poder",
   "key.kimon.stats": "Abrir Hoja de Personaje",
+  "key.kimon.charge": "Cargar (Subir Poder)",
   "key.categories.misc": "Miscelánea",
 
   "hud.kimon.power": "Poder: %s",
   "hud.kimon.tier": "Nivel: %s",
+  "hud.kimon.release": "Liberación: %s%%",
+  "hud.kimon.energy": "Energía: %s / %s",
+  "hud.kimon.stamina": "Vigor: %s / %s",
+
+  "msg.kimon.hit": "Golpe de %s",
 
   "screen.kimon.stats.title": "Hoja de Personaje",
   "screen.kimon.stats.tp": "Puntos de Entrenamiento: %s",

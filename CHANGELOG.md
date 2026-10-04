@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- **Release % charge mechanic** (hold <kbd>C</kbd> to power up). Release scales combat output and
+  decays when you stop charging. Higher Focus raises your Release ceiling (base 50% → up to 100%).
+- **Live combat resources**: Energy (from Spirit) and Stamina (from Vitality), advanced each tick
+  server-side (`PowerState`, pure + 9 tests). Energy regenerates faster the lower your Release —
+  the classic "power up vs. recover" tension — and holding Release costs upkeep Energy.
+- **Melee damage now scales with Strength × Release.** Power up before you fight to hit hard.
+- **"See how hard you hit"**: landing a melee blow shows `Hit for X` on the action bar
+  (`CombatHandler`, via `LivingDamageEvent.Post`).
+- HUD now shows **Release %, Energy and Stamina** below Power/Tier.
+- `SetChargingPayload` (C→S) toggles the charge state; the server advances Release authoritatively.
+- 14 additional unit tests (`PowerState`, resource/Release maxima, melee scaling).
+
+### Added (previous, still unreleased)
 - **Character sheet GUI** (press <kbd>K</kbd>): shows the six attributes, unspent Training Points,
   and the TP cost to raise each attribute, with a "+" button per attribute. Server-authoritative —
   the client only requests raises via a `RaiseAttributePayload`; the server validates affordability.

@@ -46,4 +46,44 @@ public final class StatCalculator {
     public static double bonusMovementSpeed(StatBlock stats) {
         return Math.min(MAX_BONUS_SPEED, above(stats, Attribute.AGILITY) * SPEED_PER_AGILITY);
     }
+
+    // --- Resource maxima (Phase 3) ---
+
+    /** Max Energy (Ki) per SPIRIT point. */
+    public static final double ENERGY_PER_SPIRIT = 40.0;
+    /** Max Stamina per VITALITY point. */
+    public static final double STAMINA_PER_VITALITY = 3.5;
+    /** Extra Release ceiling per FOCUS point above start (a stand-in for "Potential Unlock"). */
+    public static final double RELEASE_PER_FOCUS = 1.0;
+    /** Hard cap on the bonus Release ceiling from FOCUS. */
+    public static final double MAX_BONUS_RELEASE = 50.0;
+
+    /** Maximum Energy pool from SPIRIT. */
+    public static double maxEnergy(StatBlock stats) {
+        return stats.get(Attribute.SPIRIT) * ENERGY_PER_SPIRIT;
+    }
+
+    /** Maximum Stamina pool from VITALITY. */
+    public static double maxStamina(StatBlock stats) {
+        return stats.get(Attribute.VITALITY) * STAMINA_PER_VITALITY;
+    }
+
+    /** The player's Release ceiling: base 50 plus a FOCUS-driven bonus, capped at 100. */
+    public static double maxRelease(StatBlock stats) {
+        double bonus = Math.min(MAX_BONUS_RELEASE, above(stats, Attribute.FOCUS) * RELEASE_PER_FOCUS);
+        return Math.min(100.0, 50.0 + bonus);
+    }
+
+    /**
+     * Effective melee damage bonus when attacking: Strength bonus scaled by the current Release
+     * fraction. At 0% Release you get none of it (you must "power up" to hit hard).
+     *
+     * @param stats            the attacker's attributes
+     * @param releaseFraction  release/100, in [0,1]
+     * @return bonus melee damage to add on top of the vanilla hit
+     */
+    public static double meleeDamageBonus(StatBlock stats, double releaseFraction) {
+        double clamped = Math.max(0.0, Math.min(1.0, releaseFraction));
+        return bonusAttackDamage(stats) * clamped;
+    }
 }

@@ -67,4 +67,38 @@ class StatCalculatorTest {
         StatBlock lowered = withAttribute(Attribute.VITALITY, 0);
         assertTrue(StatCalculator.bonusHealth(lowered) >= 0.0);
     }
+
+    @Test
+    @DisplayName("max energy scales with Spirit")
+    void maxEnergyFromSpirit() {
+        StatBlock s = withAttribute(Attribute.SPIRIT, 10);
+        assertEquals(10 * StatCalculator.ENERGY_PER_SPIRIT, StatCalculator.maxEnergy(s), 1e-9);
+    }
+
+    @Test
+    @DisplayName("max stamina scales with Vitality")
+    void maxStaminaFromVitality() {
+        StatBlock s = withAttribute(Attribute.VITALITY, 20);
+        assertEquals(20 * StatCalculator.STAMINA_PER_VITALITY, StatCalculator.maxStamina(s), 1e-9);
+    }
+
+    @Test
+    @DisplayName("max Release is 50 at start and rises with Focus, capped at 100")
+    void maxReleaseFromFocus() {
+        assertEquals(50.0, StatCalculator.maxRelease(StatBlock.initial()), 1e-9);
+        StatBlock focused = withAttribute(Attribute.FOCUS, StatBlock.START_VALUE + 20);
+        assertEquals(70.0, StatCalculator.maxRelease(focused), 1e-9);
+        StatBlock maxed = withAttribute(Attribute.FOCUS, StatBlock.MAX_VALUE);
+        assertEquals(100.0, StatCalculator.maxRelease(maxed), 1e-9);
+    }
+
+    @Test
+    @DisplayName("melee bonus is zero at 0% Release and full at 100%")
+    void meleeScalesWithRelease() {
+        StatBlock strong = withAttribute(Attribute.STRENGTH, StatBlock.START_VALUE + 100);
+        double full = StatCalculator.bonusAttackDamage(strong);
+        assertEquals(0.0, StatCalculator.meleeDamageBonus(strong, 0.0), 1e-9);
+        assertEquals(full * 0.5, StatCalculator.meleeDamageBonus(strong, 0.5), 1e-9);
+        assertEquals(full, StatCalculator.meleeDamageBonus(strong, 1.0), 1e-9);
+    }
 }
