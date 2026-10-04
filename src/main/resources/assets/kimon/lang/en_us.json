@@ -23,6 +23,10 @@
   "msg.kimon.form_down": "Reverted to %s",
   "msg.kimon.form_max": "Already at the highest form",
   "msg.kimon.form_locked": "%s locked (needs Tier %s, Release %s%%)",
+  "msg.kimon.altar_train": "Trained at the altar: +%s Power, +%s TP",
+
+  "itemGroup.kimon": "Kimon",
+  "block.kimon.training_altar": "Training Altar",
 
   "form.kimon.base": "Base",
   "form.kimon.surge": "Surge",

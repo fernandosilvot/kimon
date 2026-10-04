@@ -60,6 +60,7 @@ Minecraft 26.2 / NeoForge 26.2.0.88.
 | **Energy Blast** attack (<kbd>B</kbd>): raycast that consumes Energy and scales with Energy × Release | ✅ |
 | **Forms / transformations** (<kbd>R</kbd> up / <kbd>V</kbd> down): multiply combat damage, drain Energy, gated by Power tier + Release | ✅ |
 | **Form Mastery**: forms grow stronger (+damage) and cheaper (−drain) the more you use them | ✅ |
+| **Training Altar** block: craft it, place it, right-click to train (+Power, +TP) — world presence | ✅ |
 | **HUD** showing Race/Class, active Form + Mastery, Power, Tier, Release %, Energy, Stamina | ✅ |
 | **`/kimon` debug/admin command** to set progression without grinding | ✅ |
 | Server-authoritative logic (the client cannot forge values) | ✅ |
@@ -135,6 +136,9 @@ A quick tour that exercises every system:
 9. **Build Mastery**: just by spending time in a form, its **Mastery** rises (shown on the HUD).
    Higher mastery means more damage and less Energy drain for that form — so a well-practised Surge
    can rival a fresh Ascent while costing less. (Shortcut: `/kimon mastery zenith 50`.)
+10. **Train at an altar**: craft a **Training Altar** (amethyst shards around obsidian; find it in the
+    Kimon creative tab too), place it, and right-click it to train for a bigger reward (+15 Power,
+    +15 TP) than the free keybind — giving your training a place in the world.
 
 ### "See how hard you hit"
 
@@ -246,6 +250,9 @@ net.kimon.kimon
 │   ├── PlayerClass.java        # three classes: modifiers
 │   ├── CharacterProfile.java   # chosen race + class (persisted+synced)
 │   └── ModStatAttachments.java # STATS and PROFILE attachments
+├── block/
+│   ├── TrainingAltarBlock.java # right-click to train (+Power, +TP), server-authoritative
+│   └── ModBlocks.java          # registers blocks, block-items, and the Kimon creative tab
 ├── network/
 │   ├── TrainPowerPayload.java       # C→S: train
 │   ├── RaiseAttributePayload.java   # C→S: spend TP on an attribute
@@ -334,9 +341,11 @@ full plan and [`docs/roadmap.svg`](docs/roadmap.svg) for the diagram source.
 - ✅ **Phase 5** — Energy Blast: ranged attack consuming Energy, scaling with Energy × Release.
 - ✅ **Phase 6** — forms / transformations: multiply combat damage, drain Energy, gated by tier + Release.
 - ✅ **Form Mastery** — forms grow stronger (+damage) and cheaper (−drain) the more you use them.
+- ✅ **Phase 7 (started)** — **Training Altar** block: a craftable world block you right-click to
+  train, giving progression a physical place in the world.
 
 **Next**
-- 🔜 **Release v0.3.0** consolidating Phases 5-6 + Form Mastery.
+- 🔜 More Phase 7 — wishes/rewards and master NPCs that teach skills/forms.
 
 **Later**
 - ⏳ A visual projectile entity for the Energy Blast; player aura/transform animations.

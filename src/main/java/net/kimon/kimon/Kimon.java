@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 
+import net.kimon.kimon.block.ModBlocks;
 import net.kimon.kimon.power.ModAttachments;
 import net.kimon.kimon.stats.ModStatAttachments;
 import net.neoforged.bus.api.IEventBus;
@@ -40,6 +41,9 @@ public class Kimon {
 
         // Register the StatBlock data attachment (six attributes + Training Points).
         ModStatAttachments.register(modEventBus);
+
+        // Register blocks (Training Altar), their items, and the creative tab.
+        ModBlocks.register(modEventBus);
 
         // Networking (payloads) is wired via @EventBusSubscriber in ModNetworking.
         // Client-only features (keybind, HUD) are wired in KimonClient.

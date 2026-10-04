@@ -23,6 +23,10 @@
   "msg.kimon.form_down": "Volviste a %s",
   "msg.kimon.form_max": "Ya estás en la forma máxima",
   "msg.kimon.form_locked": "%s bloqueada (requiere Nivel %s, Liberación %s%%)",
+  "msg.kimon.altar_train": "Entrenaste en el altar: +%s de Poder, +%s TP",
+
+  "itemGroup.kimon": "Kimon",
+  "block.kimon.training_altar": "Altar de Entrenamiento",
 
   "form.kimon.base": "Base",
   "form.kimon.surge": "Oleada",

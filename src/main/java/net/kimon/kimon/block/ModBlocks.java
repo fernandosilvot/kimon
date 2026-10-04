@@ -1,0 +1,62 @@
+package net.kimon.kimon.block;
+
+import java.util.function.Supplier;
+
+import net.kimon.kimon.Kimon;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredBlock;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredItem;
+import net.neoforged.neoforge.registries.DeferredRegister;
+
+/**
+ * Registers Kimon's blocks, their block-items, and a creative tab.
+ */
+public final class ModBlocks {
+
+    private ModBlocks() {
+    }
+
+    public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Kimon.MODID);
+    public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Kimon.MODID);
+    public static final DeferredRegister<CreativeModeTab> TABS =
+            DeferredRegister.create(Registries.CREATIVE_MODE_TAB, Kimon.MODID);
+
+    /** The Training Altar block. */
+    public static final DeferredBlock<TrainingAltarBlock> TRAINING_ALTAR = BLOCKS.registerBlock(
+            "training_altar",
+            TrainingAltarBlock::new,
+            p -> p.mapColor(MapColor.COLOR_PURPLE)
+                    .strength(3.0f, 6.0f)
+                    .requiresCorrectToolForDrops()
+                    .pushReaction(PushReaction.BLOCK));
+
+    /** Block-item for the Training Altar. */
+    public static final DeferredItem<BlockItem> TRAINING_ALTAR_ITEM =
+            ITEMS.registerSimpleBlockItem("training_altar", TRAINING_ALTAR);
+
+    /** Kimon creative tab holding the mod's items. */
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> KIMON_TAB = TABS.register(
+            "kimon",
+            () -> CreativeModeTab.builder()
+                    .title(Component.translatable("itemGroup.kimon"))
+                    .withTabsBefore(CreativeModeTabs.COMBAT)
+                    .icon(() -> TRAINING_ALTAR_ITEM.get().getDefaultInstance())
+                    .displayItems((params, output) -> output.accept(TRAINING_ALTAR_ITEM.get()))
+                    .build());
+
+    public static void register(IEventBus modEventBus) {
+        BLOCKS.register(modEventBus);
+        ITEMS.register(modEventBus);
+        TABS.register(modEventBus);
+    }
+}
