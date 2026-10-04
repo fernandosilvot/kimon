@@ -1,5 +1,6 @@
 {
   "key.kimon.train": "Entrenar Poder",
   "key.categories.misc": "Miscelánea",
-  "hud.kimon.power": "Poder: %s"
+  "hud.kimon.power": "Poder: %s",
+  "hud.kimon.tier": "Nivel: %s"
 }
