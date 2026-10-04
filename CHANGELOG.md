@@ -6,6 +6,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-04
+
+### Added
+- **Training Altar block (Phase 7 start).** A craftable world block (amethyst shards + obsidian)
+  that you right-click to train for a larger reward than the keybind (+15 Power, +15 TP),
+  server-authoritative. Comes with blockstate/model/item model, loot table, recipe, a Kimon
+  creative tab, and en/es names — giving progression a physical place in the world.
+- **Form Mastery.** Each form now accumulates mastery while active, raising its damage multiplier
+  (up to +0.25) and lowering its Energy drain (up to −40%) as you practise it. Mastery is per-form,
+  persisted and synced, shown on the HUD next to the active form. (`MasteryData` pure + 8 tests,
+  `MasteryCodecs`, `MASTERY` attachment, `/kimon mastery <form> <level>`.)
+- **Forms / transformations.** Three forms above Base — Surge, Ascent, Zenith — that multiply all
+  combat damage (melee and Energy Blast) while draining Energy per second, gated by Power tier and
+  minimum Release. Transform up with <kbd>R</kbd>, down with <kbd>V</kbd>; running out of Energy or
+  dropping below the required Release reverts you to Base. (`Form` pure + 9 tests, `TransformPayload`,
+  `/kimon form <name>`.) The active form shows on the HUD.
+
 ## [0.2.0] - 2026-10-04
 
 ### Added
@@ -75,6 +92,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Project scaffolding: MIT license, README, contributing guide, GitFlow branching model,
   and GitHub Actions CI (build + test).
 
-[Unreleased]: https://github.com/fernandosilvot/kimon/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/fernandosilvot/kimon/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/fernandosilvot/kimon/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/fernandosilvot/kimon/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/fernandosilvot/kimon/releases/tag/v0.1.0

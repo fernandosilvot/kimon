@@ -6,8 +6,11 @@ import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 
 import net.kimon.kimon.Kimon;
+import net.kimon.kimon.power.Form;
+import net.kimon.kimon.power.MasteryData;
 import net.kimon.kimon.power.ModAttachments;
 import net.kimon.kimon.power.PowerData;
+import net.kimon.kimon.power.PowerState;
 import net.kimon.kimon.stats.Attribute;
 import net.kimon.kimon.stats.CharacterProfile;
 import net.kimon.kimon.stats.ModStatAttachments;
@@ -64,6 +67,17 @@ public final class KimonCommands {
                         .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .then(Commands.argument("class", StringArgumentType.word())
                                 .executes(ctx -> setClass(ctx.getSource(), StringArgumentType.getString(ctx, "class")))))
+                .then(Commands.literal("form")
+                        .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                        .then(Commands.argument("form", StringArgumentType.word())
+                                .executes(ctx -> setForm(ctx.getSource(), StringArgumentType.getString(ctx, "form")))))
+                .then(Commands.literal("mastery")
+                        .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                        .then(Commands.argument("form", StringArgumentType.word())
+                                .then(Commands.argument("level", IntegerArgumentType.integer(0))
+                                        .executes(ctx -> setMastery(ctx.getSource(),
+                                                StringArgumentType.getString(ctx, "form"),
+                                                IntegerArgumentType.getInteger(ctx, "level"))))))
                 .then(Commands.literal("reset")
                         .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .executes(ctx -> reset(ctx.getSource()))));
@@ -183,6 +197,40 @@ public final class KimonCommands {
         return 1;
     }
 
+    private static int setForm(CommandSourceStack src, String formKey) {
+        ServerPlayer p = self(src);
+        if (p == null) {
+            return 0;
+        }
+        Form form = Form.byKey(formKey);
+        if (form == null) {
+            src.sendSystemMessage(Component.literal("§cUnknown form. Options: base, surge, ascent, zenith"));
+            return 0;
+        }
+        PowerState state = p.getData(ModAttachments.STATE.get());
+        p.setData(ModAttachments.STATE.get(), state.withForm(form));
+        src.sendSystemMessage(Component.literal("§aForm set to " + form.key() + "."));
+        return 1;
+    }
+
+    private static int setMastery(CommandSourceStack src, String formKey, int level) {
+        ServerPlayer p = self(src);
+        if (p == null) {
+            return 0;
+        }
+        Form form = Form.byKey(formKey);
+        if (form == null || form == Form.BASE) {
+            src.sendSystemMessage(Component.literal("§cUnknown form. Options: surge, ascent, zenith"));
+            return 0;
+        }
+        MasteryData mastery = p.getData(ModAttachments.MASTERY.get());
+        java.util.Map<Form, Integer> levels = mastery.asLevelMap();
+        levels.put(form, level);
+        p.setData(ModAttachments.MASTERY.get(), MasteryData.of(levels));
+        src.sendSystemMessage(Component.literal("§aMastery of " + form.key() + " set to " + level + "."));
+        return 1;
+    }
+
     private static int reset(CommandSourceStack src) {
         ServerPlayer p = self(src);
         if (p == null) {
@@ -191,6 +239,7 @@ public final class KimonCommands {
         p.setData(ModStatAttachments.PROFILE.get(), CharacterProfile.DEFAULT);
         p.setData(ModStatAttachments.STATS.get(), StatBlock.initial());
         p.setData(ModAttachments.POWER.get(), PowerData.INITIAL);
+        p.setData(ModAttachments.MASTERY.get(), MasteryData.initial());
         StatEffects.apply(p);
         src.sendSystemMessage(Component.literal("§eCharacter reset to defaults."));
         return 1;

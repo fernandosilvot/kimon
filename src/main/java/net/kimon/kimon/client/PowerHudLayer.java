@@ -56,6 +56,17 @@ public final class PowerHudLayer implements GuiLayer {
                         Component.translatable("class.kimon." + profile.clazz().key())),
                 MARGIN_X, y, 0xFFFFFFFF);
         y += LINE;
+        // Active form (only when transformed, in an eye-catching color).
+        if (state.form() != net.kimon.kimon.power.Form.BASE) {
+            net.kimon.kimon.power.MasteryData mastery =
+                    minecraft.player.getData(ModAttachments.MASTERY.get());
+            guiGraphics.text(minecraft.font,
+                    Component.translatable("hud.kimon.form",
+                            Component.translatable("form.kimon." + state.form().key()),
+                            mastery.level(state.form())),
+                    MARGIN_X, y, 0xFFFF66CC);
+            y += LINE;
+        }
         guiGraphics.text(minecraft.font, Component.translatable("hud.kimon.power", data.power()), MARGIN_X, y, ACCENT);
         y += LINE;
         guiGraphics.text(minecraft.font, Component.translatable("hud.kimon.tier", tier), MARGIN_X, y, ACCENT);

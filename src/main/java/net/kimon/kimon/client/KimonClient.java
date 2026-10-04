@@ -8,6 +8,7 @@ import net.kimon.kimon.Kimon;
 import net.kimon.kimon.network.FireBlastPayload;
 import net.kimon.kimon.network.SetChargingPayload;
 import net.kimon.kimon.network.TrainPowerPayload;
+import net.kimon.kimon.network.TransformPayload;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
@@ -75,6 +76,22 @@ public final class KimonClient {
             KeyMapping.Category.MISC
     ));
 
+    /** Transform up to the next form. Default: <kbd>R</kbd>. */
+    public static final Lazy<KeyMapping> FORM_UP_KEY = Lazy.of(() -> new KeyMapping(
+            "key.kimon.form_up",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_R,
+            KeyMapping.Category.MISC
+    ));
+
+    /** Transform down toward BASE. Default: <kbd>V</kbd>. */
+    public static final Lazy<KeyMapping> FORM_DOWN_KEY = Lazy.of(() -> new KeyMapping(
+            "key.kimon.form_down",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_V,
+            KeyMapping.Category.MISC
+    ));
+
     /** Tracks the last charge state we told the server, so we only send on change. */
     private static boolean lastChargingSent = false;
 
@@ -88,6 +105,8 @@ public final class KimonClient {
         event.register(STATS_KEY.get());
         event.register(CHARGE_KEY.get());
         event.register(BLAST_KEY.get());
+        event.register(FORM_UP_KEY.get());
+        event.register(FORM_DOWN_KEY.get());
     }
 
     @SubscribeEvent
@@ -106,6 +125,12 @@ public final class KimonClient {
         }
         while (BLAST_KEY.get().consumeClick()) {
             ClientPacketDistributor.sendToServer(new FireBlastPayload());
+        }
+        while (FORM_UP_KEY.get().consumeClick()) {
+            ClientPacketDistributor.sendToServer(new TransformPayload(true));
+        }
+        while (FORM_DOWN_KEY.get().consumeClick()) {
+            ClientPacketDistributor.sendToServer(new TransformPayload(false));
         }
 
         // Charge key is a held state, not a click: send the server a packet only when it changes.

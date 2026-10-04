@@ -56,8 +56,14 @@ Mirrors the research's phased plan, scoped to one vertical slice at a time:
    modifiers; `/kimon` debug commands. *(done)*
 5. ✅ **Energy attacks** — Energy Blast: raycast attack consuming Energy, scaling with Energy ×
    Release. *(done)*
-6. 🔜 **Forms** — data-driven multipliers, transform state machine, mastery. *(next)*
-7. 💤 **World / masters / sagas / wishes** — long-horizon, data-driven.
+6. ✅ **Forms** — Base→Surge→Ascent→Zenith; multiply combat damage, drain Energy, gated by tier +
+   Release; transform up/down keys; HUD indicator. **Form Mastery**: forms improve (+damage,
+   −drain) with use. *(done)*
+7. 🔜 **World / masters / sagas / wishes** — long-horizon, data-driven. *(in progress)*
+   - ✅ **Training Altar** block: craftable, right-click to train for a bigger reward.
+   - ⏳ Wishes/rewards, master NPCs that teach skills/forms, data-driven sagas.
+
+Near-term refinements: a visual projectile entity, and moving races/forms to JSON datapacks.
 
 Deferred (need libraries not yet on 26.2): player animation (forms visuals), in-game GameTests.
 Also deferred: moving races/forms/skills to JSON datapacks (currently enum-based; the research's

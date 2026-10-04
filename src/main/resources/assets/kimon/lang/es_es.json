@@ -3,9 +3,12 @@
   "key.kimon.stats": "Abrir Hoja de Personaje",
   "key.kimon.charge": "Cargar (Subir Poder)",
   "key.kimon.blast": "Lanzar Ráfaga de Energía",
+  "key.kimon.form_up": "Transformarse (Subir)",
+  "key.kimon.form_down": "Destransformarse (Bajar)",
   "key.categories.misc": "Miscelánea",
 
   "hud.kimon.profile": "%s / %s",
+  "hud.kimon.form": "Forma: %s (Maestría %s)",
   "hud.kimon.power": "Poder: %s",
   "hud.kimon.tier": "Nivel: %s",
   "hud.kimon.release": "Liberación: %s%%",
@@ -16,6 +19,19 @@
   "msg.kimon.blast_hit": "Ráfaga de Energía: %s de daño",
   "msg.kimon.blast_miss": "La Ráfaga de Energía falló",
   "msg.kimon.no_energy": "Energía insuficiente",
+  "msg.kimon.form_up": "Transformado: %s",
+  "msg.kimon.form_down": "Volviste a %s",
+  "msg.kimon.form_max": "Ya estás en la forma máxima",
+  "msg.kimon.form_locked": "%s bloqueada (requiere Nivel %s, Liberación %s%%)",
+  "msg.kimon.altar_train": "Entrenaste en el altar: +%s de Poder, +%s TP",
+
+  "itemGroup.kimon": "Kimon",
+  "block.kimon.training_altar": "Altar de Entrenamiento",
+
+  "form.kimon.base": "Base",
+  "form.kimon.surge": "Oleada",
+  "form.kimon.ascent": "Ascenso",
+  "form.kimon.zenith": "Cénit",
 
   "screen.kimon.stats.title": "Hoja de Personaje",
   "screen.kimon.stats.tp": "Puntos de Entrenamiento: %s",
