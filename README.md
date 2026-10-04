@@ -32,6 +32,7 @@ the legal stance.
 - [Build from source](#build-from-source)
 - [Architecture](#architecture)
 - [Testing](#testing)
+- [For AI agents / contributors picking this up](#for-ai-agents--contributors-picking-this-up)
 - [Development workflow (GitFlow)](#development-workflow-gitflow)
 - [Roadmap](#roadmap)
 - [Legal / originality](#legal--originality)
@@ -316,6 +317,14 @@ Training Points or stats.
   manually (and the hard logic is covered by the unit tests). Tracked as future work.
 
 ---
+
+## For AI agents / contributors picking this up
+
+If you're an AI agent (Claude, Kiro, etc.) or a new contributor, start with
+**[`docs/CONTINUE_HERE.md`](docs/CONTINUE_HERE.md)** — a complete handoff covering the current
+state, architecture, Minecraft 26.2 API gotchas, the GitFlow workflow, and suggested next steps.
+See also [`AGENTS.md`](AGENTS.md), [`CLAUDE.md`](CLAUDE.md), and the standing rules in
+`.kiro/steering/`.
 
 ## Development workflow (GitFlow)
 

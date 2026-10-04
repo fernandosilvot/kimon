@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- **Agent handoff docs** so any AI agent (Claude, Kiro, etc.) or contributor can continue the
+  project cold: `docs/CONTINUE_HERE.md` (full state, architecture, 26.2 API gotchas, workflow,
+  next slices), `AGENTS.md`, `CLAUDE.md`, and a `.kiro/steering/kimon-onboarding.md` session
+  pointer. README now links them.
 - **Wish Orb item (Phase 7).** A craftable consumable (ender eye + amethyst + gold) that, on
   right-click, grants a random `Wish` — a Training-Point boon, a Power surge, or a balanced mix —
   then is consumed. Server-authoritative roll. (`Wish` pure + 5 tests, `WishOrbItem`, client item
