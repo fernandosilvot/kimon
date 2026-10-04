@@ -109,7 +109,7 @@ public final class KimonCommands {
                 "Derived: §c+%.1f dmg§r  §c+%.0f hp§r  maxEnergy §9%.0f§r  maxStamina §a%.0f",
                 StatCalculator.bonusAttackDamage(stats, profile),
                 StatCalculator.bonusHealth(stats, profile),
-                StatCalculator.maxEnergy(stats, profile),
+                StatCalculator.maxEnergy(stats, profile, net.kimon.kimon.config.KimonConfig.params().kiPerSpirit()),
                 StatCalculator.maxStamina(stats, profile))));
         return 1;
     }

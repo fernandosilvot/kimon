@@ -33,7 +33,7 @@ simplified version** of the same shape:
 - **Training Points (TP):** earned by training; spent to raise attributes. Cost grows per point.
 - **Power:** the aggregate "level" shown on the HUD (already implemented in v0.1.0). Tiers derived
   from Power scale vanilla attributes (`PowerScaling`, implemented).
-- **Release %** (future): a 0–max multiplier that scales combat stats and gates TP gain, with the
+- **Release %**: a 0–max multiplier that scales combat stats and gates TP gain, with the
   classic "charge up vs. regenerate" tension.
 
 Formulas are taken from the research as **starting points**, all made configurable:
@@ -63,6 +63,15 @@ Mirrors the research's phased plan, scoped to one vertical slice at a time:
    - ✅ **Training Altar** block: craftable, right-click to train for a bigger reward.
    - ✅ **Wish Orb** item: craftable consumable granting a random progression wish.
    - ⏳ Master NPCs that teach skills/forms, data-driven sagas.
+
+   - ✅ **Release state machine + config** (Unreleased): explicit Release states, charge / discharge /
+     reset / turbo controls and a server/client config, per `docs/02-release-ki-stats.md`.
+   - ✅ **TP by fighting**: the Train key/button is gone; TP come from hits with Release ≥ 5%
+     (`TpGain`), and spending TP on attributes raises Power.
+   - ✅ **Combat costs, regen lock and sync**: hit costs (Energy + Stamina), 30 s Energy-regen lock
+     after being hurt, throttled sync every 2 ticks, aura state for neighbours, dimension re-sync.
+   - ⏳ Next (`docs/03`, order of 12): step 2 progression (levels, weights, gravity), step 3 races and
+     classes as datapack JSON, step 4 skills, step 5 forms from JSON, step 6 Form Mastery rework.
 
 Near-term refinements: a visual projectile entity, and moving races/forms to JSON datapacks.
 

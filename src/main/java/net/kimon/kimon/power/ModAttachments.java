@@ -43,13 +43,13 @@ public final class ModAttachments {
      * Per-player live combat resources: Release %, Energy, Stamina (Phase 3).
      *
      * <p>Not serialized: resources are transient and recomputed/regenerated each session from the
-     * player's attributes. Synced to the owning client for the HUD.</p>
+     * player's attributes. <b>Not auto-synced</b>: it changes almost every tick, so {@link SyncHandler}
+     * sends it to the owning client every {@link SyncPolicy#INTERVAL_TICKS} ticks, and only when it
+     * changed (plus on login, respawn and dimension change).</p>
      */
     public static final Supplier<AttachmentType<PowerState>> STATE = ATTACHMENT_TYPES.register(
             "state",
-            () -> AttachmentType.builder(() -> PowerState.INITIAL)
-                    .sync((holder, to) -> holder == to, PowerState.STREAM_CODEC)
-                    .build());
+            () -> AttachmentType.builder(() -> PowerState.INITIAL).build());
 
     /** Per-player Form Mastery. Serialized, synced, kept across death. */
     public static final Supplier<AttachmentType<MasteryData>> MASTERY = ATTACHMENT_TYPES.register(

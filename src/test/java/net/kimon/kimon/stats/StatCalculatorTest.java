@@ -101,4 +101,19 @@ class StatCalculatorTest {
         assertEquals(full * 0.5, StatCalculator.meleeDamageBonus(strong, 0.5), 1e-9);
         assertEquals(full, StatCalculator.meleeDamageBonus(strong, 1.0), 1e-9);
     }
+
+    @Test
+    void configurableEnergyPerSpiritScalesMaxEnergy() {
+        StatBlock stats = StatBlock.initial();
+        assertEquals(StatCalculator.maxEnergy(stats) * 2, StatCalculator.maxEnergy(stats, 80.0), 1e-9);
+    }
+
+    @Test
+    void configurableMaxReleaseRespectsBaseAndHardCap() {
+        StatBlock stats = StatBlock.initial();
+        assertEquals(50.0, StatCalculator.maxRelease(stats), 1e-9);
+        assertEquals(30.0, StatCalculator.maxRelease(stats, 30.0, 100.0), 1e-9);
+        assertEquals(100.0, StatCalculator.maxRelease(stats, 500.0, 100.0), 1e-9);
+        assertEquals(200.0, StatCalculator.maxRelease(stats, 500.0, 200.0), 1e-9);
+    }
 }

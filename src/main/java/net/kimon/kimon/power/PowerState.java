@@ -1,119 +1,207 @@
 package net.kimon.kimon.power;
 
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+
 /**
  * Immutable per-player combat resource state: Release %, Energy, Stamina and the active {@link Form}.
  *
  * <p>This is the "feel" core described in the design research: a <b>Release %</b> that scales combat
  * output, an <b>Energy</b> pool that regenerates faster the lower your Release, and a
  * <b>transformation</b> that multiplies combat output while draining Energy. All math is pure (no
- * Minecraft types) so it is unit-testable.</p>
+ * Minecraft types besides the network codec) so it is unit-testable.</p>
  *
- * @param release  current Release %, in {@code [0, maxRelease]}
- * @param energy   current Energy (Ki), in {@code [0, maxEnergy]}
- * @param stamina  current Stamina, in {@code [0, maxStamina]}
- * @param charging whether the player is actively charging (holding the charge key)
- * @param form     the active transformation
+ * <h2>Release state machine</h2>
+ * Release only changes through input: <b>charge</b> raises it, <b>discharge</b> lowers it (and wins
+ * if both are held), and with no input it holds (STABLE) while upkeep slowly drains Energy. Running
+ * out of Energy sends the player to {@link ReleaseState#EXHAUSTED} until Energy recovers.
+ *
+ * @param release      current Release %, in {@code [0, maxRelease]}
+ * @param energy       current Energy (Ki), in {@code [0, maxEnergy]}
+ * @param stamina      current Stamina, in {@code [0, maxStamina]}
+ * @param charging     input: the charge key is held
+ * @param discharging  input: the discharge key is held (takes priority over charging)
+ * @param turbo        input: Turbo is held (faster charge, extra Energy cost)
+ * @param releaseState the state-machine state computed by the last {@link #tick}
+ * @param form         the active transformation
+ * @param regenLock    ticks left in the post-damage regeneration lock (server-only, not synced)
  */
-public record PowerState(double release, double energy, double stamina, boolean charging, Form form) {
+public record PowerState(double release, double energy, double stamina,
+                         boolean charging, boolean discharging, boolean turbo,
+                         ReleaseState releaseState, Form form, int regenLock) {
 
-    public static final PowerState INITIAL = new PowerState(0, 0, 0, false, Form.BASE);
+    public static final PowerState INITIAL =
+            new PowerState(0, 0, 0, false, false, false, ReleaseState.STABLE, Form.BASE, 0);
 
-    /** Stream codec for syncing live resources to the owning client. */
-    public static final net.minecraft.network.codec.StreamCodec<net.minecraft.network.RegistryFriendlyByteBuf, PowerState> STREAM_CODEC =
-            net.minecraft.network.codec.StreamCodec.of(
+    /** Convenience constructor: no regeneration lock. */
+    public PowerState(double release, double energy, double stamina,
+                      boolean charging, boolean discharging, boolean turbo,
+                      ReleaseState releaseState, Form form) {
+        this(release, energy, stamina, charging, discharging, turbo, releaseState, form, 0);
+    }
+
+    /** Convenience constructor: no discharge/turbo input, STABLE state. */
+    public PowerState(double release, double energy, double stamina, boolean charging, Form form) {
+        this(release, energy, stamina, charging, false, false, ReleaseState.STABLE, form, 0);
+    }
+
+    /**
+     * Stream codec for syncing live resources to the owning client. The discharge input is not sent
+     * (the client derives it from {@link ReleaseState#LOWERING}).
+     */
+    public static final StreamCodec<RegistryFriendlyByteBuf, PowerState> STREAM_CODEC =
+            StreamCodec.of(
                     (buf, s) -> {
                         buf.writeDouble(s.release());
                         buf.writeDouble(s.energy());
                         buf.writeDouble(s.stamina());
                         buf.writeBoolean(s.charging());
+                        buf.writeBoolean(s.turbo());
+                        buf.writeVarInt(s.releaseState().ordinal());
                         buf.writeVarInt(s.form().ordinal());
                     },
                     buf -> new PowerState(
-                            buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readBoolean(),
-                            Form.VALUES[Math.floorMod(buf.readVarInt(), Form.VALUES.length)])
+                            buf.readDouble(), buf.readDouble(), buf.readDouble(),
+                            buf.readBoolean(), false, buf.readBoolean(),
+                            ReleaseState.byOrdinal(buf.readVarInt()),
+                            Form.VALUES[Math.floorMod(buf.readVarInt(), Form.VALUES.length)],
+                            0)
             );
 
-    public static final double BASE_MAX_RELEASE = 50.0;
-    public static final double HARD_MAX_RELEASE = 100.0;
-
-    public static final double CHARGE_RATE = 25.0;
-    public static final double SLOWDOWN_ABOVE_50 = 0.5;
-    public static final double DECAY_RATE = 10.0;
+    /** Minimum Release % to be "active" (earn TP, use powers). Fixed by the design, not configurable. */
     public static final double MIN_ACTIVE_RELEASE = 5.0;
 
-    public static final double ENERGY_REGEN_PCT = 0.04;
-    public static final double ENERGY_REGEN_CUTOFF = 50.0;
+    /** Release % above which charging slows down (the "feels slow past 50%" of the research). */
+    private static final double SLOWDOWN_THRESHOLD = 50.0;
 
-    public static final double STAMINA_REGEN_PCT = 0.05;
-
-    public static final double UPKEEP_FACTOR = 0.004;
+    /** Advances the state using {@link PowerParams#DEFAULTS}. */
+    public PowerState tick(double dt, double maxRelease, double maxEnergy, double maxStamina) {
+        return tick(dt, maxRelease, maxEnergy, maxStamina, PowerParams.DEFAULTS);
+    }
 
     /**
      * Advances the state by {@code dt} seconds. Besides Release/Energy/Stamina, the active form
-     * drains Energy per second; running out of Energy drops the form back to BASE (and Release to 0).
+     * drains Energy per second; running out of Energy drops the form back to BASE and Release to 0.
      *
      * @param dt          seconds elapsed (e.g. 0.05 for one tick)
      * @param maxRelease  the player's current Release ceiling
      * @param maxEnergy   max Energy from attributes
      * @param maxStamina  max Stamina from attributes
+     * @param p           balance values
      */
-    public PowerState tick(double dt, double maxRelease, double maxEnergy, double maxStamina) {
-        double cappedMaxRelease = Math.min(HARD_MAX_RELEASE, Math.max(0, maxRelease));
+    public PowerState tick(double dt, double maxRelease, double maxEnergy, double maxStamina, PowerParams p) {
+        double cap = clamp(maxRelease, p.hardMaxRelease());
 
-        double nextEnergy = energy;
-        double nextRelease = release;
-        Form nextForm = form;
+        // EXHAUSTED persists until Energy has recovered enough; input is ignored meanwhile.
+        boolean exhausted = releaseState == ReleaseState.EXHAUSTED
+                && energy < maxEnergy * p.exhaustRecoverPct();
 
-        if (charging && energy > 0) {
-            double rate = CHARGE_RATE * (release < 50.0 ? 1.0 : SLOWDOWN_ABOVE_50);
-            nextRelease = Math.min(cappedMaxRelease, release + rate * dt);
-        } else {
-            nextRelease = Math.max(0, release - DECAY_RATE * dt);
+        double nextRelease = Math.min(release, cap);
+        boolean rising = false;
+        boolean lowering = false;
+        if (exhausted) {
+            nextRelease = 0;
+        } else if (discharging) {
+            double lowered = Math.max(0, nextRelease - p.dischargeRate() * dt);
+            lowering = lowered < nextRelease;
+            nextRelease = lowered;
+        } else if (charging) {
+            double rate = p.chargeRate()
+                    * (turbo ? p.turboMult() : 1.0)
+                    * (nextRelease < SLOWDOWN_THRESHOLD ? 1.0 : p.slowdownAbove50());
+            double raised = Math.min(cap, nextRelease + rate * dt);
+            rising = raised > nextRelease;
+            nextRelease = raised;
         }
 
-        // Release upkeep + form drain both cost Energy.
-        double upkeep = maxEnergy * UPKEEP_FACTOR * Math.pow(nextRelease / 100.0, 2) * dt;
-        nextEnergy -= upkeep;
+        // Release upkeep, form drain and Turbo all cost Energy; low Release regenerates it.
+        double nextEnergy = energy;
+        nextEnergy -= maxEnergy * p.upkeepFactor() * Math.pow(nextRelease / 100.0, 2) * dt;
         nextEnergy -= form.energyDrainPerSecond() * dt;
-
-        if (nextRelease < ENERGY_REGEN_CUTOFF) {
-            double factor = Math.max(0, 1.0 - nextRelease / ENERGY_REGEN_CUTOFF);
-            nextEnergy += maxEnergy * ENERGY_REGEN_PCT * factor * dt;
+        if (turbo && rising) {
+            nextEnergy -= maxEnergy * p.turboKiDrain() * dt;
+        }
+        boolean locked = regenLock > 0;
+        if (!locked && nextRelease < p.kiRegenCutoff()) {
+            double factor = Math.max(0, 1.0 - nextRelease / p.kiRegenCutoff());
+            nextEnergy += maxEnergy * p.kiRegenPct() * p.kiRegenRate().multiplier() * factor * dt;
         }
         nextEnergy = clamp(nextEnergy, maxEnergy);
 
-        if (nextEnergy <= 0) {
-            nextEnergy = 0;
+        Form nextForm = form;
+        ReleaseState nextState;
+        if (nextEnergy <= 0 || exhausted) {
+            // Can't sustain Release or a form with no Energy.
+            nextEnergy = Math.max(0, nextEnergy);
             nextRelease = 0;
-            nextForm = Form.BASE; // can't sustain a form with no Energy
-        } else if (nextForm != Form.BASE && nextRelease < nextForm.requiredRelease()) {
-            // Release dropped below what the form needs to stay active → revert.
             nextForm = Form.BASE;
+            nextState = ReleaseState.EXHAUSTED;
+        } else {
+            if (nextForm != Form.BASE && nextRelease < nextForm.requiredRelease()) {
+                // Release dropped below what the form needs to stay active → revert.
+                nextForm = Form.BASE;
+            }
+            if (lowering) {
+                nextState = ReleaseState.LOWERING;
+            } else if (charging && !discharging && cap > 0 && nextRelease >= cap) {
+                nextState = ReleaseState.AT_MAX;
+            } else if (rising) {
+                nextState = ReleaseState.CHARGING;
+            } else {
+                nextState = ReleaseState.STABLE;
+            }
         }
 
-        double nextStamina = clamp(stamina + maxStamina * STAMINA_REGEN_PCT * dt, maxStamina);
+        boolean staminaBlocked = locked && p.staminaRegenLocked();
+        double nextStamina = staminaBlocked
+                ? clamp(stamina, maxStamina)
+                : clamp(stamina + maxStamina * 0.05 * dt, maxStamina);
 
-        return new PowerState(nextRelease, nextEnergy, nextStamina, charging, nextForm);
+        return new PowerState(nextRelease, nextEnergy, nextStamina,
+                charging, discharging, turbo, nextState, nextForm, Math.max(0, regenLock - 1));
+    }
+
+    /** Sets the three held-key inputs; the next {@link #tick} acts on them. */
+    public PowerState withInput(boolean charging, boolean discharging, boolean turbo) {
+        return new PowerState(release, energy, stamina, charging, discharging, turbo, releaseState, form, regenLock);
     }
 
     public PowerState withCharging(boolean c) {
-        return new PowerState(release, energy, stamina, c, form);
+        return withInput(c, discharging, turbo);
     }
 
     public PowerState withForm(Form f) {
-        return new PowerState(release, energy, stamina, charging, f);
+        return new PowerState(release, energy, stamina, charging, discharging, turbo, releaseState, f, regenLock);
+    }
+
+    /**
+     * Instantly drops Release to 0 and de-transforms (the "reset" key). An EXHAUSTED player stays
+     * exhausted until Energy recovers.
+     */
+    public PowerState reset() {
+        ReleaseState next = releaseState == ReleaseState.EXHAUSTED ? ReleaseState.EXHAUSTED : ReleaseState.STABLE;
+        return new PowerState(0, energy, stamina, charging, discharging, turbo, next, Form.BASE, regenLock);
     }
 
     public PowerState withResources(double release, double energy, double stamina,
                                     double maxRelease, double maxEnergy, double maxStamina) {
         return new PowerState(
-                clamp(release, Math.min(HARD_MAX_RELEASE, maxRelease)),
+                clamp(release, maxRelease),
                 clamp(energy, maxEnergy),
                 clamp(stamina, maxStamina),
-                charging, form);
+                charging, discharging, turbo, releaseState, form, regenLock);
     }
 
-    /** The combat multiplier contributed by Release (0.0 at 0% up to 1.0 at 100%). */
+    /**
+     * Starts (or restarts) the post-damage regeneration lock: no Energy regen for {@code ticks}.
+     * A longer remaining lock is never shortened.
+     */
+    public PowerState hurt(int ticks) {
+        return new PowerState(release, energy, stamina, charging, discharging, turbo, releaseState, form,
+                Math.max(regenLock, Math.max(0, ticks)));
+    }
+
+    /** The combat multiplier contributed by Release (0.0 at 0% up to 1.0 at 100%, more if overcharged). */
     public double releaseMultiplier() {
         return release / 100.0;
     }

@@ -8,7 +8,7 @@
 ![Minecraft](https://img.shields.io/badge/Minecraft-26.2-brightgreen)
 ![NeoForge](https://img.shields.io/badge/NeoForge-26.2.0.88-orange)
 ![Java](https://img.shields.io/badge/Java-25-red)
-![Tests](https://img.shields.io/badge/tests-81%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-124%20passing-brightgreen)
 
 Kimon is a from-scratch RPG progression mod inspired by the *feel* of classic anime-fighter mods
 (train, grow stronger, power up, transform) — built as a **clean-room reimplementation** with
@@ -47,7 +47,7 @@ Minecraft 26.2 / NeoForge 26.2.0.88.
 | Feature | Status |
 | --- | --- |
 | Per-player **Power** stat, persisted across relog & death, synced to the client | ✅ |
-| **Train** keybind (<kbd>G</kbd>): raises Power `+5` and earns Training Points | ✅ |
+| **Training Points by fighting**: hits (melee and Energy Blast) with Release ≥ 5% earn TP — `2 + 2·⌊FOCUS/5⌋·Release/100`, on a configurable hit chance. No free TP source | ✅ |
 | Power scales **max health / attack damage / movement speed** in tiers | ✅ |
 | **Six attributes** — Strength, Agility, Vitality, Energy, Focus, Spirit | ✅ |
 | **Training Points economy** with a rising per-point cost curve | ✅ |
@@ -55,13 +55,16 @@ Minecraft 26.2 / NeoForge 26.2.0.88.
 | Attributes drive real combat stats (Vitality→health, Strength→damage, Agility→speed) | ✅ |
 | **Six races** (Human, Titan, Sage, Frost, Mystic, Hybrid) with unique starting spreads & modifiers | ✅ |
 | **Three classes** (Warrior, Brawler, Channeler) that further tweak modifiers | ✅ |
-| **Release %** charge mechanic (hold <kbd>C</kbd>) that scales combat output | ✅ |
+| **Release %** state machine — charge (<kbd>C</kbd>), discharge (<kbd>Ctrl+C</kbd>), reset (<kbd>H</kbd>), turbo (<kbd>R</kbd>); states Stable / Charging / At max / Lowering / Exhausted; scales combat output | ✅ |
+| **Combat costs & regen lock**: an empowered hit (Release ≥ 5%) costs Energy (`1 + STR/200`) and Stamina, with vanilla damage if you can't pay; being hurt by a living entity stops Energy regen for 30 s (configurable) | ✅ |
+| **Throttled sync**: your resources reach your client every 2 ticks and only when changed; neighbours get a coarse aura state; full re-sync on login, respawn and dimension change | ✅ |
+| **Config** (`kimon-server.toml` / `kimon-client.toml`): Release/Energy balance is tunable, no hardcoded numbers | ✅ |
 | **Energy & Stamina** resources with regen (Energy regens faster at low Release) | ✅ |
 | Melee damage scales with **Strength × Release**; action-bar **"Hit for X"** feedback | ✅ |
 | **Energy Blast** attack (<kbd>B</kbd>): raycast that consumes Energy and scales with Energy × Release | ✅ |
-| **Forms / transformations** (<kbd>R</kbd> up / <kbd>V</kbd> down): multiply combat damage, drain Energy, gated by Power tier + Release | ✅ |
+| **Forms / transformations** (<kbd>G</kbd> up; <kbd>H</kbd> reverts): multiply combat damage, drain Energy, gated by Power tier + Release | ✅ |
 | **Form Mastery**: forms grow stronger (+damage) and cheaper (−drain) the more you use them | ✅ |
-| **Training Altar** block: craft it, place it, right-click to train (+Power, +TP) — world presence | ✅ |
+| **Training Altar** block: a training dummy — right-click counts as a hit (needs Release ≥ 5%, costs Stamina, chance of TP; no Power) | ✅ |
 | **Wish Orb** item: right-click to be granted a random wish (Power and/or Training Points) | ✅ |
 | **HUD** showing Race/Class, active Form + Mastery, Power, Tier, Release %, Energy, Stamina | ✅ |
 | **`/kimon` debug/admin command** to set progression without grinding | ✅ |
@@ -80,12 +83,13 @@ systems. See the [Roadmap](#roadmap).
 
 | Key | Action |
 | --- | --- |
-| <kbd>G</kbd> | **Train** — raise Power and earn Training Points |
-| <kbd>K</kbd> | Open the **Character Sheet** to spend Training Points on attributes |
-| <kbd>C</kbd> (hold) | **Charge** — power up; your Release % rises (and decays when released) |
+| <kbd>K</kbd> | Open the **Character Sheet** to spend Training Points on attributes (each point also raises Power) |
+| <kbd>C</kbd> (hold) | **Charge** — Release % rises (slower past 50%); with no input it holds, costing Energy |
+| <kbd>Ctrl</kbd>+<kbd>C</kbd> (hold) | **Discharge** — Release % drops (wins over Charge) |
+| <kbd>R</kbd> (hold) | **Turbo** — faster charge at an extra Energy cost |
+| <kbd>H</kbd> | **Reset** — Release to 0% and revert to Base form instantly |
 | <kbd>B</kbd> | **Energy Blast** — fire a ranged energy attack along your view (costs Energy) |
-| <kbd>R</kbd> | **Transform up** — ascend to the next form (needs Power tier + Release) |
-| <kbd>V</kbd> | **Transform down** — revert one form toward Base |
+| <kbd>G</kbd> | **Transform up** — ascend to the next form (needs Power tier + Release) |
 | <kbd>F3</kbd> | Vanilla debug screen — hides the Kimon HUD while held |
 
 All keys are rebindable under **Options → Controls → Miscellaneous**.
@@ -120,27 +124,27 @@ A quick tour that exercises every system:
 
 1. **Launch** a world (enable cheats so you can use `/kimon`).
 2. **Check the HUD** (top-left): your Race/Class, `Power`, `Tier`, `Release %`, `Energy`, `Stamina`.
-3. **Train**: press <kbd>G</kbd> a few times — Power and Training Points go up.
+3. **Earn TP by fighting**: hold <kbd>C</kbd> until Release is above 5%, then hit a mob. Some hits show `(+N TP)` on the action bar. At 0% Release you earn nothing.
 4. **Spend TP**: press <kbd>K</kbd> and raise attributes with the `+` buttons. Vitality adds hearts,
    Strength adds damage, Agility adds speed. (Or shortcut it: `/kimon tp 100000`.)
 5. **Pick an identity**: `/kimon race titan` + `/kimon class warrior` for a melee bruiser, or
    `/kimon race sage` + `/kimon class channeler` for an energy build. `/kimon info` shows the effect.
-6. **Power up and hit**: hold <kbd>C</kbd> to charge your Release % to the max (watch the HUD), then
+6. **Power up and hit**: hold <kbd>C</kbd> to charge your Release % to the max (watch the HUD state: Charging → At max; <kbd>Ctrl</kbd>+<kbd>C</kbd> lowers it, <kbd>H</kbd> resets it), then
    left-click a mob. The action bar shows **`Hit for X`** — compare hitting at 0% Release vs. fully
    charged to feel the Strength × Release scaling.
 7. **Fire an Energy Blast**: with some Release charged, press <kbd>B</kbd> while looking at a target.
    It consumes Energy and deals damage scaling with your Energy attribute × Release. An energy build
    (`/kimon race sage` + `/kimon class channeler`, high Energy attribute) hits hardest.
-8. **Transform**: charge your Release, then press <kbd>R</kbd> to ascend to the next **form**
+8. **Transform**: charge your Release, then press <kbd>G</kbd> to ascend to the next **form**
    (Surge → Ascent → Zenith). Forms multiply all your combat damage but drain Energy per second and
    need enough Power tier + Release — if Energy runs out or Release drops, you revert to Base.
-   Press <kbd>V</kbd> to step down. The active form shows on the HUD.
+   Press <kbd>H</kbd> to revert (it also resets Release). The active form shows on the HUD.
 9. **Build Mastery**: just by spending time in a form, its **Mastery** rises (shown on the HUD).
    Higher mastery means more damage and less Energy drain for that form — so a well-practised Surge
    can rival a fresh Ascent while costing less. (Shortcut: `/kimon mastery zenith 50`.)
 10. **Train at an altar**: craft a **Training Altar** (amethyst shards around obsidian; find it in the
-    Kimon creative tab too), place it, and right-click it to train for a bigger reward (+15 Power,
-    +15 TP) than the free keybind — giving your training a place in the world.
+    Kimon creative tab too), place it, charge your Release (≥ 5%) and right-click it. It acts as a
+    training dummy: each use costs Stamina and has a chance to grant TP, like a hit would.
 11. **Make a wish**: craft a **Wish Orb** (ender eye + amethyst + gold) and right-click it to be
     granted a random wish — a boon of Training Points, a surge of Power, or a mix. The orb is
     consumed. Great for a quick power spike.
@@ -233,10 +237,20 @@ loads on a dedicated server, and keeps every stat/resource computation **server-
 ```
 net.kimon.kimon
 ├── Kimon.java                  # @Mod entry point; registers attachments on the mod bus
+├── config/
+│   └── KimonConfig.java        # SERVER (Release/Energy balance) + CLIENT (HUD) ModConfigSpec
 ├── power/
 │   ├── PowerData.java          # Power stat + tier math (pure, unit-tested)
 │   ├── PowerScaling.java       # Power → tiered attribute bonuses (pure, unit-tested)
-│   ├── PowerState.java         # Release %, Energy, Stamina loop (pure, unit-tested)
+│   ├── PowerState.java         # Release state machine + Energy/Stamina loop (pure, unit-tested)
+│   ├── ReleaseState.java       # Stable / Charging / At max / Lowering / Exhausted
+│   ├── CombatCosts.java        # Energy/Stamina cost of an empowered hit (pure, unit-tested)
+│   ├── AuraState.java          # coarse aura info neighbours receive (pure)
+│   ├── AuraCache.java          # client-side auras of nearby players
+│   ├── SyncPolicy.java         # when to send state to clients (pure, unit-tested)
+│   ├── SyncHandler.java        # server: throttled state sync + full re-sync on dimension change
+│   ├── PowerParams.java        # balance values for the loop (pure; built from the config)
+│   ├── KiRegenRate.java        # slow / normal / fast / faster Energy regen
 │   ├── EnergyBlast.java        # energy-attack damage/cost rules (pure, unit-tested)
 │   ├── Form.java               # transformation ladder: multipliers, drain, gating (pure, unit-tested)
 │   ├── MasteryData.java        # per-form mastery: raises damage, lowers drain (pure, unit-tested)
@@ -256,15 +270,17 @@ net.kimon.kimon
 │   ├── CharacterProfile.java   # chosen race + class (persisted+synced)
 │   └── ModStatAttachments.java # STATS and PROFILE attachments
 ├── block/
-│   ├── TrainingAltarBlock.java # right-click to train (+Power, +TP), server-authoritative
+│   ├── TrainingAltarBlock.java # training dummy: costs Stamina, chance of TP, server-authoritative
 │   └── ModBlocks.java          # registers blocks, items (incl. Wish Orb), the Kimon creative tab
 ├── wish/
 │   ├── Wish.java               # wish reward table (pure, unit-tested)
 │   └── WishOrbItem.java        # consumable: right-click grants a random wish
 ├── network/
-│   ├── TrainPowerPayload.java       # C→S: train
 │   ├── RaiseAttributePayload.java   # C→S: spend TP on an attribute
-│   ├── SetChargingPayload.java      # C→S: toggle charging (hold C)
+│   ├── PowerSyncPayload.java        # S→C: your Release/Energy/Stamina (every 2 ticks, if changed)
+│   ├── AuraPayload.java             # S→C: a nearby player's aura bucket
+│   ├── ChargeInputPayload.java      # C→S: held charge / discharge / turbo flags
+│   ├── ResetReleasePayload.java     # C→S: reset Release + revert form
 │   ├── FireBlastPayload.java        # C→S: fire an Energy Blast
 │   ├── TransformPayload.java        # C→S: transform up / down
 │   └── ModNetworking.java           # registers payloads + server-side handlers
@@ -278,28 +294,33 @@ net.kimon.kimon
 
 ### Why it's server-authoritative
 
-The client only ever sends **intents** (train, raise attribute, charging on/off). The server
+The client only ever sends **intents** (raise attribute, charge/discharge/turbo, reset, fire blast, transform). The server
 validates and applies them, then NeoForge's synced data attachments push the authoritative result
 back to the owning client, which the HUD/GUI simply read. A modified client cannot grant itself free
 Training Points or stats.
 
-### Data flow of one "train" action
+### Data flow of earning and spending TP
 
 ```
-[client] press G
-   └─► ClientPacketDistributor.sendToServer(TrainPowerPayload)
-          └─► [server] ModNetworking.handleTrain
-                 ├─► POWER += 5           (PowerData, auto-synced)
-                 ├─► PowerEffects.apply    (re-derive tier bonuses)
-                 └─► STATS.trainingPoints += 5  (StatBlock, auto-synced)
-                        └─► [client] HUD / Character Sheet read the synced values
+[client] left-click a mob (vanilla attack, no Kimon packet)
+   └─► [server] CombatHandler.onDamagePost
+          ├─► needs Release ≥ 5%  ──(else no TP)
+          ├─► TpGain.forHit(FOCUS, Release, roll)   (pure, unit-tested)
+          └─► STATS.trainingPoints += tp           (StatBlock, auto-synced)
+
+[client] press + on the Character Sheet
+   └─► ClientPacketDistributor.sendToServer(RaiseAttributePayload)
+          └─► [server] ModNetworking.handleRaiseAttribute
+                 ├─► StatBlock.raise  (spends TP, validated server-side)
+                 ├─► POWER += powerPerPoint  (tier bonuses + form gating)
+                 └─► StatEffects / PowerEffects re-derive vanilla attributes
 ```
 
 ---
 
 ## Testing
 
-- **Unit tests** (`src/test/java`, 81 tests) cover all pure logic: Power tiers, the TP economy and
+- **Unit tests** (`src/test/java`, 124 tests) cover all pure logic: Power tiers, the TP economy and
   cost curve, attribute-derived stats, the Release/Energy/Stamina loop, race/class modifiers, the
   Energy Blast damage/cost rules, the form ladder, Form Mastery, and the Wish reward table.
   They run on a plain JVM with no Minecraft bootstrap, so they are fast and reliable in CI.

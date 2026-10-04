@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- **Regeneration lock.** After being hurt by a living entity, Energy stops regenerating for
+  `combat.regenLockTicks` (default 600 = 30 s); `combat.staminaRegenLocked` (default false) extends it
+  to Stamina. Server-only counter inside `PowerState` (`hurt()`), so it costs no bandwidth.
+- **Hit costs.** An empowered melee hit (Release ≥ 5%) now costs Energy (`1 + STR/200`) and
+  `combat.hitStaminaCost` (default 2%) of max Stamina. If you can't pay, the hit does vanilla damage
+  (and earns no TP). New pure `CombatCosts`.
+- **Throttled sync.** `PowerState` is no longer an auto-synced attachment; `SyncHandler` sends it to
+  the owner every 2 ticks and only when it changed (`PowerSyncPayload`, `SyncPolicy`). Neighbours get
+  an `AuraState` (charging / turbo / 10% Release bucket, never exact numbers) via `AuraPayload`, kept
+  client-side in `AuraCache` (the aura *drawing* is a later phase).
+- **Dimension re-sync.** Login, respawn and dimension change force a full resync of the resources,
+  aura and the auto-synced attachments (works around NeoForge issue #2510).
+- 17 new unit tests (`RegenLockTest`, `CombatCostsTest`, `SyncPolicyTest`): 124 total.
+- **Config.** `kimon-server.toml` (synced to clients) with the Release/Energy balance —
+  `release.baseMax`, `allowOvercharge`, `chargeRate`, `slowdownAbove50`, `turboMult`, `turboKiDrain`,
+  `dischargeRate`, `upkeepFactor`, and `ki.perSPI`, `regenPct`, `regenRate`, `regenCutoffRelease`,
+  `exhaustRecoverPct` — and `kimon-client.toml` (`hud.displayStep`). Values reach the pure logic as an
+  immutable `PowerParams` snapshot. Defaults follow `docs/02-release-ki-stats.md`.
+- **Release state machine.** `ReleaseState` (Stable / Charging / At max / Lowering / Exhausted),
+  computed in `PowerState.tick` and synced for the HUD. Running out of Energy now locks the player
+  in **Exhausted** (Release 0, input ignored) until Energy recovers to 5% of the maximum.
+- **Release controls.** Charge (<kbd>C</kbd>), Discharge (<kbd>Ctrl+C</kbd>, wins over charge),
+  Turbo (<kbd>R</kbd>, faster charge + extra Energy drain) and Reset (<kbd>H</kbd>, Release to 0 and
+  revert form). New `ChargeInputPayload` and `ResetReleasePayload`.
+- **Overcharge option** (`release.allowOvercharge`): Release ceiling 100% → 200%.
+- 19 new unit tests (`ReleaseStateMachineTest`, `StatCalculator` overloads): 100 total.
+
+### Changed
+- **No more free Training Points.** The Train button/packet is gone; the only organic TP source is
+  now hitting things with Release ≥ 5% (melee and Energy Blast), per the research:
+  `TP = 2 + 2·⌊FOCUS/5⌋·Release/100`, rolled against `tp.hitChance` (default 0.2). Against another
+  player the target's FOCUS is used. New pure `TpGain`/`TpParams` (7 tests) and config keys
+  `tp.baseAmount`, `tp.perFocusStep`, `tp.focusDivisor`, `tp.hitChance`.
+- **Training Altar is a training dummy.** It needs Release ≥ 5%, costs `tp.altarStaminaCost` of max
+  Stamina per use and only sometimes grants TP; it no longer grants Power.
+- **Power comes from spending TP.** Each attribute point bought adds `progression.powerPerPoint`
+  Power (default 5), so form gating by Power tier follows from fighting → TP → attributes.
+- Action bar shows the TP earned: `Hit for X (+N TP)`.
+- **Release no longer decays on its own.** With no input it holds its value (Energy upkeep still
+  applies); only Discharge or Reset lowers it. Default rates now follow the research doc:
+  charge 10 %/s (was 25), discharge 25 %/s, upkeep 0.002 (was 0.004), Energy regen 0.02 (was 0.04).
+- **Keybinds.** Transform up moved from <kbd>R</kbd> to <kbd>G</kbd>; <kbd>H</kbd> reverts the form
+  (replaces <kbd>V</kbd>); Train moved from <kbd>G</kbd> to a **Train** button on the Character Sheet.
+- Network protocol version bumped to 3 (`SetChargingPayload` removed; two clientbound payloads added).
+- Melee bonus now needs an active Release (≥ 5%); below that the hit is plain vanilla.
+- HUD shows the Release state, steps Release by `hud.displayStep`, and colours it (white ≤ 50%,
+  amber ≤ 100%, red when overcharged or exhausted).
+
 - **Agent handoff docs** so any AI agent (Claude, Kiro, etc.) or contributor can continue the
   project cold: `docs/CONTINUE_HERE.md` (full state, architecture, 26.2 API gotchas, workflow,
   next slices), `AGENTS.md`, `CLAUDE.md`, and a `.kiro/steering/kimon-onboarding.md` session
