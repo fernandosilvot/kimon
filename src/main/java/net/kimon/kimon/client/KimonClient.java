@@ -5,6 +5,7 @@ import org.lwjgl.glfw.GLFW;
 import com.mojang.blaze3d.platform.InputConstants;
 
 import net.kimon.kimon.Kimon;
+import net.kimon.kimon.network.FireBlastPayload;
 import net.kimon.kimon.network.SetChargingPayload;
 import net.kimon.kimon.network.TrainPowerPayload;
 import net.minecraft.client.KeyMapping;
@@ -66,6 +67,14 @@ public final class KimonClient {
             KeyMapping.Category.MISC
     ));
 
+    /** Fires an Energy Blast along your view. Default: <kbd>B</kbd>. */
+    public static final Lazy<KeyMapping> BLAST_KEY = Lazy.of(() -> new KeyMapping(
+            "key.kimon.blast",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_B,
+            KeyMapping.Category.MISC
+    ));
+
     /** Tracks the last charge state we told the server, so we only send on change. */
     private static boolean lastChargingSent = false;
 
@@ -78,6 +87,7 @@ public final class KimonClient {
         event.register(TRAIN_KEY.get());
         event.register(STATS_KEY.get());
         event.register(CHARGE_KEY.get());
+        event.register(BLAST_KEY.get());
     }
 
     @SubscribeEvent
@@ -93,6 +103,9 @@ public final class KimonClient {
         }
         while (STATS_KEY.get().consumeClick()) {
             Minecraft.getInstance().setScreenAndShow(new StatsScreen());
+        }
+        while (BLAST_KEY.get().consumeClick()) {
+            ClientPacketDistributor.sendToServer(new FireBlastPayload());
         }
 
         // Charge key is a held state, not a click: send the server a packet only when it changes.

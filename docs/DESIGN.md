@@ -54,8 +54,9 @@ Mirrors the research's phased plan, scoped to one vertical slice at a time:
    Strength × Release; action-bar damage feedback. *(done)*
 4. ✅ **Races & classes** — six races + three classes with starting spreads and derived-stat
    modifiers; `/kimon` debug commands. *(done)*
-5. 🔜 **Energy attacks** — generic projectile entity, configurable techniques. *(next)*
-6. ⏳ **Forms** — data-driven multipliers, transform state machine, mastery.
+5. ✅ **Energy attacks** — Energy Blast: raycast attack consuming Energy, scaling with Energy ×
+   Release. *(done)*
+6. 🔜 **Forms** — data-driven multipliers, transform state machine, mastery. *(next)*
 7. 💤 **World / masters / sagas / wishes** — long-horizon, data-driven.
 
 Deferred (need libraries not yet on 26.2): player animation (forms visuals), in-game GameTests.

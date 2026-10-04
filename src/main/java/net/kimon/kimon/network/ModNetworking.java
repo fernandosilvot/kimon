@@ -1,6 +1,7 @@
 package net.kimon.kimon.network;
 
 import net.kimon.kimon.Kimon;
+import net.kimon.kimon.power.CombatHandler;
 import net.kimon.kimon.power.ModAttachments;
 import net.kimon.kimon.power.PowerData;
 import net.kimon.kimon.power.PowerEffects;
@@ -52,6 +53,12 @@ public final class ModNetworking {
                 SetChargingPayload.TYPE,
                 SetChargingPayload.STREAM_CODEC,
                 ModNetworking::handleSetCharging
+        );
+
+        registrar.playToServer(
+                FireBlastPayload.TYPE,
+                FireBlastPayload.STREAM_CODEC,
+                ModNetworking::handleFireBlast
         );
     }
 
@@ -105,6 +112,15 @@ public final class ModNetworking {
                 if (state.charging() != payload.charging()) {
                     serverPlayer.setData(ModAttachments.STATE.get(), state.withCharging(payload.charging()));
                 }
+            }
+        });
+    }
+
+    /** Fires an Energy Blast from the player's view (raycast + damage), handled in CombatHandler. */
+    private static void handleFireBlast(final FireBlastPayload payload, final IPayloadContext context) {
+        context.enqueueWork(() -> {
+            if (context.player() instanceof ServerPlayer serverPlayer) {
+                CombatHandler.fireEnergyBlast(serverPlayer);
             }
         });
     }

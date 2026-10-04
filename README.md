@@ -8,7 +8,7 @@
 ![Minecraft](https://img.shields.io/badge/Minecraft-26.2-brightgreen)
 ![NeoForge](https://img.shields.io/badge/NeoForge-26.2.0.88-orange)
 ![Java](https://img.shields.io/badge/Java-25-red)
-![Tests](https://img.shields.io/badge/tests-54%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-59%20passing-brightgreen)
 
 Kimon is a from-scratch RPG progression mod inspired by the *feel* of classic anime-fighter mods
 (train, grow stronger, power up, transform) — built as a **clean-room reimplementation** with
@@ -57,12 +57,13 @@ Minecraft 26.2 / NeoForge 26.2.0.88.
 | **Release %** charge mechanic (hold <kbd>C</kbd>) that scales combat output | ✅ |
 | **Energy & Stamina** resources with regen (Energy regens faster at low Release) | ✅ |
 | Melee damage scales with **Strength × Release**; action-bar **"Hit for X"** feedback | ✅ |
+| **Energy Blast** attack (<kbd>B</kbd>): raycast that consumes Energy and scales with Energy × Release | ✅ |
 | **HUD** showing Race/Class, Power, Tier, Release %, Energy, Stamina (hidden under F3) | ✅ |
 | **`/kimon` debug/admin command** to set progression without grinding | ✅ |
 | Server-authoritative logic (the client cannot forge values) | ✅ |
 | Automatic server → client sync of all stats | ✅ |
 | English + Spanish localization | ✅ |
-| 54 JUnit unit tests, GitHub Actions CI (build + test with caching) | ✅ |
+| 59 JUnit unit tests, GitHub Actions CI (build + test with caching) | ✅ |
 
 **Design discipline:** features are added **one vertical slice at a time**. Each slice is complete
 and playable, with its logic unit-tested, before the next begins — rather than many half-finished
@@ -77,6 +78,7 @@ systems. See the [Roadmap](#roadmap).
 | <kbd>G</kbd> | **Train** — raise Power and earn Training Points |
 | <kbd>K</kbd> | Open the **Character Sheet** to spend Training Points on attributes |
 | <kbd>C</kbd> (hold) | **Charge** — power up; your Release % rises (and decays when released) |
+| <kbd>B</kbd> | **Energy Blast** — fire a ranged energy attack along your view (costs Energy) |
 | <kbd>F3</kbd> | Vanilla debug screen — hides the Kimon HUD while held |
 
 All keys are rebindable under **Options → Controls → Miscellaneous**.
@@ -117,6 +119,9 @@ A quick tour that exercises every system:
 6. **Power up and hit**: hold <kbd>C</kbd> to charge your Release % to the max (watch the HUD), then
    left-click a mob. The action bar shows **`Hit for X`** — compare hitting at 0% Release vs. fully
    charged to feel the Strength × Release scaling.
+7. **Fire an Energy Blast**: with some Release charged, press <kbd>B</kbd> while looking at a target.
+   It consumes Energy and deals damage scaling with your Energy attribute × Release. An energy build
+   (`/kimon race sage` + `/kimon class channeler`, high Energy attribute) hits hardest.
 
 ### "See how hard you hit"
 
@@ -210,9 +215,10 @@ net.kimon.kimon
 │   ├── PowerData.java          # Power stat + tier math (pure, unit-tested)
 │   ├── PowerScaling.java       # Power → tiered attribute bonuses (pure, unit-tested)
 │   ├── PowerState.java         # Release %, Energy, Stamina loop (pure, unit-tested)
+│   ├── EnergyBlast.java        # energy-attack damage/cost rules (pure, unit-tested)
 │   ├── PowerEffects.java       # applies Power-tier bonuses as vanilla attribute modifiers
 │   ├── PowerEventHandler.java  # re-applies bonuses on login / respawn
-│   ├── CombatHandler.java      # server tick loop; melee scaling; "Hit for X" feedback
+│   ├── CombatHandler.java      # server tick loop; melee scaling; Energy Blast; "Hit for X"
 │   └── ModAttachments.java     # POWER (persisted+synced) and STATE (synced) attachments
 ├── stats/
 │   ├── Attribute.java          # the six attributes
@@ -228,6 +234,7 @@ net.kimon.kimon
 │   ├── TrainPowerPayload.java       # C→S: train
 │   ├── RaiseAttributePayload.java   # C→S: spend TP on an attribute
 │   ├── SetChargingPayload.java      # C→S: toggle charging (hold C)
+│   ├── FireBlastPayload.java        # C→S: fire an Energy Blast
 │   └── ModNetworking.java           # registers payloads + server-side handlers
 ├── command/
 │   └── KimonCommands.java      # /kimon debug/admin command tree
@@ -260,8 +267,9 @@ Training Points or stats.
 
 ## Testing
 
-- **Unit tests** (`src/test/java`, 54 tests) cover all pure logic: Power tiers, the TP economy and
-  cost curve, attribute-derived stats, the Release/Energy/Stamina loop, and race/class modifiers.
+- **Unit tests** (`src/test/java`, 59 tests) cover all pure logic: Power tiers, the TP economy and
+  cost curve, attribute-derived stats, the Release/Energy/Stamina loop, race/class modifiers, and
+  the Energy Blast damage/cost rules.
   They run on a plain JVM with no Minecraft bootstrap, so they are fast and reliable in CI.
 
   ```bash
@@ -294,8 +302,10 @@ Feature branches are **deleted after merging** to keep the branch list clean; th
 
 ## Roadmap
 
+![Kimon roadmap](docs/roadmap.svg)
+
 Implemented in phases, each a complete vertical slice. See [`docs/DESIGN.md`](docs/DESIGN.md) for the
-full plan and [`docs/roadmap.svg`](docs/roadmap.svg) for the diagram.
+full plan and [`docs/roadmap.svg`](docs/roadmap.svg) for the diagram source.
 
 **Done**
 - ✅ **Phase 0** — Power stat, training keybind, HUD, networking, tests, CI.
@@ -303,12 +313,13 @@ full plan and [`docs/roadmap.svg`](docs/roadmap.svg) for the diagram.
 - ✅ **Phase 2** — six attributes + Training Points economy, character sheet GUI, attributes drive stats.
 - ✅ **Phase 3** — Release % charge, Energy/Stamina resources, melee scaling, "Hit for X" feedback.
 - ✅ **Phase 4** — six races + three classes, `/kimon` debug commands.
+- ✅ **Phase 5** — Energy Blast: ranged attack consuming Energy, scaling with Energy × Release.
 
 **Next**
-- 🔜 **Phase 5** — energy attacks: a projectile that consumes Energy and scales with Energy × Release.
+- 🔜 **Phase 6** — forms / transformations (temporary multipliers + mastery).
 
 **Later**
-- ⏳ **Phase 6** — forms / transformations (multipliers + mastery).
+- ⏳ A visual projectile entity for the Energy Blast.
 - ⏳ Move races/forms/skills to **JSON datapacks** (currently enum-based) for server customization.
 - 💤 **Phase 7** — world, masters, sagas, wishes (data-driven, long-horizon).
 - 💤 Player animations (needs a 26.2 animation library) and in-game GameTests.

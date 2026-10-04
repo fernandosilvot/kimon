@@ -6,7 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-04
+
 ### Added
+- **Energy Blast attack** (<kbd>B</kbd>): a server-side raycast along the player's view that
+  consumes Energy and deals magic damage scaling with the Energy attribute × Release
+  (`EnergyBlast`, pure + 5 tests; `FireBlastPayload`). Action-bar feedback on hit/miss/no-energy.
 - **Races & classes.** Six races (Human, Titan, Sage, Frost, Mystic, Hybrid) each with an original
   starting attribute spread and per-attribute percent modifiers, and three classes (Warrior,
   Brawler, Channeler) that further tweak modifiers. Race + class feed every derived stat
@@ -70,5 +75,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Project scaffolding: MIT license, README, contributing guide, GitFlow branching model,
   and GitHub Actions CI (build + test).
 
-[Unreleased]: https://github.com/fernandosilvot/kimon/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/fernandosilvot/kimon/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/fernandosilvot/kimon/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/fernandosilvot/kimon/releases/tag/v0.1.0

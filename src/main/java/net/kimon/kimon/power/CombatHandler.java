@@ -6,8 +6,14 @@ import net.kimon.kimon.stats.ModStatAttachments;
 import net.kimon.kimon.stats.StatBlock;
 import net.kimon.kimon.stats.StatCalculator;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
@@ -92,5 +98,49 @@ public final class CombatHandler {
                 && Math.abs(a.release() - b.release()) < 1e-4
                 && Math.abs(a.energy() - b.energy()) < 1e-4
                 && Math.abs(a.stamina() - b.stamina()) < 1e-4;
+    }
+
+    /**
+     * Fires an Energy Blast from the given server player: raycasts along their view, and if it hits
+     * a living entity within range, deducts Energy and deals Energy×Release-scaled magic damage.
+     * Server-authoritative — called from the fire-blast packet handler.
+     */
+    public static void fireEnergyBlast(ServerPlayer player) {
+        StatBlock stats = player.getData(ModStatAttachments.STATS.get());
+        CharacterProfile profile = player.getData(ModStatAttachments.PROFILE.get());
+        PowerState state = player.getData(ModAttachments.STATE.get());
+
+        if (!EnergyBlast.canFire(state.energy())) {
+            player.sendSystemMessage(Component.translatable("msg.kimon.no_energy"), true);
+            return;
+        }
+
+        // Deduct energy immediately (so spamming drains you), re-sync state.
+        PowerState afterCost = state.withResources(
+                state.release(),
+                state.energy() - EnergyBlast.energyCost(),
+                state.stamina(),
+                StatCalculator.maxRelease(stats),
+                StatCalculator.maxEnergy(stats, profile),
+                StatCalculator.maxStamina(stats, profile));
+        player.setData(ModAttachments.STATE.get(), afterCost);
+
+        HitResult hit = ProjectileUtil.getHitResultOnViewVector(
+                player,
+                e -> e != player && e.isPickable() && e instanceof LivingEntity,
+                EnergyBlast.RANGE);
+
+        if (hit.getType() == HitResult.Type.ENTITY
+                && ((EntityHitResult) hit).getEntity() instanceof LivingEntity target) {
+            double dmg = EnergyBlast.damage(stats, profile, state.releaseMultiplier());
+            DamageSource source = player.damageSources().indirectMagic(player, player);
+            if (player.level() instanceof ServerLevel serverLevel) {
+                target.hurtServer(serverLevel, source, (float) dmg);
+            }
+            player.sendSystemMessage(
+                    Component.translatable("msg.kimon.blast_hit", String.format("%.1f", dmg)), true);
+        } else {
+            player.sendSystemMessage(Component.translatable("msg.kimon.blast_miss"), true);
+        }
     }
 }
