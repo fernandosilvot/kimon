@@ -29,10 +29,11 @@ public final class StatEffects {
     /** Recomputes and applies all attribute-derived bonuses for the player from their StatBlock. */
     public static void apply(Player player) {
         StatBlock stats = player.getData(ModStatAttachments.STATS.get());
+        CharacterProfile profile = player.getData(ModStatAttachments.PROFILE.get());
 
-        set(player, Attributes.MAX_HEALTH, HEALTH_ID, StatCalculator.bonusHealth(stats));
-        set(player, Attributes.ATTACK_DAMAGE, DAMAGE_ID, StatCalculator.bonusAttackDamage(stats));
-        set(player, Attributes.MOVEMENT_SPEED, SPEED_ID, StatCalculator.bonusMovementSpeed(stats));
+        set(player, Attributes.MAX_HEALTH, HEALTH_ID, StatCalculator.bonusHealth(stats, profile));
+        set(player, Attributes.ATTACK_DAMAGE, DAMAGE_ID, StatCalculator.bonusAttackDamage(stats, profile));
+        set(player, Attributes.MOVEMENT_SPEED, SPEED_ID, StatCalculator.bonusMovementSpeed(stats, profile));
 
         if (player.getHealth() > player.getMaxHealth()) {
             player.setHealth(player.getMaxHealth());

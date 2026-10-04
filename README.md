@@ -54,6 +54,20 @@ The first release is a small but **fully working, end-to-end vertical slice** of
    on the action bar.
 7. Rebind keys under **Options → Controls → Miscellaneous**.
 
+### Debug / admin commands
+
+Op-level `/kimon` commands let you test progression without grinding:
+
+```
+/kimon info                 # show your race, class, Power, TP, attributes, derived stats
+/kimon tp <amount>          # grant Training Points
+/kimon power <value>        # set your Power
+/kimon attr <name> <value>  # set an attribute (strength|agility|vitality|energy|focus|spirit)
+/kimon race <race>          # set race (human|titan|sage|frost|mystic|hybrid) — reseeds attributes
+/kimon class <class>        # set class (warrior|brawler|channeler)
+/kimon reset                # reset character to defaults
+```
+
 ---
 
 ## Requirements

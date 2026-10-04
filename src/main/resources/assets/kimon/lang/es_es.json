@@ -4,6 +4,7 @@
   "key.kimon.charge": "Cargar (Subir Poder)",
   "key.categories.misc": "Miscelánea",
 
+  "hud.kimon.profile": "%s / %s",
   "hud.kimon.power": "Poder: %s",
   "hud.kimon.tier": "Nivel: %s",
   "hud.kimon.release": "Liberación: %s%%",
@@ -22,6 +23,17 @@
   "attribute.kimon.energy": "Energía",
   "attribute.kimon.focus": "Concentración",
   "attribute.kimon.spirit": "Espíritu",
+
+  "race.kimon.human": "Humano",
+  "race.kimon.titan": "Titán",
+  "race.kimon.sage": "Sabio",
+  "race.kimon.frost": "Gélido",
+  "race.kimon.mystic": "Místico",
+  "race.kimon.hybrid": "Híbrido",
+
+  "class.kimon.warrior": "Guerrero",
+  "class.kimon.brawler": "Luchador",
+  "class.kimon.channeler": "Canalizador",
 
   "gui.done": "Hecho"
 }

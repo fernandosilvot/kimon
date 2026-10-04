@@ -1,6 +1,7 @@
 package net.kimon.kimon.power;
 
 import net.kimon.kimon.Kimon;
+import net.kimon.kimon.stats.CharacterProfile;
 import net.kimon.kimon.stats.ModStatAttachments;
 import net.kimon.kimon.stats.StatBlock;
 import net.kimon.kimon.stats.StatCalculator;
@@ -39,13 +40,14 @@ public final class CombatHandler {
             return;
         }
         StatBlock stats = player.getData(ModStatAttachments.STATS.get());
+        CharacterProfile profile = player.getData(ModStatAttachments.PROFILE.get());
         PowerState state = player.getData(ModAttachments.STATE.get());
 
         PowerState next = state.tick(
                 DT,
                 StatCalculator.maxRelease(stats),
-                StatCalculator.maxEnergy(stats),
-                StatCalculator.maxStamina(stats));
+                StatCalculator.maxEnergy(stats, profile),
+                StatCalculator.maxStamina(stats, profile));
 
         // Only write (and thus sync) when something actually changed, to avoid packet spam.
         if (!approxEqual(next, state)) {
@@ -64,9 +66,10 @@ public final class CombatHandler {
         }
 
         StatBlock stats = attacker.getData(ModStatAttachments.STATS.get());
+        CharacterProfile profile = attacker.getData(ModStatAttachments.PROFILE.get());
         PowerState state = attacker.getData(ModAttachments.STATE.get());
 
-        double bonus = StatCalculator.meleeDamageBonus(stats, state.releaseMultiplier());
+        double bonus = StatCalculator.meleeDamageBonus(stats, profile, state.releaseMultiplier());
         if (bonus > 0) {
             event.setAmount(event.getAmount() + (float) bonus);
         }

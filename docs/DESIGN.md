@@ -52,12 +52,15 @@ Mirrors the research's phased plan, scoped to one vertical slice at a time:
    cost, character sheet GUI, attributes driving vanilla stats. *(done)*
 3. ✅ **Resources** — Energy / Stamina with regen; Release % charge mechanic; melee scales with
    Strength × Release; action-bar damage feedback. *(done)*
-4. 🔜 **Races & classes** (data-driven JSON) + character creation screen. *(next)*
-5. ⏳ **Energy attacks** — generic projectile entity, configurable techniques.
+4. ✅ **Races & classes** — six races + three classes with starting spreads and derived-stat
+   modifiers; `/kimon` debug commands. *(done)*
+5. 🔜 **Energy attacks** — generic projectile entity, configurable techniques. *(next)*
 6. ⏳ **Forms** — data-driven multipliers, transform state machine, mastery.
 7. 💤 **World / masters / sagas / wishes** — long-horizon, data-driven.
 
 Deferred (need libraries not yet on 26.2): player animation (forms visuals), in-game GameTests.
+Also deferred: moving races/forms/skills to JSON datapacks (currently enum-based; the research's
+JSON schema is the target once the feature set stabilizes).
 
 ## Server-authoritative principle
 

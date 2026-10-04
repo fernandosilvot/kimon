@@ -4,6 +4,7 @@
   "key.kimon.charge": "Charge (Power Up)",
   "key.categories.misc": "Miscellaneous",
 
+  "hud.kimon.profile": "%s / %s",
   "hud.kimon.power": "Power: %s",
   "hud.kimon.tier": "Tier: %s",
   "hud.kimon.release": "Release: %s%%",
@@ -22,6 +23,17 @@
   "attribute.kimon.energy": "Energy",
   "attribute.kimon.focus": "Focus",
   "attribute.kimon.spirit": "Spirit",
+
+  "race.kimon.human": "Human",
+  "race.kimon.titan": "Titan",
+  "race.kimon.sage": "Sage",
+  "race.kimon.frost": "Frost",
+  "race.kimon.mystic": "Mystic",
+  "race.kimon.hybrid": "Hybrid",
+
+  "class.kimon.warrior": "Warrior",
+  "class.kimon.brawler": "Brawler",
+  "class.kimon.channeler": "Channeler",
 
   "gui.done": "Done"
 }
