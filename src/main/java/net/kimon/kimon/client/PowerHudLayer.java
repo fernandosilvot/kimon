@@ -3,6 +3,7 @@ package net.kimon.kimon.client;
 import net.kimon.kimon.Kimon;
 import net.kimon.kimon.power.ModAttachments;
 import net.kimon.kimon.power.PowerData;
+import net.kimon.kimon.power.PowerScaling;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -35,8 +36,11 @@ public final class PowerHudLayer implements GuiLayer {
         }
 
         PowerData data = minecraft.player.getData(ModAttachments.POWER.get());
+        int tier = PowerScaling.tiers(data.power());
         Component label = Component.translatable("hud.kimon.power", data.power());
+        Component tierLabel = Component.translatable("hud.kimon.tier", tier);
 
         guiGraphics.text(minecraft.font, label, MARGIN_X, MARGIN_Y, TEXT_COLOR);
+        guiGraphics.text(minecraft.font, tierLabel, MARGIN_X, MARGIN_Y + 11, TEXT_COLOR);
     }
 }

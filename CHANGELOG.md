@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **Power now scales combat attributes.** Accumulated Power is converted into bonus max health,
+  attack damage, and movement speed via vanilla `AttributeModifier`s, in discrete tiers
+  (`PowerScaling`: one tier per 25 Power, capped at 50 tiers). Bonuses are server-authoritative and
+  re-applied on login and respawn from the stored Power.
+- HUD now also shows the current **Tier** below the Power value.
+- Spanish/English translations for the Tier line.
+- 7 additional unit tests covering the tier/bonus formulas.
+
 ## [0.1.0] - 2026-10-04
 
 ### Added

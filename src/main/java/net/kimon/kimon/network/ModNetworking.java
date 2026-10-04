@@ -3,6 +3,7 @@ package net.kimon.kimon.network;
 import net.kimon.kimon.Kimon;
 import net.kimon.kimon.power.ModAttachments;
 import net.kimon.kimon.power.PowerData;
+import net.kimon.kimon.power.PowerEffects;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -49,6 +50,8 @@ public final class ModNetworking {
             if (context.player() instanceof ServerPlayer serverPlayer) {
                 PowerData current = serverPlayer.getData(ModAttachments.POWER.get());
                 serverPlayer.setData(ModAttachments.POWER.get(), current.train());
+                // Re-apply attribute bonuses so training is immediately felt (more health/damage/speed).
+                PowerEffects.apply(serverPlayer);
             }
         });
     }
