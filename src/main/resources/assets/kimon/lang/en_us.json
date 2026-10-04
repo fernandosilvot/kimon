@@ -8,7 +8,7 @@
   "key.categories.misc": "Miscellaneous",
 
   "hud.kimon.profile": "%s / %s",
-  "hud.kimon.form": "Form: %s",
+  "hud.kimon.form": "Form: %s (Mastery %s)",
   "hud.kimon.power": "Power: %s",
   "hud.kimon.tier": "Tier: %s",
   "hud.kimon.release": "Release: %s%%",

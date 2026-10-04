@@ -51,6 +51,15 @@ public final class ModAttachments {
                     .sync((holder, to) -> holder == to, PowerState.STREAM_CODEC)
                     .build());
 
+    /** Per-player Form Mastery. Serialized, synced, kept across death. */
+    public static final Supplier<AttachmentType<MasteryData>> MASTERY = ATTACHMENT_TYPES.register(
+            "mastery",
+            () -> AttachmentType.builder(MasteryData::initial)
+                    .serialize(MasteryCodecs.MAP_CODEC)
+                    .sync((holder, to) -> holder == to, MasteryCodecs.STREAM_CODEC)
+                    .copyOnDeath()
+                    .build());
+
     /**
      * Registers the attachment types to the given mod event bus.
      *

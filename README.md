@@ -8,7 +8,7 @@
 ![Minecraft](https://img.shields.io/badge/Minecraft-26.2-brightgreen)
 ![NeoForge](https://img.shields.io/badge/NeoForge-26.2.0.88-orange)
 ![Java](https://img.shields.io/badge/Java-25-red)
-![Tests](https://img.shields.io/badge/tests-68%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-76%20passing-brightgreen)
 
 Kimon is a from-scratch RPG progression mod inspired by the *feel* of classic anime-fighter mods
 (train, grow stronger, power up, transform) — built as a **clean-room reimplementation** with
@@ -59,12 +59,13 @@ Minecraft 26.2 / NeoForge 26.2.0.88.
 | Melee damage scales with **Strength × Release**; action-bar **"Hit for X"** feedback | ✅ |
 | **Energy Blast** attack (<kbd>B</kbd>): raycast that consumes Energy and scales with Energy × Release | ✅ |
 | **Forms / transformations** (<kbd>R</kbd> up / <kbd>V</kbd> down): multiply combat damage, drain Energy, gated by Power tier + Release | ✅ |
-| **HUD** showing Race/Class, active Form, Power, Tier, Release %, Energy, Stamina (hidden under F3) | ✅ |
+| **Form Mastery**: forms grow stronger (+damage) and cheaper (−drain) the more you use them | ✅ |
+| **HUD** showing Race/Class, active Form + Mastery, Power, Tier, Release %, Energy, Stamina | ✅ |
 | **`/kimon` debug/admin command** to set progression without grinding | ✅ |
 | Server-authoritative logic (the client cannot forge values) | ✅ |
 | Automatic server → client sync of all stats | ✅ |
 | English + Spanish localization | ✅ |
-| 68 JUnit unit tests, GitHub Actions CI (build + test with caching) | ✅ |
+| 76 JUnit unit tests, GitHub Actions CI (build + test with caching) | ✅ |
 
 **Design discipline:** features are added **one vertical slice at a time**. Each slice is complete
 and playable, with its logic unit-tested, before the next begins — rather than many half-finished
@@ -101,6 +102,7 @@ instantly, without grinding:
 /kimon race <race>          # set race: human|titan|sage|frost|mystic|hybrid (reseeds attributes)
 /kimon class <class>        # set class: warrior|brawler|channeler
 /kimon form <form>          # force a form: base|surge|ascent|zenith
+/kimon mastery <form> <lvl> # set mastery level for a form (surge|ascent|zenith)
 /kimon reset                # reset character to defaults
 ```
 
@@ -130,6 +132,9 @@ A quick tour that exercises every system:
    (Surge → Ascent → Zenith). Forms multiply all your combat damage but drain Energy per second and
    need enough Power tier + Release — if Energy runs out or Release drops, you revert to Base.
    Press <kbd>V</kbd> to step down. The active form shows on the HUD.
+9. **Build Mastery**: just by spending time in a form, its **Mastery** rises (shown on the HUD).
+   Higher mastery means more damage and less Energy drain for that form — so a well-practised Surge
+   can rival a fresh Ascent while costing less. (Shortcut: `/kimon mastery zenith 50`.)
 
 ### "See how hard you hit"
 
@@ -225,10 +230,12 @@ net.kimon.kimon
 │   ├── PowerState.java         # Release %, Energy, Stamina loop (pure, unit-tested)
 │   ├── EnergyBlast.java        # energy-attack damage/cost rules (pure, unit-tested)
 │   ├── Form.java               # transformation ladder: multipliers, drain, gating (pure, unit-tested)
+│   ├── MasteryData.java        # per-form mastery: raises damage, lowers drain (pure, unit-tested)
+│   ├── MasteryCodecs.java      # NBT + network codecs for MasteryData
 │   ├── PowerEffects.java       # applies Power-tier bonuses as vanilla attribute modifiers
 │   ├── PowerEventHandler.java  # re-applies bonuses on login / respawn
-│   ├── CombatHandler.java      # server tick loop; melee + form scaling; Energy Blast; transform
-│   └── ModAttachments.java     # POWER (persisted+synced) and STATE (synced) attachments
+│   ├── CombatHandler.java      # server tick loop; melee + form×mastery scaling; blast; transform
+│   └── ModAttachments.java     # POWER, STATE (synced), MASTERY (persisted+synced) attachments
 ├── stats/
 │   ├── Attribute.java          # the six attributes
 │   ├── StatBlock.java          # attributes + Training Points economy (pure, unit-tested)
@@ -277,9 +284,10 @@ Training Points or stats.
 
 ## Testing
 
-- **Unit tests** (`src/test/java`, 68 tests) cover all pure logic: Power tiers, the TP economy and
+- **Unit tests** (`src/test/java`, 76 tests) cover all pure logic: Power tiers, the TP economy and
   cost curve, attribute-derived stats, the Release/Energy/Stamina loop, race/class modifiers, the
-  Energy Blast damage/cost rules, and the form ladder (multipliers, drain, tier/Release gating).
+  Energy Blast damage/cost rules, the form ladder (multipliers, drain, tier/Release gating), and
+  Form Mastery (gain over time, damage/drain scaling, caps).
   They run on a plain JVM with no Minecraft bootstrap, so they are fast and reliable in CI.
 
   ```bash
@@ -325,9 +333,10 @@ full plan and [`docs/roadmap.svg`](docs/roadmap.svg) for the diagram source.
 - ✅ **Phase 4** — six races + three classes, `/kimon` debug commands.
 - ✅ **Phase 5** — Energy Blast: ranged attack consuming Energy, scaling with Energy × Release.
 - ✅ **Phase 6** — forms / transformations: multiply combat damage, drain Energy, gated by tier + Release.
+- ✅ **Form Mastery** — forms grow stronger (+damage) and cheaper (−drain) the more you use them.
 
 **Next**
-- 🔜 **Form Mastery** — forms grow stronger / cheaper the more you use them.
+- 🔜 **Release v0.3.0** consolidating Phases 5-6 + Form Mastery.
 
 **Later**
 - ⏳ A visual projectile entity for the Energy Blast; player aura/transform animations.
