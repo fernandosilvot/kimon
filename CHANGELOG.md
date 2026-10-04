@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-04
+
 ### Added
 - **Training Altar block (Phase 7 start).** A craftable world block (amethyst shards + obsidian)
   that you right-click to train for a larger reward than the keybind (+15 Power, +15 TP),
@@ -90,6 +92,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Project scaffolding: MIT license, README, contributing guide, GitFlow branching model,
   and GitHub Actions CI (build + test).
 
-[Unreleased]: https://github.com/fernandosilvot/kimon/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/fernandosilvot/kimon/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/fernandosilvot/kimon/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/fernandosilvot/kimon/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/fernandosilvot/kimon/releases/tag/v0.1.0
