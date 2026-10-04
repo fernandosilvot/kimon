@@ -1,6 +1,7 @@
 package net.kimon.kimon.power;
 
 import net.kimon.kimon.Kimon;
+import net.kimon.kimon.stats.StatEffects;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -25,6 +26,7 @@ public final class PowerEventHandler {
     static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof Player player && !player.level().isClientSide()) {
             PowerEffects.apply(player);
+            StatEffects.apply(player);
         }
     }
 
@@ -32,6 +34,7 @@ public final class PowerEventHandler {
     static void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (event.getEntity() instanceof Player player && !player.level().isClientSide()) {
             PowerEffects.apply(player);
+            StatEffects.apply(player);
         }
     }
 }

@@ -1,6 +1,21 @@
 {
   "key.kimon.train": "Train Power",
+  "key.kimon.stats": "Open Character Sheet",
   "key.categories.misc": "Miscellaneous",
+
   "hud.kimon.power": "Power: %s",
-  "hud.kimon.tier": "Tier: %s"
+  "hud.kimon.tier": "Tier: %s",
+
+  "screen.kimon.stats.title": "Character Sheet",
+  "screen.kimon.stats.tp": "Training Points: %s",
+  "screen.kimon.stats.cost": "cost %s",
+
+  "attribute.kimon.strength": "Strength",
+  "attribute.kimon.agility": "Agility",
+  "attribute.kimon.vitality": "Vitality",
+  "attribute.kimon.energy": "Energy",
+  "attribute.kimon.focus": "Focus",
+  "attribute.kimon.spirit": "Spirit",
+
+  "gui.done": "Done"
 }

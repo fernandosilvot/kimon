@@ -4,6 +4,10 @@ import net.kimon.kimon.Kimon;
 import net.kimon.kimon.power.ModAttachments;
 import net.kimon.kimon.power.PowerData;
 import net.kimon.kimon.power.PowerEffects;
+import net.kimon.kimon.stats.Attribute;
+import net.kimon.kimon.stats.ModStatAttachments;
+import net.kimon.kimon.stats.StatBlock;
+import net.kimon.kimon.stats.StatEffects;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -12,16 +16,17 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 /**
- * Registers Kimon's network payloads and their server-side handlers.
- *
- * <p>Registered on the mod event bus (that is why {@code @EventBusSubscriber} has no
- * {@code bus} / {@code value} dist filter: it defaults to the mod bus on both sides).</p>
+ * Registers Kimon's network payloads and their server-side handlers. Registered on the mod event
+ * bus (the {@code @EventBusSubscriber} defaults to the mod bus).
  */
 @EventBusSubscriber(modid = Kimon.MODID)
 public final class ModNetworking {
 
     /** Bump this string when the wire format changes incompatibly. */
     private static final String PROTOCOL_VERSION = "1";
+
+    /** Training Points granted per training action. */
+    public static final long TP_PER_TRAIN = 5L;
 
     private ModNetworking() {
     }
@@ -30,28 +35,57 @@ public final class ModNetworking {
     static void register(RegisterPayloadHandlersEvent event) {
         final PayloadRegistrar registrar = event.registrar(PROTOCOL_VERSION);
 
-        // Serverbound only: the client requests a training action; the server authoritatively applies it.
         registrar.playToServer(
                 TrainPowerPayload.TYPE,
                 TrainPowerPayload.STREAM_CODEC,
                 ModNetworking::handleTrain
         );
+
+        registrar.playToServer(
+                RaiseAttributePayload.TYPE,
+                RaiseAttributePayload.STREAM_CODEC,
+                ModNetworking::handleRaiseAttribute
+        );
     }
 
     /**
-     * Handles a {@link TrainPowerPayload} on the server's main thread.
-     *
-     * <p>Reads the player's current {@link PowerData}, applies {@link PowerData#train()}, and writes
-     * it back with {@code setData} — which both persists it and triggers the synced attachment to
-     * push the new value to the owning client.</p>
+     * Handles a training request: raises Power (legacy stat + attribute scaling) and grants
+     * Training Points to the stat block. Both attachments auto-sync to the owning client.
      */
     private static void handleTrain(final TrainPowerPayload payload, final IPayloadContext context) {
         context.enqueueWork(() -> {
             if (context.player() instanceof ServerPlayer serverPlayer) {
+                // Legacy Power stat + its tiered attribute scaling.
                 PowerData current = serverPlayer.getData(ModAttachments.POWER.get());
                 serverPlayer.setData(ModAttachments.POWER.get(), current.train());
-                // Re-apply attribute bonuses so training is immediately felt (more health/damage/speed).
                 PowerEffects.apply(serverPlayer);
+
+                // New: training also earns Training Points to spend on attributes.
+                StatBlock stats = serverPlayer.getData(ModStatAttachments.STATS.get());
+                serverPlayer.setData(ModStatAttachments.STATS.get(), stats.addTrainingPoints(TP_PER_TRAIN));
+            }
+        });
+    }
+
+    /**
+     * Handles a request to raise one attribute. The server validates affordability via
+     * {@link StatBlock#raise} (a no-op if unaffordable), persists the result, and re-derives the
+     * player's vanilla attributes.
+     */
+    private static void handleRaiseAttribute(final RaiseAttributePayload payload, final IPayloadContext context) {
+        context.enqueueWork(() -> {
+            if (!(context.player() instanceof ServerPlayer serverPlayer)) {
+                return;
+            }
+            Attribute attribute = payload.attribute();
+            if (attribute == null) {
+                return;
+            }
+            StatBlock stats = serverPlayer.getData(ModStatAttachments.STATS.get());
+            StatBlock raised = stats.raise(attribute); // returns same instance if unaffordable
+            if (raised != stats) {
+                serverPlayer.setData(ModStatAttachments.STATS.get(), raised);
+                StatEffects.apply(serverPlayer);
             }
         });
     }
