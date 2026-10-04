@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- **Design document** (`docs/DESIGN.md`) distilling the reference anime-RPG mechanics into Kimon's
+  original stat model, with the clean-room legal stance and the phased roadmap.
+- **Six-attribute system + Training Points economy** (`stats` package):
+  - `Attribute` enum: Strength, Agility, Vitality, Energy, Focus, Spirit.
+  - `StatBlock`: immutable per-player attributes + TP, with a rising per-point cost curve,
+    spend-to-raise, and clamping. Pure and fully unit-tested (11 tests).
 - **Power now scales combat attributes.** Accumulated Power is converted into bonus max health,
   attack damage, and movement speed via vanilla `AttributeModifier`s, in discrete tiers
   (`PowerScaling`: one tier per 25 Power, capped at 50 tiers). Bonuses are server-authoritative and
