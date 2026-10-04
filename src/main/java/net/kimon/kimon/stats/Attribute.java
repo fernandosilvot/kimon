@@ -14,13 +14,13 @@ public enum Attribute {
     /** Governs melee damage. */
     STRENGTH("strength"),
     /** Governs movement speed and defense. */
-    AGILITY("agility"),
+    DEXTERITY("dexterity"),
     /** Governs max health (Body). */
-    VITALITY("vitality"),
+    CONSTITUTION("constitution"),
     /** Governs energy-attack power. */
-    ENERGY("energy"),
+    WILLPOWER("willpower"),
     /** Governs TP gain rate and resource caps. */
-    FOCUS("focus"),
+    MIND("mind"),
     /** Governs max energy and regeneration. */
     SPIRIT("spirit");
 
@@ -33,6 +33,26 @@ public enum Attribute {
     /** Stable lowercase identifier used for serialization and translation keys. */
     public String key() {
         return key;
+    }
+
+    /**
+     * Finds an attribute by name, case-insensitive. Accepts the full key ({@code dexterity}), the
+     * abbreviations used by the design docs ({@code str dex con wil mnd spi}) and the names the
+     * attributes had before ({@code agility vitality energy focus}). Returns null if unknown.
+     */
+    public static Attribute byKey(String name) {
+        if (name == null) {
+            return null;
+        }
+        return switch (name.trim().toLowerCase(java.util.Locale.ROOT)) {
+            case "strength", "str" -> STRENGTH;
+            case "dexterity", "dex", "agility" -> DEXTERITY;
+            case "constitution", "con", "vitality" -> CONSTITUTION;
+            case "willpower", "wil", "will", "energy" -> WILLPOWER;
+            case "mind", "mnd", "focus" -> MIND;
+            case "spirit", "spi" -> SPIRIT;
+            default -> null;
+        };
     }
 
     /** All attributes, in declaration order. Cached to avoid repeated array allocation. */

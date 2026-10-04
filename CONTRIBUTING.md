@@ -72,8 +72,8 @@ Also:
   Importing client classes into common code is a server-crash bug.
 - Put non-trivial logic in plain, unit-testable classes (like `PowerData`) where possible,
   rather than entangling it with world/entity objects.
-- Use **original** names and assets only. Do not add third-party IP (anime franchises, other
-  mods' assets, etc.).
+- Names and terms follow Dragon Ball's (see `docs/DESIGN.md`), but do **not** copy code, textures,
+  models, sounds or configs from Dragon Block C or any other mod: write your own and use your own assets.
 
 ## Scope discipline
 

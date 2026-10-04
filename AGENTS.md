@@ -22,7 +22,7 @@ export JAVA_HOME="$(brew --prefix openjdk@25)/libexec/openjdk.jdk/Contents/Home"
 
 ## Golden rules (summary — details in docs/CONTINUE_HERE.md)
 
-- **Original IP only** (clean-room). No Dragon Ball / Dragon Block C code, assets, or names.
+- **Clean-room.** No Dragon Block C / Dragon Ball code, textures, models, sounds or configs. *Names and terms may follow Dragon Ball's* (owner's decision, see docs/DESIGN.md).
 - **Server-authoritative.** Client sends intents; server validates; synced attachments return state.
 - **Unit-test pure logic.** Balance math goes in Minecraft-free classes with JUnit tests.
 - **GitFlow.** Feature branch off `develop` → `--no-ff` merge → delete the branch (local + remote).

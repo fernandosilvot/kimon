@@ -6,14 +6,17 @@ original, modern implementation on NeoForge 26.2.
 ## Legal stance (read first)
 
 Kimon is a **clean-room reimplementation of mechanics**, not a port. We study how training-driven
-anime-RPG progression *works* (from public wikis, guides and research) and build original code,
-names and assets.
+anime-RPG progression *works* (from public wikis, guides and research) and write our own code, and
+use our own assets.
 
 - ✅ Allowed: reimplementing game mechanics and formulas. Game rules/ideas are not copyrightable.
-- ❌ Never: decompiling or copying Dragon Block C's code, textures, models, sounds or configs;
-  using Dragon Ball trademarks (Saiyan, Kamehameha, etc.) as identifiers; shipping its assets.
-
-All Kimon terms are original: **Power**, **Tier**, generic attribute names, invented form names.
+- ❌ Never: decompiling or copying Dragon Block C's code, textures, models, sounds or configs, or
+  shipping its assets.
+- ⚠️ **Names (owner's decision, 2026-10-04):** the earlier "invented names only" rule was lifted. Races,
+  classes, attributes, forms and terms now use Dragon Ball's (Saiyan, Namekian, Ki, Release, Super
+  Saiyan…) so players recognise them. They are trademarks of their owners and may have to be changed if
+  a rights holder asks; keep the project non-commercial. Keeping names in lang files and data JSON
+  (not scattered through code) makes a future rename cheap.
 
 ## Core stat model (adapted from the research)
 
@@ -21,14 +24,14 @@ The reference design (DBC) uses six trainable attributes bought with Training Po
 "Release %" power multiplier, and resources (Ki / Body / Stamina). Kimon adopts an **original,
 simplified version** of the same shape:
 
-| Kimon attribute | Governs | Reference analogue |
+| Attribute | Governs | Doc abbreviation |
 | --- | --- | --- |
 | `STRENGTH` | Melee damage | STR |
-| `AGILITY`  | Movement speed, defense | DEX |
-| `VITALITY` | Max health (Body) | CON |
-| `ENERGY`   | Energy-attack power | WIL |
-| `FOCUS`    | TP gain rate, resource cap | MND |
-| `SPIRIT`   | Max energy / regen | SPI |
+| `DEXTERITY` | Movement speed, defense | DEX |
+| `CONSTITUTION` | Max health (Body) | CON |
+| `WILLPOWER` | Ki-attack power | WIL |
+| `MIND` | TP gain rate, Release ceiling | MND |
+| `SPIRIT` | Max Ki / regen | SPI |
 
 - **Training Points (TP):** earned by training; spent to raise attributes. Cost grows per point.
 - **Power:** the aggregate "level" shown on the HUD (already implemented in v0.1.0). Tiers derived
@@ -40,7 +43,7 @@ Formulas are taken from the research as **starting points**, all made configurab
 - `meleeDamage = STR * 2.5 * (1 + classMod) * form * release/100`
 - `maxBody     = VIT * 20`
 - `maxEnergy   = SPIRIT * 40`
-- `tpPerHit    = 2 + 2*floor(FOCUS/5) * release/100`  (requires release ≥ 5%)
+- `tpPerHit    = 2 + 2*floor(MIND/5) * release/100`  (requires release ≥ 5%)
 
 ## Implementation phases (Kimon roadmap)
 
@@ -56,7 +59,7 @@ Mirrors the research's phased plan, scoped to one vertical slice at a time:
    modifiers; `/kimon` debug commands. *(done)*
 5. ✅ **Energy attacks** — Energy Blast: raycast attack consuming Energy, scaling with Energy ×
    Release. *(done)*
-6. ✅ **Forms** — Base→Surge→Ascent→Zenith; multiply combat damage, drain Energy, gated by tier +
+6. ✅ **Forms** — Base→Super Saiyan→Super Saiyan 2→Super Saiyan 3 (race gating comes with step 5); multiply combat damage, drain Energy, gated by tier +
    Release; transform up/down keys; HUD indicator. **Form Mastery**: forms improve (+damage,
    −drain) with use. *(done)*
 7. 🔜 **World / masters / sagas / wishes** — long-horizon, data-driven. *(in progress)*

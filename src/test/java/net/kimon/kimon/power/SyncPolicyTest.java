@@ -38,7 +38,7 @@ class SyncPolicyTest {
         assertTrue(SyncPolicy.sameForSync(a, at(10 + 1e-6, 100)));
         assertTrue(SyncPolicy.sameForSync(a, a.hurt(600)));
         assertFalse(SyncPolicy.sameForSync(a, at(10.01, 100)));
-        assertFalse(SyncPolicy.sameForSync(a, a.withForm(Form.SURGE)));
+        assertFalse(SyncPolicy.sameForSync(a, a.withForm(Form.SUPER_SAIYAN)));
         assertFalse(SyncPolicy.sameForSync(a, a.withInput(true, false, false)));
     }
 

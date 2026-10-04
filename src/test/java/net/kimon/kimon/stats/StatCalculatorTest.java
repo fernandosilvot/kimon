@@ -30,10 +30,10 @@ class StatCalculatorTest {
     @Test
     @DisplayName("only points above the start value contribute")
     void onlyPointsAboveStartCount() {
-        StatBlock atStart = withAttribute(Attribute.VITALITY, StatBlock.START_VALUE);
+        StatBlock atStart = withAttribute(Attribute.CONSTITUTION, StatBlock.START_VALUE);
         assertEquals(0.0, StatCalculator.bonusHealth(atStart), 1e-9);
 
-        StatBlock plusTen = withAttribute(Attribute.VITALITY, StatBlock.START_VALUE + 10);
+        StatBlock plusTen = withAttribute(Attribute.CONSTITUTION, StatBlock.START_VALUE + 10);
         assertEquals(10 * StatCalculator.HEALTH_PER_VITALITY, StatCalculator.bonusHealth(plusTen), 1e-9);
     }
 
@@ -44,7 +44,7 @@ class StatCalculatorTest {
         assertEquals(50 * StatCalculator.DAMAGE_PER_STRENGTH, StatCalculator.bonusAttackDamage(strong), 1e-9);
         assertEquals(0.0, StatCalculator.bonusHealth(strong), 1e-9);
 
-        StatBlock agile = withAttribute(Attribute.AGILITY, StatBlock.START_VALUE + 25);
+        StatBlock agile = withAttribute(Attribute.DEXTERITY, StatBlock.START_VALUE + 25);
         assertEquals(25 * StatCalculator.SPEED_PER_AGILITY, StatCalculator.bonusMovementSpeed(agile), 1e-9);
     }
 
@@ -52,9 +52,9 @@ class StatCalculatorTest {
     @DisplayName("bonuses are capped")
     void bonusesCapped() {
         StatBlock maxed = StatBlock.of(Map.of(
-                Attribute.VITALITY, StatBlock.MAX_VALUE,
+                Attribute.CONSTITUTION, StatBlock.MAX_VALUE,
                 Attribute.STRENGTH, StatBlock.MAX_VALUE,
-                Attribute.AGILITY, StatBlock.MAX_VALUE
+                Attribute.DEXTERITY, StatBlock.MAX_VALUE
         ), 0);
         assertEquals(StatCalculator.MAX_BONUS_HEALTH, StatCalculator.bonusHealth(maxed), 1e-9);
         assertEquals(StatCalculator.MAX_BONUS_DAMAGE, StatCalculator.bonusAttackDamage(maxed), 1e-9);
@@ -64,7 +64,7 @@ class StatCalculatorTest {
     @Test
     @DisplayName("bonuses never go negative")
     void neverNegative() {
-        StatBlock lowered = withAttribute(Attribute.VITALITY, 0);
+        StatBlock lowered = withAttribute(Attribute.CONSTITUTION, 0);
         assertTrue(StatCalculator.bonusHealth(lowered) >= 0.0);
     }
 
@@ -78,7 +78,7 @@ class StatCalculatorTest {
     @Test
     @DisplayName("max stamina scales with Vitality")
     void maxStaminaFromVitality() {
-        StatBlock s = withAttribute(Attribute.VITALITY, 20);
+        StatBlock s = withAttribute(Attribute.CONSTITUTION, 20);
         assertEquals(20 * StatCalculator.STAMINA_PER_VITALITY, StatCalculator.maxStamina(s), 1e-9);
     }
 
@@ -86,9 +86,9 @@ class StatCalculatorTest {
     @DisplayName("max Release is 50 at start and rises with Focus, capped at 100")
     void maxReleaseFromFocus() {
         assertEquals(50.0, StatCalculator.maxRelease(StatBlock.initial()), 1e-9);
-        StatBlock focused = withAttribute(Attribute.FOCUS, StatBlock.START_VALUE + 20);
+        StatBlock focused = withAttribute(Attribute.MIND, StatBlock.START_VALUE + 20);
         assertEquals(70.0, StatCalculator.maxRelease(focused), 1e-9);
-        StatBlock maxed = withAttribute(Attribute.FOCUS, StatBlock.MAX_VALUE);
+        StatBlock maxed = withAttribute(Attribute.MIND, StatBlock.MAX_VALUE);
         assertEquals(100.0, StatCalculator.maxRelease(maxed), 1e-9);
     }
 

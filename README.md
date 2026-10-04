@@ -8,14 +8,13 @@
 ![Minecraft](https://img.shields.io/badge/Minecraft-26.2-brightgreen)
 ![NeoForge](https://img.shields.io/badge/NeoForge-26.2.0.88-orange)
 ![Java](https://img.shields.io/badge/Java-25-red)
-![Tests](https://img.shields.io/badge/tests-159%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-162%20passing-brightgreen)
 
 Kimon is a from-scratch RPG progression mod inspired by the *feel* of classic anime-fighter mods
-(train, grow stronger, power up, transform) — built as a **clean-room reimplementation** with
-**100% original names, terms, and assets** to stay clear of any third-party intellectual property.
-There is no "Saiyan", no "Kamehameha", no Dragon Ball branding: just an original *Power* stat,
-original races, and its own vocabulary. See [`docs/DESIGN.md`](docs/DESIGN.md) for the design and
-the legal stance.
+(train, grow stronger, power up, transform). It is a **clean-room reimplementation of the mechanics**:
+none of Dragon Block C's code, textures, sounds or models are used. Names and terms deliberately follow
+Dragon Ball's (Saiyan, Namekian, Ki, Release, Super Saiyan…) so players recognise everything. See
+[`docs/DESIGN.md`](docs/DESIGN.md) for the design and the legal stance.
 
 ---
 
@@ -47,14 +46,14 @@ Minecraft 26.2 / NeoForge 26.2.0.88.
 | Feature | Status |
 | --- | --- |
 | Per-player **Power** stat, persisted across relog & death, synced to the client | ✅ |
-| **Training Points by fighting**: hits (melee and Energy Blast) with Release ≥ 5% earn TP — `2 + 2·⌊FOCUS/5⌋·Release/100`, on a configurable hit chance. No free TP source | ✅ |
+| **Training Points by fighting**: hits (melee and Ki Blast) with Release ≥ 5% earn TP — `2 + 2·⌊Mind/5⌋·Release/100`, on a configurable hit chance. No free TP source | ✅ |
 | Power scales **max health / attack damage / movement speed** in tiers | ✅ |
-| **Six attributes** — Strength, Agility, Vitality, Energy, Focus, Spirit | ✅ |
+| **Six attributes** — Strength, Dexterity, Constitution, Willpower, Mind, Spirit | ✅ |
 | **Training Points economy** with a rising per-point cost curve | ✅ |
 | **Character sheet GUI** (<kbd>K</kbd>) to spend TP on attributes | ✅ |
-| Attributes drive real combat stats (Vitality→health, Strength→damage, Agility→speed) | ✅ |
-| **Six races** (Human, Titan, Sage, Frost, Mystic, Hybrid) with unique starting spreads & modifiers | ✅ |
-| **Three classes** (Warrior, Brawler, Channeler) that further tweak modifiers | ✅ |
+| Attributes drive real combat stats (Constitution→health, Strength→damage, Dexterity→speed) | ✅ |
+| **Six races** (Human, Saiyan, Namekian, Arcosian, Majin, Half-Saiyan) with unique starting spreads & modifiers | ✅ |
+| **Three classes** (Warrior, Martial Artist, Spiritualist) that further tweak modifiers | ✅ |
 | **Release %** state machine — charge (<kbd>C</kbd>), discharge (<kbd>Ctrl+C</kbd>), reset (<kbd>H</kbd>), turbo (<kbd>R</kbd>); states Stable / Charging / At max / Lowering / Exhausted; scales combat output | ✅ |
 | **Character level** derived from attributes (every 5 points above 55 = 1 level), shown on the HUD and sheet | ✅ |
 | **Attribute cost curve** (UC) configurable via `progression.cost*`; the sheet buys **+1 / +10 / +100 / +1000** points at once (server-validated, stops when you run out of TP) | ✅ |
@@ -109,11 +108,11 @@ instantly, without grinding:
 /kimon info                 # show race, class, Power, TP, attributes and derived stats
 /kimon tp <amount>          # grant Training Points
 /kimon power <value>        # set your Power
-/kimon attr <name> <value>  # set an attribute: strength|agility|vitality|energy|focus|spirit
-/kimon race <race>          # set race: human|titan|sage|frost|mystic|hybrid (reseeds attributes)
-/kimon class <class>        # set class: warrior|brawler|channeler
-/kimon form <form>          # force a form: base|surge|ascent|zenith
-/kimon mastery <form> <lvl> # set mastery level for a form (surge|ascent|zenith)
+/kimon attr <name> <value>  # set an attribute: strength|dexterity|constitution|willpower|mind|spirit (str/dex/con/wil/mnd/spi work too)
+/kimon race <race>          # set race: human|saiyan|namekian|arcosian|majin|half_saiyan (reseeds attributes)
+/kimon class <class>        # set class: warrior|martial_artist|spiritualist
+/kimon form <form>          # force a form: base|super_saiyan|super_saiyan_2|super_saiyan_3
+/kimon mastery <form> <lvl> # set mastery level for a form (super_saiyan|super_saiyan_2|super_saiyan_3)
 /kimon reset                # reset character to defaults
 ```
 
@@ -129,23 +128,23 @@ A quick tour that exercises every system:
 1. **Launch** a world (enable cheats so you can use `/kimon`).
 2. **Check the HUD** (top-left): your Race/Class, `Power`, `Tier`, `Release %`, `Energy`, `Stamina`.
 3. **Earn TP by fighting**: hold <kbd>C</kbd> until Release is above 5%, then hit a mob. Some hits show `(+N TP)` on the action bar. At 0% Release you earn nothing.
-4. **Spend TP**: press <kbd>K</kbd> and raise attributes with the `+` buttons. Vitality adds hearts,
-   Strength adds damage, Agility adds speed. (Or shortcut it: `/kimon tp 100000`.)
-5. **Pick an identity**: `/kimon race titan` + `/kimon class warrior` for a melee bruiser, or
-   `/kimon race sage` + `/kimon class channeler` for an energy build. `/kimon info` shows the effect.
+4. **Spend TP**: press <kbd>K</kbd> and raise attributes with the `+` buttons. Constitution adds hearts,
+   Strength adds damage, Dexterity adds speed. (Or shortcut it: `/kimon tp 100000`.)
+5. **Pick an identity**: `/kimon race saiyan` + `/kimon class warrior` for a melee bruiser, or
+   `/kimon race namekian` + `/kimon class spiritualist` for an energy build. `/kimon info` shows the effect.
 6. **Power up and hit**: hold <kbd>C</kbd> to charge your Release % to the max (watch the HUD state: Charging → At max; <kbd>Ctrl</kbd>+<kbd>C</kbd> lowers it, <kbd>H</kbd> resets it), then
    left-click a mob. The action bar shows **`Hit for X`** — compare hitting at 0% Release vs. fully
    charged to feel the Strength × Release scaling.
 7. **Fire an Energy Blast**: with some Release charged, press <kbd>B</kbd> while looking at a target.
    It consumes Energy and deals damage scaling with your Energy attribute × Release. An energy build
-   (`/kimon race sage` + `/kimon class channeler`, high Energy attribute) hits hardest.
+   (`/kimon race namekian` + `/kimon class spiritualist`, high Willpower attribute) hits hardest.
 8. **Transform**: charge your Release, then press <kbd>G</kbd> to ascend to the next **form**
-   (Surge → Ascent → Zenith). Forms multiply all your combat damage but drain Energy per second and
+   (Super Saiyan → Super Saiyan 2 → Super Saiyan 3). Forms multiply all your combat damage but drain Ki per second and
    need enough Power tier + Release — if Energy runs out or Release drops, you revert to Base.
    Press <kbd>H</kbd> to revert (it also resets Release). The active form shows on the HUD.
 9. **Build Mastery**: just by spending time in a form, its **Mastery** rises (shown on the HUD).
-   Higher mastery means more damage and less Energy drain for that form — so a well-practised Surge
-   can rival a fresh Ascent while costing less. (Shortcut: `/kimon mastery zenith 50`.)
+   Higher mastery means more damage and less Energy drain for that form — so a well-practised Super Saiyan
+   can rival a fresh Super Saiyan 2 while costing less. (Shortcut: `/kimon mastery super_saiyan_3 50`.)
 10. **Train at an altar**: craft a **Training Altar** (amethyst shards around obsidian; find it in the
     Kimon creative tab too), place it, charge your Release (≥ 5%) and right-click it. It acts as a
     training dummy: each use costs Stamina and has a chance to grant TP, like a hit would.
@@ -166,22 +165,22 @@ all modifiers.
 Each **race** sets your starting attributes (60 points, so everyone is level 1) and percent modifiers
 on the derived stats; each **class** adds more modifiers on top. All of it is **data**: shipped as JSON
 under `data/kimon/races/` and `data/kimon/classes/`, so a datapack can change or add races and classes
-without code. Names are original to Kimon; the numbers follow the design research's tables.
+without code. The numbers follow the design research's tables.
 
 | Race | Identity | Starting lean |
 | --- | --- | --- |
 | **Human** | Balanced all-rounder | even across the board; high stamina |
-| **Titan** | Hardest-hitting melee | high Strength & Energy |
-| **Sage** | Strongest energy user | huge Spirit & Focus, tough body |
-| **Frost** | Defensive & fast | high Vitality & Spirit; best defense and speed |
-| **Mystic** | Agile, stamina-rich | high Agility |
-| **Hybrid** | Between balanced and offensive | Energy-leaning |
+| **Saiyan** | Hardest-hitting melee | high Strength & Willpower |
+| **Namekian** | Strongest Ki user | huge Spirit & Mind, tough body |
+| **Arcosian** | Defensive & fast | high Constitution & Spirit; best defense and speed |
+| **Majin** | Agile, stamina-rich | high Dexterity |
+| **Half-Saiyan** | Between balanced and offensive | Willpower-leaning |
 
 | Class | Lean |
 | --- | --- |
 | **Warrior** | more melee, body and stamina; less energy and speed |
-| **Brawler** | the baseline (no changes) |
-| **Channeler** | more energy, defense and speed; less melee, body and stamina |
+| **Martial Artist** | the baseline (no changes) |
+| **Spiritualist** | more Ki, defense and speed; less melee, body and stamina |
 
 ### Adding your own (datapack)
 
@@ -195,7 +194,7 @@ data/<namespace>/classes/<name>.json    → class id <namespace>:<name>
 ```json
 // races/orc.json — all six attributes are required
 {
-  "attributes": { "strength": 20, "agility": 5, "vitality": 15, "energy": 5, "focus": 5, "spirit": 10 },
+  "attributes": { "strength": 20, "dexterity": 5, "constitution": 15, "willpower": 5, "mind": 5, "spirit": 10 },
   "modifiers":  { "melee": 25, "body": 10, "run": -10 }
 }
 // classes/berserker.json — a class only has modifiers
@@ -209,20 +208,6 @@ those stats exist.) Race + class modifiers add up. Run `/reload` after changing 
 found the built-in set stays in use. Names show as the id's path unless you add
 `race.<namespace>.<name>` / `class.<namespace>.<name>` to a language file.
 
---- | --- | --- |
-| **Human** | Balanced all-rounder | even across the board |
-| **Titan** | Hardest-hitting melee | high Strength & Energy |
-| **Sage** | Strongest energy user | huge Energy & Spirit, low body |
-| **Frost** | Defensive & fast | high Vitality, Agility, Spirit |
-| **Mystic** | Agile, regen-focused | high Agility |
-| **Hybrid** | Between balanced and offensive | Strength + Energy |
-
-| Class | Lean |
-| --- | --- |
-| **Warrior** | more physical power, less energy |
-| **Brawler** | balanced, slightly more stamina/focus |
-| **Channeler** | more energy power & spirit, less physical |
-
 ---
 
 ## Attributes & derived stats
@@ -230,11 +215,11 @@ found the built-in set stays in use. Names show as the id's path unless you add
 | Attribute | Governs |
 | --- | --- |
 | **Strength** | Melee damage (scaled by Release) |
-| **Agility** | Movement speed, defense |
-| **Vitality** | Max health (and Stamina pool) |
-| **Energy** | Energy-attack power *(used by upcoming energy attacks)* |
-| **Focus** | Raises your Release ceiling (50% → up to 100%) |
-| **Spirit** | Max Energy pool |
+| **Dexterity** | Movement speed, defense |
+| **Constitution** | Max health (and Stamina pool) |
+| **Willpower** | Ki-attack power (Ki Blast) |
+| **Mind** | Raises your Release ceiling (50% → up to 100%) and TP per hit |
+| **Spirit** | Max Ki pool |
 
 Only attribute points **above the starting value** contribute bonuses, so a brand-new character
 plays like vanilla and grows from there. All balancing math lives in pure, unit-tested classes
@@ -359,7 +344,7 @@ Training Points or stats.
 [client] left-click a mob (vanilla attack, no Kimon packet)
    └─► [server] CombatHandler.onDamagePost
           ├─► needs Release ≥ 5%  ──(else no TP)
-          ├─► TpGain.forHit(FOCUS, Release, roll)   (pure, unit-tested)
+          ├─► TpGain.forHit(Mind, Release, roll)   (pure, unit-tested)
           └─► STATS.trainingPoints += tp           (StatBlock, auto-synced)
 
 [client] press + on the Character Sheet
@@ -374,7 +359,7 @@ Training Points or stats.
 
 ## Testing
 
-- **Unit tests** (`src/test/java`, 159 tests) cover all pure logic: Power tiers, the TP economy and
+- **Unit tests** (`src/test/java`, 162 tests) cover all pure logic: Power tiers, the TP economy and
   cost curve, attribute-derived stats, the Release/Energy/Stamina loop, race/class modifiers, the
   Energy Blast damage/cost rules, the form ladder, Form Mastery, and the Wish reward table.
   They run on a plain JVM with no Minecraft bootstrap, so they are fast and reliable in CI.
@@ -447,10 +432,12 @@ full plan and [`docs/roadmap.svg`](docs/roadmap.svg) for the diagram source.
 
 ## Legal / originality
 
-Kimon is an **original work** and is **not affiliated with, endorsed by, or derived from** any anime
-franchise or any existing Minecraft mod. It is a clean-room reimplementation of *game mechanics*
-(which are not copyrightable); all names, terminology, text, and assets are original to this project.
-No third-party code or assets are used. Distributed under the [MIT License](LICENSE).
+Kimon is a **fan project**, **not affiliated with, endorsed by, or derived from** Dragon Ball, its
+rights holders, or Dragon Block C. It is a clean-room reimplementation of *game mechanics* (which are
+not copyrightable): **no code, textures, models, sounds or configs from Dragon Block C or Dragon Ball are
+used**. Names and terminology follow Dragon Ball's by the project owner's choice, so the game is
+recognisable; "Dragon Ball" and its names belong to their owners, and a project that uses them can be
+asked to change them. Keep it non-commercial. Distributed under the [MIT License](LICENSE).
 
 "Minecraft" is a trademark of Mojang Synergies AB. "NeoForge" is a project of the NeoForged team.
 This mod is an independent, unofficial project.

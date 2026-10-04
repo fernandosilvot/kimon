@@ -21,14 +21,17 @@ public final class StatCodecs {
     private StatCodecs() {
     }
 
-    /** Map codec: six attribute ints + the TP long. */
+    /**
+     * Map codec: six attribute ints + the TP long. The stored field names are fixed (they predate the
+     * attributes' display names), so existing saves keep loading.
+     */
     public static final MapCodec<StatBlock> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            Codec.INT.fieldOf(Attribute.STRENGTH.key()).forGetter(b -> b.get(Attribute.STRENGTH)),
-            Codec.INT.fieldOf(Attribute.AGILITY.key()).forGetter(b -> b.get(Attribute.AGILITY)),
-            Codec.INT.fieldOf(Attribute.VITALITY.key()).forGetter(b -> b.get(Attribute.VITALITY)),
-            Codec.INT.fieldOf(Attribute.ENERGY.key()).forGetter(b -> b.get(Attribute.ENERGY)),
-            Codec.INT.fieldOf(Attribute.FOCUS.key()).forGetter(b -> b.get(Attribute.FOCUS)),
-            Codec.INT.fieldOf(Attribute.SPIRIT.key()).forGetter(b -> b.get(Attribute.SPIRIT)),
+            Codec.INT.fieldOf("strength").forGetter(b -> b.get(Attribute.STRENGTH)),
+            Codec.INT.fieldOf("agility").forGetter(b -> b.get(Attribute.DEXTERITY)),
+            Codec.INT.fieldOf("vitality").forGetter(b -> b.get(Attribute.CONSTITUTION)),
+            Codec.INT.fieldOf("energy").forGetter(b -> b.get(Attribute.WILLPOWER)),
+            Codec.INT.fieldOf("focus").forGetter(b -> b.get(Attribute.MIND)),
+            Codec.INT.fieldOf("spirit").forGetter(b -> b.get(Attribute.SPIRIT)),
             Codec.LONG.fieldOf("training_points").forGetter(StatBlock::trainingPoints)
     ).apply(instance, StatCodecs::build));
 
@@ -44,10 +47,10 @@ public final class StatCodecs {
     private static StatBlock build(int str, int agi, int vit, int ene, int foc, int spi, long tp) {
         Map<Attribute, Integer> map = new EnumMap<>(Attribute.class);
         map.put(Attribute.STRENGTH, str);
-        map.put(Attribute.AGILITY, agi);
-        map.put(Attribute.VITALITY, vit);
-        map.put(Attribute.ENERGY, ene);
-        map.put(Attribute.FOCUS, foc);
+        map.put(Attribute.DEXTERITY, agi);
+        map.put(Attribute.CONSTITUTION, vit);
+        map.put(Attribute.WILLPOWER, ene);
+        map.put(Attribute.MIND, foc);
         map.put(Attribute.SPIRIT, spi);
         return StatBlock.of(map, tp);
     }

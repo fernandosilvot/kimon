@@ -121,7 +121,7 @@ class ReleaseStateMachineTest {
     @Test
     @DisplayName("Energy hitting 0 → EXHAUSTED: Release 0, form dropped")
     void exhaustion() {
-        PowerState s = new PowerState(40, 0.001, 0, true, false, false, ReleaseState.CHARGING, Form.SURGE);
+        PowerState s = new PowerState(40, 0.001, 0, true, false, false, ReleaseState.CHARGING, Form.SUPER_SAIYAN);
         PowerState after = tick(s);
         assertEquals(ReleaseState.EXHAUSTED, after.releaseState());
         assertEquals(0.0, after.release(), 1e-9);
@@ -152,7 +152,7 @@ class ReleaseStateMachineTest {
     @Test
     @DisplayName("reset() drops Release to 0 and reverts the form")
     void reset() {
-        PowerState s = new PowerState(70, 100, 5, true, false, false, ReleaseState.CHARGING, Form.ASCENT).reset();
+        PowerState s = new PowerState(70, 100, 5, true, false, false, ReleaseState.CHARGING, Form.SUPER_SAIYAN_2).reset();
         assertEquals(0.0, s.release(), 1e-9);
         assertEquals(Form.BASE, s.form());
         assertEquals(ReleaseState.STABLE, s.releaseState());
