@@ -8,6 +8,8 @@ organized and how to propose changes.
 - **JDK 25** (the toolchain is pinned to it; the system JDK is not used).
 - Git.
 - No IDE is required, but IntelliJ IDEA or Eclipse are recommended for NeoForge development.
+- Step-by-step setup for macOS, Linux and Windows, plus troubleshooting: [`docs/SETUP.md`](docs/SETUP.md). How the project is
+  organised and what to build next: [`docs/CONTINUE_HERE.md`](docs/CONTINUE_HERE.md).
 
 ```bash
 export JAVA_HOME="$(brew --prefix openjdk@25)/libexec/openjdk.jdk/Contents/Home"  # macOS/Homebrew

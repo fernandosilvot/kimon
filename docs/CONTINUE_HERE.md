@@ -1,118 +1,109 @@
-# CONTINUE HERE — agent handoff
+# CONTINUE HERE — the entry point for any agent, on any computer
 
-This file is the single entry point for any AI agent (Claude, Kiro, Cursor, etc.) picking up Kimon.
-Read it first, then `README.md`, `docs/DESIGN.md`, and `CHANGELOG.md`. Follow the rules in
-`.kiro/steering/kimon-docs.md` on every change.
+You are an AI coding agent (Claude, Kiro, Cursor, Copilot, …) or a human picking up **Kimon**. Read this page first; it takes five
+minutes and tells you what to read next, what the rules are, and how to avoid the mistakes already made.
 
-## What Kimon is
+## 1. What Kimon is
 
-An original, clean-room anime-style **Power/energy progression** mod for **Minecraft 26.2** on
-**NeoForge 26.2.0.88**, built clean-room (no Dragon Ball / DBC code or assets; names and terms follow Dragon Ball's by the owner's decision). Mechanics
-are reimplemented from the research in `docs/DESIGN.md`.
+A Minecraft **26.2 / NeoForge 26.2.0.88 / Java 25** mod, written clean-room, that re-implements the mechanics of the discontinued mod
+*Dragon Block C*: six attributes bought with Training Points (TP), a Release % power multiplier, Ki and Stamina, races and classes,
+skills, per-race transformations and Kaioken. Names and terms follow Dragon Ball's on purpose. It lives in a **public GitHub
+repository** (`fernandosilvot/kimon`, MIT). The owner is **Fernando**; he talks to you in **Spanish** (rioplatense/informal) and
+cares about *playing* it: he tests every slice in the game and reports what feels wrong.
 
-## Environment (verified working)
+## 2. Read in this order
 
-- **JDK 25** required. On macOS/Homebrew:
-  `export JAVA_HOME="$(brew --prefix openjdk@25)/libexec/openjdk.jdk/Contents/Home"`
-- Build: `./gradlew build` · Test: `./gradlew test` · Dev client: `./gradlew runClient`
-- First build decompiles MC (slow, needs the `-Xmx3G` already set in `gradle.properties`).
-- `org.gradle.configuration-cache=false` on purpose (NeoGradle 7.1.39 breakage).
+1. **This file.**
+2. [`STATUS.md`](STATUS.md) — what is done, which branch holds what, the **open bug**, the next steps, questions for the owner.
+3. [`SETUP.md`](SETUP.md) — install Java 25, clone, build, test, run (macOS / Linux / Windows).
+4. [`ARCHITECTURE.md`](ARCHITECTURE.md) — packages, attachments, payloads, datapack formats, formulas, config, controls, commands, tests,
+   how to extend, 26.2 API gotchas.
+5. [`DECISIONS.md`](DECISIONS.md) — owner decisions, legal/provenance, contradictions in the research and how they were resolved, our
+   own `[PROP]` numbers.
+6. [`research/`](research/) — the design source of truth (three documents written by the owner): `01` history/architecture/license,
+   `02` Release/Ki/stats with formulas and the config table, `03` everything else + JSON schemas + the **12-step order**.
+7. `README.md` (features, controls, user guide), `CHANGELOG.md`, `DESIGN.md` (roadmap), `CONTRIBUTING.md`.
 
-## Current state (as of this handoff)
+## 3. Ground rules
 
-- Branch of record: **`develop`** (latest work). `main` holds tagged releases.
-- Latest release: **v0.3.0**. ~81 passing unit tests. CI green (`.github/workflows/build.yml`).
-- Implemented: Phases 0–6 + Form Mastery + Phase 7 (Training Altar block, Wish Orb item).
-  See `README.md` feature table and the roadmap diagram (`docs/roadmap.svg`, embedded in README).
+1. **Server-authoritative.** Clients send intents, never values. Validate everything on the server.
+2. **Pure logic first, with tests.** New balance math goes into Minecraft-free classes with JUnit tests; glue stays thin.
+3. **Data, not constants.** Anything the research tags `[COM]` or `[PROP]` goes to config or datapack JSON.
+4. **The research is the spec.** If you change a number or a rule, say which document it came from, or record the deviation in
+   `DECISIONS.md`. Where the documents contradict each other, follow what is already decided there.
+5. **Don't copy other people's code or assets.** See `DECISIONS.md` §2 (provenance and legal). Names and terms are free by the owner's
+   decision; textures, models, sounds of Dragon Block C are not. Ask the owner before touching the decompiled
+   copies that may exist on his machine (`MC/test/`, outside this repo) and never commit them.
+6. **One phase per session, one vertical slice per branch.** Finish and verify before starting the next.
+7. **Keep old data readable.** Renaming a key in saves/JSON/commands needs a legacy alias (several exist; copy the pattern).
+8. **Don't invent facts.** If a number is unknown, make it config, mark it `[PROP]`, and list it in `DECISIONS.md` §4.
+9. **Be honest in reports.** Say what you verified (tests, boot, play-test) and what you could not. Do not claim a gameplay feature
+   works because it compiles.
+10. **Respond in Spanish** to the owner; code, comments in docs, commits and identifiers are English.
 
-## Architecture (where things live)
+## 4. Workflow (GitFlow)
 
-Package root: `net.kimon.kimon`
-
-- `power/` — Power stat, tiers, Release%/Energy/Stamina loop, forms + mastery, combat.
-  - Pure/unit-tested cores: `PowerData`, `PowerScaling`, `PowerState`, `EnergyBlast`, `Form`, `MasteryData`.
-  - Server glue: `CombatHandler` (tick loop, melee/blast scaling, transform, blast raycast),
-    `PowerEffects`, `PowerEventHandler`, `ModAttachments` (POWER, STATE, MASTERY).
-- `stats/` — six attributes + TP economy, races/classes, derived stats.
-  - Pure/unit-tested: `StatBlock`, `StatCalculator`, `RaceDef`, `ClassDef`, `StatMods`, `CharacterCatalog`, `CharacterProfile`.
-  Races/classes are JSON under `data/kimon/{races,classes}/`, loaded by `CharacterDataLoader` and synced by `CatalogPayload`.
-  - Glue: `StatEffects`, `StatCodecs`, `ModStatAttachments` (STATS, PROFILE).
-- `network/` — serverbound payloads (raise attribute, charge input, reset release, fire blast, transform) and clientbound
-  `PowerSyncPayload` / `AuraPayload` sent by `power/SyncHandler` (STATE is NOT an auto-synced attachment) +
-  `ModNetworking` handlers.
-- `block/` — `TrainingAltarBlock`, `ModBlocks` (blocks, items incl. Wish Orb, creative tab).
-- `wish/` — `Wish` (reward table, pure), `WishOrbItem`.
-- `power/Form*` — forms as data: `Form` (id reference), `FormDef`, `FormCatalog` (JSON, synced), pure
-  `FormRules` (ladder/unlock) and `FormEffect` (attribute pipeline); `FormDataLoader/Handler` are the glue.
-- `skill/` — skills as data: `SkillDef`/`SkillEffect` (JSON), `SkillCatalog`, `SkillData` (attachment),
-  pure `SkillRules`/`SkillEffects`; glue `SkillHandler`, `FlightHandler`, `DashHandler`, `SkillDataLoader`.
-- `command/` — `KimonCommands` (`/kimon ...` debug/admin tree).
-- `client/` — `KimonClient` (keybinds→payloads), `StatsScreen` (GUI), `PowerHudLayer` (HUD). All
-  `@Dist.CLIENT`.
-
-Resources: `src/main/resources/assets/kimon/` (lang en/es, blockstates, models, `items/` client
-item defs), `data/kimon/` (`loot_table/`, `recipe/`), `META-INF/neoforge.mods.toml`.
-
-## Non-negotiable conventions
-
-1. **Clean-room.** No DBC/Dragon Ball code, textures, models, sounds or configs. Names and terms follow Dragon Ball's (owner's decision, 2026-10-04); keep them in lang files and data JSON so a rename stays cheap.
-2. **Server-authoritative.** Client sends intents (payloads); server validates and applies; synced
-   data attachments push state back. Never trust client values.
-3. **Pure logic is unit-tested.** Put balance math in Minecraft-free classes and add JUnit tests.
-4. **26.2 API gotchas** (already handled, keep consistent):
-   - `Identifier` (not `ResourceLocation`).
-   - GUI render = `extractRenderState(GuiGraphicsExtractor)`, text via `guiGraphics.text(...)`.
-   - HUD layer implements `net.neoforged.neoforge.client.gui.GuiLayer`.
-   - Open screens with `Minecraft.setScreenAndShow(...)`.
-   - Attach `.serialize(MapCodec)` (not Codec); `.sync(predicate, StreamCodec)`.
-   - Damage via `LivingEntity.hurtServer(ServerLevel, DamageSource, float)`.
-   - Action-bar message = `ServerPlayer.sendSystemMessage(component, true)`.
-   - Command perms via `Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)`.
-   - Blocks: `registerBlock(name, factory, UnaryOperator<Properties>)`; interaction =
-     `useWithoutItem(...)`. Items: `registerItem(...)`; `use(Level, Player, InteractionHand)`.
-   - Datapacks use singular dirs: `data/<ns>/loot_table/`, `data/<ns>/recipe/`.
-   - Items need a client item definition at `assets/<ns>/items/<name>.json` plus the model.
-
-## Workflow (GitFlow) — do this every feature
-
-1. `git switch develop && git switch -c feature/<name>` (branch from develop).
-2. Implement; keep pure logic testable; add tests.
-3. `./gradlew test` and `./gradlew build` (JDK 25) must pass; verify `runClient` loads w/o crash.
-4. **Update docs** (steering rule): `README.md`, `CHANGELOG.md` (`[Unreleased]`), `docs/DESIGN.md`,
-   and regenerate `docs/roadmap.svg` (mermaid) if a phase changed.
-5. Conventional-commit; `git merge --no-ff` into `develop`; push; **delete the feature branch**
-   (local and remote). Keep branches to just `main` + `develop`.
-6. Release: move `[Unreleased]`→`[X.Y.Z]`, bump `mod_version`, merge `develop`→`main`, tag `vX.Y.Z`,
-   `gh release create`.
-
-## Suggested next slices (Phase 7 and refinements)
-
-Pick one, keep it a complete vertical slice:
-
-- **Master NPCs** — an entity the player interacts with to learn skills/forms. Larger: needs an
-  `EntityType`, a renderer (`EntityRenderersEvent.RegisterRenderers`), and a dialog/teach flow.
-  Consider starting with a villager-reskin or a simple `PathfinderMob` to avoid custom rigging.
-- **Visual projectile for the Energy Blast** — a `Projectile` entity + renderer so the blast is seen,
-  replacing the instant raycast (or complementing it). High visual payoff.
-- **Data-driven sagas/quests** — a JSON mission format (see the schema sketch in `docs/DESIGN.md`).
-- **Move forms/skills to JSON datapacks** — races and classes are done; the research targets datapack-defined
-  content for server customization.
-- **Skills** — e.g. Fly/Dash/Endurance as learnable, TP-costed abilities (pure cost logic + effects).
-
-## Quick manual test recipe
-
+```bash
+git switch develop && git pull
+git switch -c feature/<short-name>          # never commit features to develop/main directly
+# …implement; pure logic + tests…
+export JAVA_HOME=<JDK 25>                   # see SETUP.md
+./gradlew test build                        # must pass
+./gradlew runClient                         # must boot without errors; the owner plays it
+# update README / CHANGELOG [Unreleased] / DESIGN / STATUS / roadmap (see STATUS.md §8)
+git add -A && git commit                    # Conventional Commits + the co-author trailer (below)
+git push -u origin feature/<short-name>     # lets another computer continue the branch
+# when verified (the owner has played it, or moved on without reporting problems):
+git switch develop && git merge --no-ff feature/<short-name> && git push origin develop
+git branch -d feature/<short-name> && git push origin --delete feature/<short-name>
 ```
-/op <you>                 # or a creative world with cheats
-/kimon tp 100000
-/kimon race saiyan
-/kimon class warrior
-/kimon attr strength 1000
-/kimon power 5000
-# hold C to charge Release (Ctrl+C lowers it, H resets, hold R for turbo), press G to transform,
-# left-click a mob (see "Hit for X (+N TP)" — TP only comes from hits with Release >= 5%),
-# press B to fire an Energy Blast, press K for the character sheet.
-/give @s kimon:wish_orb 4
-/give @s kimon:training_altar
-/give @s kimon:gravity_device      # stand within 8 blocks: 10G, heavier, STR/DEX down, TP likelier
-/give @s kimon:weighted_vest        # carried weight: lowers melee damage, TP likelier
-```
+
+- Commit style: `feat(scope): …`, `fix(scope): …`, `docs: …`, `chore: …`; body lists the changes; end with
+  `Co-Authored-By: <your model name> <noreply@anthropic.com>` if you are an Anthropic model (otherwise your own attribution).
+- Only `main` and `develop` persist long-term. `main` is touched only for releases: move `[Unreleased]` → `[X.Y.Z]` in the changelog,
+  bump `mod_version` in `gradle.properties`, merge `develop` → `main`, tag `vX.Y.Z`, `gh release create`.
+- **Never force-push** `main`/`develop`. If a push is rejected, `git fetch` and merge.
+- **Keep risky or unconfirmed work on its branch** (and push the branch). Merge to `develop` when verified.
+
+## 5. Working next to other agents
+
+More than one agent (or the owner in another terminal) can work on this repo at the same time — it already happened: another session
+switched the shared checkout to another branch and stashed the working tree. Protect yourself and them:
+
+1. At the start: `git status`, `git branch --show-current`, `git worktree list`, `git stash list`. If something is not yours, **don't touch it**.
+2. Do your work in **your own worktree** so you never switch branches under someone else:
+   ```bash
+   git worktree add ../kimon-<task> -b feature/<task> develop     # or an existing branch
+   cd ../kimon-<task>      # build, test, commit and push from here
+   git worktree remove ../kimon-<task>        # when finished
+   ```
+3. A branch can be checked out in only one worktree. Use `git stash apply` (not `pop`) when you copy changes someone else stashed.
+4. Two agents must not run `runClient` on the same `run/` folder at once (use separate worktrees; each has its own `run/`).
+5. Before editing a shared doc (`STATUS.md`, `CHANGELOG.md`, `README.md`), `git fetch` and re-read it — someone may have changed it.
+6. If you see a conflicting instruction in a file (e.g. a rule that was removed), don't "fix" it silently: note it in `STATUS.md`/`DECISIONS.md` and tell the owner.
+
+## 6. Quality gates (every slice)
+
+- [ ] `./gradlew test` → all pass (state the count).
+- [ ] `./gradlew build` → passes.
+- [ ] `./gradlew runClient` boots with **no `ERROR`/exception** in `run/client/logs/latest.log` (`Kimon initializing`, `Loaded N races/skills/forms` appear).
+- [ ] New pure logic has tests; tests compare to the research tables where they exist.
+- [ ] New strings exist in **both** `en_us.json` and `es_es.json`.
+- [ ] Protocol version bumped if a payload changed; new config keys documented in `ARCHITECTURE.md` §9.
+- [ ] Docs synced: `README.md` (features, controls, commands, test count), `CHANGELOG.md`, `DESIGN.md`, `STATUS.md`, roadmap SVG.
+- [ ] You told the owner **what to test in the game** and what you could not verify.
+
+## 7. Playing it (what the owner does)
+
+See `SETUP.md` §4 for the recipe. Short version, in a creative world with cheats:
+`/kimon race saiyan` → `/kimon tp 100000` → `/kimon attr mind 100` → <kbd>J</kbd> learn *Super Form* → hold <kbd>C</kbd> past 10% →
+<kbd>G</kbd> transform. TP only come from hitting mobs with Release ≥ 5%. Feedback appears in the **action bar** (not in chat), so
+the log may not show what he saw — ask what message appeared.
+
+## 8. Pointers for common questions
+
+- *How do I add a skill/form/race?* `ARCHITECTURE.md` §12.
+- *Why is this number 0.2?* `DECISIONS.md` §3–4.
+- *What formula does the research give?* `research/02` (Release/Ki/stats) and `research/03` (everything else).
+- *Which API call is right in 26.2?* `ARCHITECTURE.md` §13.
+- *What should I build next?* `STATUS.md` §6.
