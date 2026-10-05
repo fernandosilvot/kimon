@@ -10,8 +10,7 @@ anime-RPG progression *works* (from public wikis, guides and research) and write
 use our own assets.
 
 - ✅ Allowed: reimplementing game mechanics and formulas. Game rules/ideas are not copyrightable.
-- ❌ Never: decompiling or copying Dragon Block C's code, textures, models, sounds or configs, or
-  shipping its assets.
+- ❌ Never: decompiling or copying Dragon Block C's  textures, models, sounds
 - ⚠️ **Names (owner's decision, 2026-10-04):** the earlier "invented names only" rule was lifted. Races,
   classes, attributes, forms and terms now use Dragon Ball's (Saiyan, Namekian, Ki, Release, Super
   Saiyan…) so players recognise them. They are trademarks of their owners and may have to be changed if
@@ -82,11 +81,12 @@ Mirrors the research's phased plan, scoped to one vertical slice at a time:
      Kaioken, Oozaru/God forms, instant transformation (double-tap).
    - ⏳ Next (`docs/03`, order of 12): step 5b Kaioken, step 6 Form Mastery rework, step 7 Ki techniques.
 
-Near-term refinements: a visual projectile entity, and moving races/forms to JSON datapacks.
+Near-term: Kaioken (branch `feature/kaioken`, open bug), Form Mastery rework, Ki techniques with a projectile entity.
 
 Deferred (need libraries not yet on 26.2): player animation (forms visuals), in-game GameTests.
-Also deferred: moving forms/skills to JSON datapacks (races and classes are done; the research's
-JSON schema is the target once the feature set stabilizes).
+
+> The always-current, step-by-step status (and what is missing in each step) is in [`STATUS.md`](STATUS.md); the numbered plan is the
+> 12 steps of [`research/03-resto-sistemas.md`](research/03-resto-sistemas.md).
 
 ## Server-authoritative principle
 
@@ -96,6 +96,5 @@ unit-tested classes (no world/entity refs) — e.g. `PowerScaling`, and the upco
 
 ## Credits
 
-Game-design research compiled by the project owner (Fernando) from public DBC documentation
-(JinGames guides, Fandom wikis, forums) and the open-source DragonMine Z (GPL-3.0) design. Kimon's
-code and assets are original and MIT-licensed.
+Game-design research compiled by the project owner (Fernando) from public DBC documentation (JinGames guides, Fandom wikis, forums) and the
+open-source DragonMine Z (GPL-3.0) design; the three documents are in [`research/`](research/).

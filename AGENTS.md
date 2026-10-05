@@ -1,39 +1,47 @@
 # AGENTS.md
 
-Guidance for AI coding agents working in this repository (Kimon, a Minecraft 26.2 / NeoForge mod).
+Guidance for AI coding agents working in this repository (**Kimon**, a Minecraft 26.2 / NeoForge 26.2.0.88 / Java 25 mod). It is a
+short summary; the full picture is in `docs/`.
 
-## Start here
+## Start here (in this order)
 
-1. Read **`docs/CONTINUE_HERE.md`** — the full handoff: state, architecture, conventions, next steps.
-2. Then `README.md` (features, controls, commands), `docs/DESIGN.md` (design + clean-room legal
-   stance), `CHANGELOG.md`.
-3. Obey **`.kiro/steering/kimon-docs.md`** — the standing rules (docs sync, GitFlow, quality gates).
+1. **`docs/CONTINUE_HERE.md`** — the entry point: rules, GitFlow, working next to other agents, quality gates.
+2. **`docs/STATUS.md`** — what is done, which branch holds what, the **open bug**, next steps, open questions for the owner.
+3. **`docs/SETUP.md`** — set up Java 25 and run it on any computer.
+4. **`docs/ARCHITECTURE.md`** — packages, attachments, payloads, datapack formats, formulas, config, how to extend, 26.2 gotchas.
+5. **`docs/DECISIONS.md`** — owner decisions, provenance/legal, research contradictions, our `[PROP]` numbers.
+6. **`docs/research/`** — the design specification (3 documents); `03` has the 12-step order of work.
+7. Standing rules: `.kiro/steering/kimon-docs.md`.
 
 ## Build / test / run
 
-JDK **25** only:
+JDK **25** is required (the machine default may be 26 — set `JAVA_HOME`):
 
 ```bash
-export JAVA_HOME="$(brew --prefix openjdk@25)/libexec/openjdk.jdk/Contents/Home"  # macOS/Homebrew
+export JAVA_HOME="$(brew --prefix openjdk@25)/libexec/openjdk.jdk/Contents/Home"  # macOS/Homebrew; see docs/SETUP.md for Linux/Windows
 ./gradlew test        # unit tests (must pass)
 ./gradlew build       # full build (must pass)
-./gradlew runClient   # dev client — verify it loads without crashing
+./gradlew runClient   # dev client — must boot without errors; the owner plays it
 ```
 
-## Golden rules (summary — details in docs/CONTINUE_HERE.md)
+## Golden rules
 
-- **Clean-room.** No Dragon Block C / Dragon Ball code, textures, models, sounds or configs. *Names and terms may follow Dragon Ball's* (owner's decision, see docs/DESIGN.md).
-- **Server-authoritative.** Client sends intents; server validates; synced attachments return state.
-- **Unit-test pure logic.** Balance math goes in Minecraft-free classes with JUnit tests.
-- **GitFlow.** Feature branch off `develop` → `--no-ff` merge → delete the branch (local + remote).
-  Only `main` + `develop` persist. Conventional Commits.
-- **Keep docs in sync** on every change: README, CHANGELOG, DESIGN, and the roadmap diagram
-  (`docs/roadmap.svg`, embedded in the README).
-- Target **Minecraft 26.2 / NeoForge 26.2.0.88 / Java 25**. See the 26.2 API gotchas list in
-  `docs/CONTINUE_HERE.md` before touching GUI, networking, blocks/items, or datapacks.
+- **Server-authoritative.** Clients send intents; the server validates; synced attachments / payloads return state.
+- **Pure logic is unit-tested.** Balance math lives in Minecraft-free classes; every new one gets JUnit tests.
+- **Balance is data.** `[COM]`/`[PROP]` numbers go to config (`KimonConfig`) or datapack JSON, never constants.
+- **GitFlow.** Feature branch off `develop` → verify → `--no-ff` merge → push → delete the branch. Conventional Commits. Push your
+  branch so another computer can continue it. Never force-push `main`/`develop`.
+- **Several agents may work at once.** Check `git status` / `git worktree list` / `git stash list` first, work in **your own worktree**,
+  never switch branches in a checkout you did not create. See `docs/CONTINUE_HERE.md` §5.
+- **Keep docs in sync** on every change: `README.md`, `CHANGELOG.md`, `docs/DESIGN.md`, `docs/STATUS.md`, `docs/roadmap.svg`
+  (`python3 docs/tools/make_roadmap.py`).
+- **Provenance:** names and terms follow Dragon Ball's (owner's decision). Read `docs/DECISIONS.md` §2 before copying anything from
+  other mods, and **ask the owner before touching the decompiled copies** that may exist on his machine (`MC/test/`, outside this repo).
+- **Be honest in reports:** say what you verified (tests, boot) and what only the owner can verify by playing. Respond to the owner in
+  **Spanish**; code, commits and docs are English.
 
 ## Project layout
 
-Java under `src/main/java/net/kimon/kimon/`: `power/`, `stats/`, `network/`, `block/`, `wish/`,
-`command/`, `client/`. Resources under `src/main/resources/{assets,data}/kimon/`. Tests under
-`src/test/java/`.
+Java under `src/main/java/net/kimon/kimon/`: `power/`, `stats/`, `skill/`, `training/`, `network/`, `config/`, `block/`, `wish/`,
+`command/`, `client/`. Resources under `src/main/resources/{assets,data}/kimon/` (datapack JSON: `races`, `classes`, `skills`, `forms`).
+Tests under `src/test/java/`. Details: `docs/ARCHITECTURE.md`.

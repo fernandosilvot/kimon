@@ -16,9 +16,12 @@ After implementing or changing any feature, BEFORE committing:
 2. **CHANGELOG.md** — add an entry under `## [Unreleased]` describing the change (Keep a Changelog
    format, Conventional-Commit spirit).
 3. **docs/DESIGN.md** — if a roadmap phase advances, mark it done and update the "next" pointer.
-4. **Roadmap diagram** — update `docs/roadmap.svg` (via the mermaid tool, then export) whenever a
-   phase changes status. The README embeds this SVG, so it must stay current. Keep the diagram
-   referenced/embedded in the README so it is viewable directly from GitHub.
+4. **docs/STATUS.md** — the volatile handoff file: branches, the 12-step table, open bugs, test counts, next steps, questions for the
+   owner. Update it at the end of **every** session (checklist in the file).
+5. **docs/ARCHITECTURE.md / DECISIONS.md** — update when you add a payload, attachment, config key, datapack field, formula or make a
+   judgment call (record `[PROP]` numbers and research contradictions in DECISIONS).
+6. **Roadmap diagram** — edit the status list in `docs/tools/make_roadmap.py` and run `python3 docs/tools/make_roadmap.py` to regenerate
+   `docs/roadmap.svg` (the README embeds it).
 
 ## Branching & cleanliness (GitFlow)
 
